@@ -1,22 +1,16 @@
-import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 import './App.css'
-import Sidebar from './components/Sidebar'
-import TopBar from './components/TopBar'
+import Login from './components/Login/Login'
+import Dashboard from './components/Dashboard/Dashboard'
 
 function App() {
-  const { t } = useTranslation()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  return (
-    <div className="dashboard">
-      <Sidebar />
-      <div className="dashboard-main">
-        <TopBar />
-        <main className="dashboard-content">
-          <h1>{t('dashboard.home')}</h1>
-        </main>
-      </div>
-    </div>
-  )
+  if (!isLoggedIn) {
+    return <Login onLogin={() => setIsLoggedIn(true)} />
+  }
+
+  return <Dashboard />
 }
 
 export default App

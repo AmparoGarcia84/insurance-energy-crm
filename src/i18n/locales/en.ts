@@ -20,4 +20,13 @@ export default {
   dashboard: {
     home: 'Home',
   },
+  login: {
+    title: 'Welcome back',
+    subtitle: 'Sign in to your account to continue',
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    passwordPlaceholder: '••••••••',
+    submit: 'Sign in',
+  },
 }

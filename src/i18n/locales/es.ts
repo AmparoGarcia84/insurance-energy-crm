@@ -20,4 +20,13 @@ export default {
   dashboard: {
     home: 'Inicio',
   },
+  login: {
+    title: 'Bienvenida',
+    subtitle: 'Inicia sesión para continuar',
+    email: 'Correo electrónico',
+    emailPlaceholder: 'tu@correo.com',
+    password: 'Contraseña',
+    passwordPlaceholder: '••••••••',
+    submit: 'Iniciar sesión',
+  },
 }

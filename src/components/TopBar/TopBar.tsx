@@ -1,5 +1,6 @@
 import { Search, Mail, Bell, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import './TopBar.css'
 
 export default function TopBar() {
   const { t } = useTranslation()

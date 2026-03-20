@@ -9,7 +9,8 @@ import {
   LogOut,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import logo from '../assets/logo.jpeg'
+import logo from '../../assets/logo.jpeg'
+import './Sidebar.css'
 
 const navItems = [
   { key: 'nav.home', icon: LayoutDashboard },
