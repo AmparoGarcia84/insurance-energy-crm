@@ -11,7 +11,12 @@ node_modules
 dist
 dist-ssr
 coverage
+.env
+.env.*
+!.env.example
 *.local
+
+CLAUDE.md
 
 # Editor directories and files
 .vscode/*
