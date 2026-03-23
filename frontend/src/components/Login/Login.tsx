@@ -62,8 +62,10 @@ export default function Login() {
         <form className="login-form" onSubmit={handleSubmit}>
           <FormField
             id="email"
+            name="email"
             label={t('login.email')}
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t('login.emailPlaceholder')}
@@ -72,8 +74,10 @@ export default function Login() {
 
           <FormField
             id="password"
+            name="password"
             label={t('login.password')}
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t('login.passwordPlaceholder')}

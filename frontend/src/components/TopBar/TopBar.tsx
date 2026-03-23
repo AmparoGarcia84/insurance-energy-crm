@@ -24,7 +24,7 @@ export default function TopBar() {
       {/* Global search — functionality to be implemented */}
       <div className="topbar-search">
         <Search size={16} />
-        <input type="text" placeholder={t('topbar.searchPlaceholder')} />
+        <input type="search" id="global-search" name="q" autoComplete="off" placeholder={t('topbar.searchPlaceholder')} />
       </div>
 
       <div className="topbar-actions">
