@@ -1,0 +1,80 @@
+/**
+ * controllers/auth.controller.ts — HTTP handlers for authentication routes
+ *
+ * Translates HTTP requests into service calls and HTTP responses.
+ * Controllers are intentionally thin: they validate inputs, delegate all
+ * business logic to auth.service.ts, and map results / errors to status codes.
+ *
+ * This layering (route → controller → service) makes each layer independently
+ * testable and prevents HTTP concerns from leaking into business logic.
+ */
+import { Request, Response } from 'express'
+import * as authService from '../services/auth.service.js'
+import { AuthRequest } from '../middleware/auth.js'
+
+/**
+ * POST /auth/login
+ *
+ * Accepts { email, password } in the request body and returns a JWT plus
+ * user profile on success. Returns 400 for missing fields (client error) and
+ * 401 for invalid credentials (authentication failure) — these different codes
+ * help API consumers distinguish a bad request from a failed login attempt.
+ */
+export async function login(req: Request, res: Response): Promise<void> {
+  const { email, password } = req.body
+
+  // Validate required fields before hitting the database
+  if (!email || !password) {
+    res.status(400).json({ error: 'Email and password are required' })
+    return
+  }
+
+  try {
+    const result = await authService.login(email, password)
+
+    // Set the JWT in an httpOnly cookie so it is never accessible from JavaScript.
+    // sameSite: 'lax' allows the cookie to be sent on same-site navigations while
+    // blocking cross-site requests. secure: true must be enabled in production (HTTPS).
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds, matches JWT expiry
+    })
+
+    // Return only the user profile — the token is in the cookie, not the body
+    res.json({ user: result.user })
+  } catch {
+    // Any error from the service layer (wrong credentials, DB error) maps to 401
+    // so callers cannot distinguish one failure mode from another
+    res.status(401).json({ error: 'Invalid credentials' })
+  }
+}
+
+/**
+ * GET /auth/me (requires requireAuth middleware)
+ *
+ * Returns the profile of the currently authenticated user, identified by the
+ * userId embedded in the JWT cookie. Used by the frontend on page load to
+ * rehydrate the session without requiring a full login.
+ */
+export async function getMe(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const user = await authService.getMe(req.user!.userId)
+    res.json(user)
+  } catch {
+    // findUniqueOrThrow throws if the user record no longer exists (e.g. deleted)
+    res.status(404).json({ error: 'User not found' })
+  }
+}
+
+/**
+ * POST /auth/logout (requires requireAuth middleware)
+ *
+ * Clears the auth cookie by overwriting it with an empty value and maxAge 0,
+ * which instructs the browser to delete it immediately.
+ */
+export function logout(_req: AuthRequest, res: Response): void {
+  res.cookie('token', '', { httpOnly: true, maxAge: 0 })
+  res.json({ ok: true })
+}

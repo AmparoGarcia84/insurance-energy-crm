@@ -28,5 +28,7 @@ export default {
     password: 'Contraseña',
     passwordPlaceholder: '••••••••',
     submit: 'Iniciar sesión',
+    submitting: 'Iniciando sesión...',
+    error: 'Email o contraseña incorrectos',
   },
 }

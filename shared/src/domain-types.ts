@@ -344,7 +344,7 @@ export interface Client {
   billingAddress?: Address
 
   // Facturación
-  iban?: string
+  iban?: string // array con iban personal y empresa 
 
   // Empresa
   employees?: number
@@ -354,7 +354,7 @@ export interface Client {
   // Gestión comercial
   accountOwnerUserId?: string
   commercialAgentUserId?: string
-  gexbrokExecutiveUserId?: string
+  gexbrokExecutiveUserId?: string // dato que no nos interesa pero se descarga, ignorar?
   collectionManager?: CollectionManager
 
   // Jerarquía (para agrupar contactos bajo una empresa/cliente principal)

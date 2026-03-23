@@ -52,36 +52,6 @@
   gap: 16px;
 }
 
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--corp-black);
-  }
-
-  input {
-    padding: 10px 12px;
-    border: 1px solid var(--corp-beige);
-    border-radius: 8px;
-    background: var(--corp-cream);
-    font-size: 14px;
-    color: var(--corp-black);
-    outline: none;
-    transition: border-color 0.15s;
-
-    &::placeholder {
-      color: var(--corp-muted);
-    }
-
-    &:focus {
-      border-color: var(--corp-gold);
-    }
-  }
-}
 
 .login-btn {
   margin-top: 8px;

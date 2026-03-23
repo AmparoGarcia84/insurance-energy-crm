@@ -28,5 +28,7 @@ export default {
     password: 'Password',
     passwordPlaceholder: '••••••••',
     submit: 'Sign in',
+    submitting: 'Signing in...',
+    error: 'Invalid email or password',
   },
 }

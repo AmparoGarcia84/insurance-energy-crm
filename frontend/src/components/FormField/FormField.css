@@ -1,0 +1,31 @@
+/* Shared styles for every label+input pair across all forms */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--corp-black);
+}
+
+.form-field input {
+  padding: 10px 12px;
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  background: var(--corp-cream);
+  font-size: 14px;
+  color: var(--corp-black);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-field input::placeholder {
+  color: var(--corp-muted);
+}
+
+.form-field input:focus {
+  border-color: var(--corp-gold);
+}

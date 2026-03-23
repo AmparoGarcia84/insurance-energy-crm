@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  OWNER
+  EMPLOYEE
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  displayName  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workdays Workday[]
+}
+
+enum ClientType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+  LOST
+}
+
+model Client {
+  id          String       @id @default(uuid())
+  type        ClientType
+  status      ClientStatus @default(LEAD)
+  displayName String
+  legalName   String?
+  taxId       String?
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  policies        Policy[]
+  energyContracts EnergyContract[]
+  cases           Case[]
+  sales           Sale[]
+}
+
+enum SaleStatus {
+  OPEN
+  WON
+  LOST
+  CANCELLED
+}
+
+model Sale {
+  id       String     @id @default(uuid())
+  clientId String
+  client   Client     @relation(fields: [clientId], references: [id])
+  title    String
+  status   SaleStatus @default(OPEN)
+  amount   Float?
+  notes    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum PolicyStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+model Policy {
+  id           String       @id @default(uuid())
+  clientId     String
+  client       Client       @relation(fields: [clientId], references: [id])
+  policyNumber String?
+  insurer      String
+  product      String
+  status       PolicyStatus @default(ACTIVE)
+  startDate    DateTime
+  endDate      DateTime?
+  premium      Float?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+enum EnergyContractStatus {
+  ACTIVE
+  CANCELLED
+  PENDING
+  EXPIRED
+}
+
+model EnergyContract {
+  id        String               @id @default(uuid())
+  clientId  String
+  client    Client               @relation(fields: [clientId], references: [id])
+  supplier  String
+  cups      String?
+  status    EnergyContractStatus @default(ACTIVE)
+  startDate DateTime
+  endDate   DateTime?
+  notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model Case {
+  id          String     @id @default(uuid())
+  clientId    String
+  client      Client     @relation(fields: [clientId], references: [id])
+  title       String
+  description String?
+  status      CaseStatus @default(OPEN)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Workday {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  date     DateTime  @db.Date
+  clockIn  DateTime?
+  clockOut DateTime?
+  notes    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  adjustmentRequests WorkAdjustmentRequest[]
+}
+
+enum AdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model WorkAdjustmentRequest {
+  id                String           @id @default(uuid())
+  workdayId         String
+  workday           Workday          @relation(fields: [workdayId], references: [id])
+  reason            String
+  requestedClockIn  DateTime?
+  requestedClockOut DateTime?
+  status            AdjustmentStatus @default(PENDING)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
