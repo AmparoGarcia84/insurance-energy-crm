@@ -1,36 +1,27 @@
-/**
- * Dashboard/Dashboard.tsx — Authenticated application shell
- *
- * This is the root layout component rendered after a successful login.
- * It composes the persistent chrome (Sidebar on the left, TopBar at the top)
- * around a central content area where individual CRM sections will be mounted.
- *
- * The current content area is a placeholder heading. As feature sections are
- * built (Clients, Sales, Policies, etc.), the router will swap content here
- * based on the active navigation item selected in the Sidebar.
- *
- * Layout is driven by CSS classes defined in App.css so that the sidebar /
- * main split is consistent across all future sub-pages.
- */
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Sidebar from '../Sidebar/Sidebar'
+import Sidebar, { Section } from '../Sidebar/Sidebar'
 import TopBar from '../TopBar/TopBar'
+import Clients from '../Clients/Clients'
 
 export default function Dashboard() {
   const { t } = useTranslation()
+  const [activeSection, setActiveSection] = useState<Section>('home')
+
+  function renderSection() {
+    switch (activeSection) {
+      case 'clients': return <Clients />
+      default:        return <h1>{t(`nav.${activeSection}`)}</h1>
+    }
+  }
 
   return (
     <div className="dashboard">
-      {/* Sidebar handles navigation and logout */}
-      <Sidebar />
-
+      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} />
       <div className="dashboard-main">
-        {/* TopBar holds search, notifications, and user identity */}
         <TopBar />
-
-        {/* Scrollable content area — individual section components will render here */}
         <main className="dashboard-content">
-          <h1>{t('dashboard.home')}</h1>
+          {renderSection()}
         </main>
       </div>
     </div>

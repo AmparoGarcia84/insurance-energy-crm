@@ -1,0 +1,226 @@
+.clients-list-view,
+.clients-form-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.clients-list-header,
+.clients-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clients-list-header h1,
+.clients-form-header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--corp-black);
+}
+
+/* ── Search ─────────────────────────────────────────── */
+.clients-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  max-width: 420px;
+  color: var(--corp-muted);
+}
+
+.clients-search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  width: 100%;
+}
+
+/* ── Table ──────────────────────────────────────────── */
+.clients-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--corp-beige);
+}
+
+.clients-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--corp-card);
+  font-size: 0.9rem;
+}
+
+.clients-table th {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.clients-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+  color: var(--corp-black);
+  vertical-align: middle;
+}
+
+.clients-table tr:last-child td {
+  border-bottom: none;
+}
+
+.clients-table tbody tr:hover {
+  background: var(--corp-muted-bg);
+}
+
+.clients-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.clients-name small {
+  font-size: 0.78rem;
+  color: var(--corp-muted);
+}
+
+/* ── Badges ─────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-type-individual { background: #e8e4df; color: var(--corp-muted); }
+.badge-type-business   { background: #e8e8ff; color: #4444aa; }
+
+.badge-status-lead     { background: #fff4d6; color: #a07800; }
+.badge-status-active   { background: #d6f0e0; color: #1a7a3e; }
+.badge-status-inactive { background: #e8e4df; color: var(--corp-muted); }
+.badge-status-lost     { background: #fde8e8; color: #a03030; }
+
+/* ── Row actions ────────────────────────────────────── */
+.clients-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  color: var(--corp-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--corp-muted-bg);
+  color: var(--corp-black);
+}
+
+.icon-btn-danger:hover {
+  background: #fde8e8;
+  color: #a03030;
+}
+
+/* ── Empty state ────────────────────────────────────── */
+.clients-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--corp-muted);
+  font-size: 0.95rem;
+}
+
+/* ── Form sections ──────────────────────────────────── */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--corp-muted);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.col-span-2 {
+  grid-column: span 2;
+}
+
+/* ── Form ───────────────────────────────────────────── */
+.clients-form {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 780px;
+}
+
+.clients-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.clients-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: var(--corp-black);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) { opacity: 0.8; }
+.btn-primary:disabled              { opacity: 0.45; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  color: var(--corp-muted);
+  border: 1px solid var(--corp-beige);
+  border-radius: 7px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover { background: var(--corp-muted-bg); }

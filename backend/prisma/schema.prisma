@@ -7,6 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ── User ─────────────────────────────────────────────────────────────────────
+
 enum UserRole {
   OWNER
   EMPLOYEE
@@ -24,9 +26,20 @@ model User {
   workdays Workday[]
 }
 
+// ── Client ────────────────────────────────────────────────────────────────────
+
 enum ClientType {
   INDIVIDUAL
   BUSINESS
+  COMPANY
+  COMMUNITY_OF_OWNERS
+  SELF_EMPLOYED
+  PENSIONER
+  RETIRED
+  COLLABORATOR
+  PROSPECT
+  OTHER
+  SUPPLIER
 }
 
 enum ClientStatus {
@@ -34,27 +47,94 @@ enum ClientStatus {
   ACTIVE
   INACTIVE
   LOST
+  PROSPECTING
+  PAYMENT_DEFAULT
+  HIGH_CLAIMS
+}
+
+enum ClientQualification {
+  NEW_BUSINESS
+  PORTFOLIO
+  REFERRED_CLIENT
+  BNI_REFERRAL
+  MARKETING_SOCIAL_MEDIA
+  MARKET_LOSS
+  PROJECT_CANCELLED
+  CANCELLED
+  NOT_PROFITABLE
+  PAYMENT_DEFAULT
+}
+
+enum CollectionManager {
+  INSURANCE_COMPANY
+  BANK_TRANSFER
+  BROKER
+  CARD_PAYMENT
+  UNPAID
 }
 
 model Client {
-  id          String       @id @default(uuid())
-  type        ClientType
-  status      ClientStatus @default(LEAD)
-  displayName String
-  legalName   String?
-  taxId       String?
-  phone       String?
-  email       String?
-  address     String?
+  id           String  @id @default(uuid())
+
+  // Identificación
+  clientNumber String?
+  displayName  String
+  legalName    String?
+  taxId        String?
+
+  // Clasificación
+  type              ClientType
+  status            ClientStatus        @default(LEAD)
+  qualification     ClientQualification?
+  activity          String?             // valores de ClientActivity (domain-types)
+  sector            String?             // valores de ClientSector (domain-types)
+  collectionManager CollectionManager?
+
+  // Fechas / documentos
+  birthDate               DateTime? @db.Date
+  drivingLicenseIssueDate DateTime? @db.Date
+  dniExpiryDate           DateTime? @db.Date
+
+  // Contacto
+  phone          String?
+  mobilePhone    String?
+  secondaryPhone String?
+  email          String?
+  fax            String?
+  website        String?
+
+  // Dirección
+  street     String?
+  postalCode String?
+  city       String?
+  province   String?
+  country    String?
+
+  // Facturación y empresa
+  iban          String?
+  employees     Int?
+  annualRevenue Float?
+
+  // Jerarquía
+  isMainClient Boolean @default(false)
+  mainClientId String?
+  mainClient   Client?  @relation("ClientHierarchy", fields: [mainClientId], references: [id])
+  subClients   Client[] @relation("ClientHierarchy")
+
+  // Observaciones
   notes       String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   policies        Policy[]
   energyContracts EnergyContract[]
   cases           Case[]
   sales           Sale[]
 }
+
+// ── Sale ──────────────────────────────────────────────────────────────────────
 
 enum SaleStatus {
   OPEN
@@ -74,6 +154,8 @@ model Sale {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
+// ── Policy ────────────────────────────────────────────────────────────────────
 
 enum PolicyStatus {
   ACTIVE
@@ -98,6 +180,8 @@ model Policy {
   updatedAt    DateTime     @updatedAt
 }
 
+// ── EnergyContract ────────────────────────────────────────────────────────────
+
 enum EnergyContractStatus {
   ACTIVE
   CANCELLED
@@ -119,6 +203,8 @@ model EnergyContract {
   updatedAt DateTime             @updatedAt
 }
 
+// ── Case ──────────────────────────────────────────────────────────────────────
+
 enum CaseStatus {
   OPEN
   IN_PROGRESS
@@ -136,6 +222,8 @@ model Case {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
+
+// ── Workday ───────────────────────────────────────────────────────────────────
 
 model Workday {
   id       String    @id @default(uuid())

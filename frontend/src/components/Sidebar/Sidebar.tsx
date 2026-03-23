@@ -12,6 +12,7 @@
  * Logout is performed by calling setAuth(null), which clears the in-memory
  * token and causes App.tsx to unmount the Dashboard and render Login instead.
  */
+import React from 'react'
 import {
   LayoutDashboard,
   Users,
@@ -34,17 +35,24 @@ import './Sidebar.css'
  * Icons are lucide-react components passed as references (not JSX) so they
  * can be instantiated with custom props inside the map.
  */
-const navItems = [
-  { key: 'nav.home', icon: LayoutDashboard },
-  { key: 'nav.clients', icon: Users },
-  { key: 'nav.sales', icon: TrendingUp },
-  { key: 'nav.policies', icon: Shield },
-  { key: 'nav.energy', icon: Zap },
-  { key: 'nav.cases', icon: AlertCircle },
-  { key: 'nav.timeTracking', icon: Clock },
+export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking'
+
+const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
+  { section: 'home',         key: 'nav.home',         icon: LayoutDashboard },
+  { section: 'clients',      key: 'nav.clients',      icon: Users },
+  { section: 'sales',        key: 'nav.sales',        icon: TrendingUp },
+  { section: 'policies',     key: 'nav.policies',     icon: Shield },
+  { section: 'energy',       key: 'nav.energy',       icon: Zap },
+  { section: 'cases',        key: 'nav.cases',        icon: AlertCircle },
+  { section: 'timeTracking', key: 'nav.timeTracking', icon: Clock },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  activeSection: Section
+  onNavigate: (section: Section) => void
+}
+
+export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
   const { t } = useTranslation()
   const { setUser } = useAuth()
 
@@ -57,12 +65,10 @@ export default function Sidebar() {
       <nav className="sidebar-nav">
         <ul>
           {navItems.map((item) => {
-            // Capitalise the component reference so React treats it as JSX
             const Icon = item.icon
             return (
-              <li key={item.key}>
-                {/* TODO: replace with <Link> once routing is implemented */}
-                <a href="#">
+              <li key={item.section} className={activeSection === item.section ? 'active' : ''}>
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate(item.section) }}>
                   <Icon size={20} />
                   <span>{t(item.key)}</span>
                 </a>
@@ -73,7 +79,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        {/* Call backend to clear the httpOnly cookie, then clear local state */}
         <button className="sidebar-logout" onClick={() => logoutApi().then(() => setUser(null))}>
           <LogOut size={16} />
           {t('sidebar.logout')}

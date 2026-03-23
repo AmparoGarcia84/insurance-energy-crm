@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next'
 import logo from '../../assets/logo.jpeg'
 import { login as loginApi } from '../../api/auth'
 import { useAuth } from '../../auth/AuthContext'
-import FormField from '../FormField/FormField'
+import InputField from '../FormField/InputField'
 import './Login.css'
 
 export default function Login() {
@@ -60,7 +60,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          <FormField
+          <InputField
             id="email"
             name="email"
             label={t('login.email')}
@@ -72,7 +72,7 @@ export default function Login() {
             required
           />
 
-          <FormField
+          <InputField
             id="password"
             name="password"
             label={t('login.password')}

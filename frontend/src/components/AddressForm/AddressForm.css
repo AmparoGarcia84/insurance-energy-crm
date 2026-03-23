@@ -1,0 +1,9 @@
+.address-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.addr-col-span-2 {
+  grid-column: span 2;
+}

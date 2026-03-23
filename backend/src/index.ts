@@ -12,6 +12,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.js'
+import clientsRouter from './routes/clients.js'
 
 const app = express()
 const PORT = process.env.PORT ?? 3000
@@ -39,6 +40,7 @@ app.get('/health', (_req, res) => {
 
 // All authentication routes (/auth/login, /auth/me) are handled here.
 app.use('/auth', authRouter)
+app.use('/clients', clientsRouter)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

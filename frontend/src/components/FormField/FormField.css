@@ -1,31 +1,36 @@
-/* Shared styles for every label+input pair across all forms */
+/* Shared styles for every label + input/select/textarea pair across all forms */
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.3rem;
 }
 
 .form-field label {
-  font-size: 13px;
+  font-size: 0.82rem;
   font-weight: 500;
-  color: var(--corp-black);
+  color: var(--corp-muted);
 }
 
-.form-field input {
-  padding: 10px 12px;
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.5rem 0.7rem;
   border: 1px solid var(--corp-beige);
-  border-radius: 8px;
-  background: var(--corp-cream);
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
   color: var(--corp-black);
+  background: var(--corp-cream);
   outline: none;
   transition: border-color 0.15s;
 }
 
-.form-field input::placeholder {
+.form-field input::placeholder,
+.form-field textarea::placeholder {
   color: var(--corp-muted);
 }
 
-.form-field input:focus {
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
   border-color: var(--corp-gold);
 }
