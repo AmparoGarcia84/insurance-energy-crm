@@ -27,7 +27,8 @@ import {
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
 import TextareaField from '../FormField/TextareaField'
-import AddressForm from '../AddressForm/AddressForm'
+import AddressList from '../AddressList/AddressList'
+import BankAccountList from '../BankAccountList/BankAccountList'
 import './Clients.css'
 
 const CLIENT_TYPES          = Object.values(ClientType)
@@ -39,22 +40,26 @@ const SECTORS               = Object.entries(ClientSectorLabels)   as [ClientSec
 
 const EMPTY_FORM: ClientInput = {
   // Identificación
-  displayName: '', clientNumber: '', legalName: '', taxId: '',
+  name: '', clientNumber: '', nif: '',
   // Clasificación
   type: ClientType.INDIVIDUAL, status: ClientStatus.LEAD, qualification: undefined,
   activity: '', sector: '', collectionManager: undefined,
   // Fechas
   birthDate: '', drivingLicenseIssueDate: '', dniExpiryDate: '',
   // Contacto
-  mobilePhone: '', phone: '', secondaryPhone: '', email: '', fax: '', website: '',
-  // Dirección
-  street: '', postalCode: '', city: '', province: '', country: '',
+  mobilePhone: '', secondaryPhone: '', email: '', website: '',
   // Empresa
-  iban: '', employees: undefined, annualRevenue: undefined,
+  employees: undefined, annualRevenue: undefined, sicCode: '',
+  // Gestión comercial
+  accountOwnerUserId: '', commercialAgentUserId: '',
+  // Integraciones
+  contractsCounterpartyId: '',
   // Jerarquía
   isMainClient: false, mainClientId: '',
   // Observaciones
-  notes: '', description: '',
+  description: '',
+  // Direcciones y cuentas
+  addresses: [], bankAccounts: [],
 }
 
 export default function Clients() {
@@ -77,9 +82,9 @@ export default function Clients() {
   const filtered = clients.filter((c) => {
     const q = search.toLowerCase()
     return (
-      c.displayName.toLowerCase().includes(q) ||
+      c.name.toLowerCase().includes(q) ||
       c.email?.toLowerCase().includes(q) ||
-      c.taxId?.toLowerCase().includes(q)
+      c.nif?.toLowerCase().includes(q)
     )
   })
 
@@ -87,22 +92,21 @@ export default function Clients() {
 
   function openEdit(client: Client) {
     setForm({
-      displayName: client.displayName, clientNumber: client.clientNumber ?? '',
-      legalName: client.legalName ?? '', taxId: client.taxId ?? '',
+      name: client.name, clientNumber: client.clientNumber ?? '', nif: client.nif ?? '',
       type: client.type, status: client.status,
       qualification: client.qualification, activity: client.activity ?? '',
       sector: client.sector ?? '', collectionManager: client.collectionManager,
       birthDate: client.birthDate ?? '', drivingLicenseIssueDate: client.drivingLicenseIssueDate ?? '',
       dniExpiryDate: client.dniExpiryDate ?? '',
-      mobilePhone: client.mobilePhone ?? '', phone: client.phone ?? '',
-      secondaryPhone: client.secondaryPhone ?? '', email: client.email ?? '',
-      fax: client.fax ?? '', website: client.website ?? '',
-      street: client.street ?? '', postalCode: client.postalCode ?? '',
-      city: client.city ?? '', province: client.province ?? '', country: client.country ?? '',
-      iban: client.iban ?? '',
-      employees: client.employees, annualRevenue: client.annualRevenue,
+      mobilePhone: client.mobilePhone ?? '', secondaryPhone: client.secondaryPhone ?? '',
+      email: client.email ?? '', website: client.website ?? '',
+      employees: client.employees, annualRevenue: client.annualRevenue, sicCode: client.sicCode ?? '',
+      accountOwnerUserId: client.accountOwnerUserId ?? '', commercialAgentUserId: client.commercialAgentUserId ?? '',
+      contractsCounterpartyId: client.contractsCounterpartyId ?? '',
       isMainClient: client.isMainClient ?? false, mainClientId: client.mainClientId ?? '',
-      notes: client.notes ?? '', description: client.description ?? '',
+      description: client.description ?? '',
+      addresses:    client.addresses?.map(({ type, street, postalCode, city, province, country }) => ({ type, street, postalCode, city, province, country })) ?? [],
+      bankAccounts: client.bankAccounts?.map(({ type, iban }) => ({ type, iban })) ?? [],
     })
     setEditing(client); setIsNew(false)
   }
@@ -119,7 +123,7 @@ export default function Clients() {
     try {
       if (isNew) {
         const created = await createClient(form)
-        setClients((prev) => [...prev, created].sort((a, b) => a.displayName.localeCompare(b.displayName)))
+        setClients((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)))
       } else if (editing) {
         const updated = await updateClient(editing.id, form)
         setClients((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
@@ -131,7 +135,7 @@ export default function Clients() {
   }
 
   async function handleDelete(client: Client) {
-    if (!confirm(t('clients.deleteConfirm', { name: client.displayName }))) return
+    if (!confirm(t('clients.deleteConfirm', { name: client.name }))) return
     await deleteClient(client.id)
     setClients((prev) => prev.filter((c) => c.id !== client.id))
   }
@@ -150,18 +154,15 @@ export default function Clients() {
           <section className="form-section">
             <h2 className="form-section-title">{t('clients.sections.identification')}</h2>
             <div className="clients-form-grid">
-              <InputField id="client-displayName" label={`${t('clients.fields.displayName')} *`} className="col-span-2"
-                name="displayName" type="text" autoComplete="off" required
-                value={form.displayName} onChange={(e) => set('displayName', e.target.value)} />
-              <InputField id="client-legalName" label={t('clients.fields.legalName')}
-                name="legalName" type="text" autoComplete="off"
-                value={form.legalName} onChange={(e) => set('legalName', e.target.value)} />
+              <InputField id="client-name" label={`${t('clients.fields.name')} *`} className="col-span-2"
+                name="name" type="text" autoComplete="off" required
+                value={form.name} onChange={(e) => set('name', e.target.value)} />
+              <InputField id="client-nif" label={t('clients.fields.nif')}
+                name="nif" type="text" autoComplete="off"
+                value={form.nif} onChange={(e) => set('nif', e.target.value)} />
               <InputField id="client-clientNumber" label={t('clients.fields.clientNumber')}
                 name="clientNumber" type="text" autoComplete="off"
                 value={form.clientNumber} onChange={(e) => set('clientNumber', e.target.value)} />
-              <InputField id="client-taxId" label={t('clients.fields.taxId')}
-                name="taxId" type="text" autoComplete="off"
-                value={form.taxId} onChange={(e) => set('taxId', e.target.value)} />
             </div>
           </section>
 
@@ -211,30 +212,24 @@ export default function Clients() {
               <InputField id="client-mobilePhone" label={t('clients.fields.mobilePhone')}
                 name="mobilePhone" type="tel" autoComplete="off"
                 value={form.mobilePhone} onChange={(e) => set('mobilePhone', e.target.value)} />
-              <InputField id="client-phone" label={t('clients.fields.phone')}
-                name="phone" type="tel" autoComplete="off"
-                value={form.phone} onChange={(e) => set('phone', e.target.value)} />
               <InputField id="client-secondaryPhone" label={t('clients.fields.secondaryPhone')}
                 name="secondaryPhone" type="tel" autoComplete="off"
                 value={form.secondaryPhone} onChange={(e) => set('secondaryPhone', e.target.value)} />
               <InputField id="client-email" label={t('clients.fields.email')}
                 name="email" type="email" autoComplete="off"
                 value={form.email} onChange={(e) => set('email', e.target.value)} />
-              <InputField id="client-fax" label={t('clients.fields.fax')}
-                name="fax" type="tel" autoComplete="off"
-                value={form.fax} onChange={(e) => set('fax', e.target.value)} />
               <InputField id="client-website" label={t('clients.fields.website')}
-                name="website" type="url" autoComplete="off"
+                name="website" type="text" autoComplete="off"
                 value={form.website} onChange={(e) => set('website', e.target.value)} />
             </div>
           </section>
 
-          {/* ── Dirección ── */}
+          {/* ── Direcciones ── */}
           <section className="form-section">
-            <h2 className="form-section-title">{t('clients.sections.address')}</h2>
-            <AddressForm
-              value={{ street: form.street, postalCode: form.postalCode, city: form.city, province: form.province, country: form.country }}
-              onChange={(addr) => setForm((f) => ({ ...f, ...addr }))}
+            <h2 className="form-section-title">{t('clients.sections.addresses')}</h2>
+            <AddressList
+              value={form.addresses ?? []}
+              onChange={(addresses) => set('addresses', addresses)}
             />
           </section>
 
@@ -258,34 +253,56 @@ export default function Clients() {
           <section className="form-section">
             <h2 className="form-section-title">{t('clients.sections.business')}</h2>
             <div className="clients-form-grid">
-              <InputField id="client-iban" label={t('clients.fields.iban')}
-                name="iban" type="text" autoComplete="off"
-                value={form.iban} onChange={(e) => set('iban', e.target.value)} />
               <InputField id="client-employees" label={t('clients.fields.employees')}
                 name="employees" type="number" min={0} autoComplete="off"
                 value={form.employees ?? ''} onChange={(e) => set('employees', e.target.value ? Number(e.target.value) : undefined)} />
               <InputField id="client-annualRevenue" label={t('clients.fields.annualRevenue')}
                 name="annualRevenue" type="number" min={0} step={0.01} autoComplete="off"
                 value={form.annualRevenue ?? ''} onChange={(e) => set('annualRevenue', e.target.value ? Number(e.target.value) : undefined)} />
+              <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
+                name="sicCode" type="text" autoComplete="off"
+                value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />
             </div>
+          </section>
+
+          {/* ── Gestión comercial ── */}
+          <section className="form-section">
+            <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
+            <div className="clients-form-grid">
+              <InputField id="client-accountOwnerUserId" label={t('clients.fields.accountOwnerUserId')}
+                name="accountOwnerUserId" type="text" autoComplete="off"
+                value={form.accountOwnerUserId ?? ''} onChange={(e) => set('accountOwnerUserId', e.target.value)} />
+              <InputField id="client-commercialAgentUserId" label={t('clients.fields.commercialAgentUserId')}
+                name="commercialAgentUserId" type="text" autoComplete="off"
+                value={form.commercialAgentUserId ?? ''} onChange={(e) => set('commercialAgentUserId', e.target.value)} />
+              <InputField id="client-contractsCounterpartyId" label={t('clients.fields.contractsCounterpartyId')}
+                name="contractsCounterpartyId" type="text" autoComplete="off"
+                value={form.contractsCounterpartyId ?? ''} onChange={(e) => set('contractsCounterpartyId', e.target.value)} />
+            </div>
+          </section>
+
+          {/* ── Cuentas bancarias ── */}
+          <section className="form-section">
+            <h2 className="form-section-title">{t('clients.sections.bankAccounts')}</h2>
+            <BankAccountList
+              value={form.bankAccounts ?? []}
+              onChange={(bankAccounts) => set('bankAccounts', bankAccounts)}
+            />
           </section>
 
           {/* ── Observaciones ── */}
           <section className="form-section">
             <h2 className="form-section-title">{t('clients.sections.notes')}</h2>
             <TextareaField id="client-description" label={t('clients.fields.description')}
-              name="description" rows={3}
+              name="description" rows={4}
               value={form.description} onChange={(e) => set('description', e.target.value)} />
-            <TextareaField id="client-notes" label={t('clients.fields.notes')}
-              name="notes" rows={2}
-              value={form.notes} onChange={(e) => set('notes', e.target.value)} />
           </section>
 
           <div className="clients-form-actions">
             <button type="button" className="btn-secondary" onClick={closeForm}>
               {t('clients.actions.cancel')}
             </button>
-            <button type="submit" className="btn-primary" disabled={saving || !form.displayName}>
+            <button type="submit" className="btn-primary" disabled={saving || !form.name}>
               {saving ? t('clients.actions.saving') : t('clients.actions.save')}
             </button>
           </div>
@@ -323,10 +340,11 @@ export default function Clients() {
           <table className="clients-table">
             <thead>
               <tr>
-                <th>{t('clients.fields.displayName')}</th>
+                <th>{t('clients.fields.name')}</th>
                 <th>{t('clients.fields.type')}</th>
                 <th>{t('clients.fields.status')}</th>
-                <th>{t('clients.fields.phone')}</th>
+                <th>{t('clients.fields.accountOwnerUserId')}</th>
+                <th>{t('clients.fields.mobilePhone')}</th>
                 <th>{t('clients.fields.email')}</th>
                 <th></th>
               </tr>
@@ -335,8 +353,8 @@ export default function Clients() {
               {filtered.map((c) => (
                 <tr key={c.id}>
                   <td className="clients-name">
-                    <span>{c.displayName}</span>
-                    {c.legalName && <small>{c.legalName}</small>}
+                    <span>{c.name}</span>
+                    {c.nif && <small>{c.nif}</small>}
                   </td>
                   <td>
                     <span className={`badge badge-type badge-type-${c.type.toLowerCase()}`}>
@@ -348,7 +366,8 @@ export default function Clients() {
                       {ClientStatusLabels[c.status]}
                     </span>
                   </td>
-                  <td>{c.mobilePhone ?? c.phone ?? '—'}</td>
+                  <td>{c.accountOwnerUserId ?? '—'}</td>
+                  <td>{c.mobilePhone ?? '—'}</td>
                   <td>{c.email ?? '—'}</td>
                   <td className="clients-actions">
                     <button className="icon-btn" onClick={() => openEdit(c)} title={t('clients.edit')}>

@@ -28,6 +28,17 @@ model User {
 
 // ── Client ────────────────────────────────────────────────────────────────────
 
+enum AddressType {
+  FISCAL
+  BUSINESS
+  PERSONAL
+}
+
+enum AccountType {
+  PERSONAL
+  BUSINESS
+}
+
 enum ClientType {
   INDIVIDUAL
   BUSINESS
@@ -78,16 +89,15 @@ model Client {
 
   // Identificación
   clientNumber String?
-  displayName  String
-  legalName    String?
-  taxId        String?
+  name         String
+  nif          String?
 
   // Clasificación
   type              ClientType
-  status            ClientStatus        @default(LEAD)
+  status            ClientStatus         @default(LEAD)
   qualification     ClientQualification?
-  activity          String?             // valores de ClientActivity (domain-types)
-  sector            String?             // valores de ClientSector (domain-types)
+  activity          String?              // valores de ClientActivity (domain-types)
+  sector            String?              // valores de ClientSector (domain-types)
   collectionManager CollectionManager?
 
   // Fechas / documentos
@@ -96,33 +106,34 @@ model Client {
   dniExpiryDate           DateTime? @db.Date
 
   // Contacto
-  phone          String?
   mobilePhone    String?
   secondaryPhone String?
   email          String?
-  fax            String?
   website        String?
 
-  // Dirección
-  street     String?
-  postalCode String?
-  city       String?
-  province   String?
-  country    String?
-
-  // Facturación y empresa
-  iban          String?
+  // Empresa
   employees     Int?
   annualRevenue Float?
+  sicCode       String?
+
+  // Gestión comercial
+  accountOwnerUserId    String?
+  commercialAgentUserId String?
+
+  // Integraciones
+  contractsCounterpartyId String?
+
+  // Relaciones
+  addresses    ClientAddress[]
+  bankAccounts ClientBankAccount[]
 
   // Jerarquía
-  isMainClient Boolean @default(false)
+  isMainClient Boolean  @default(false)
   mainClientId String?
   mainClient   Client?  @relation("ClientHierarchy", fields: [mainClientId], references: [id])
   subClients   Client[] @relation("ClientHierarchy")
 
   // Observaciones
-  notes       String?
   description String?
 
   createdAt DateTime @default(now())
@@ -132,6 +143,26 @@ model Client {
   energyContracts EnergyContract[]
   cases           Case[]
   sales           Sale[]
+}
+
+model ClientAddress {
+  id         String      @id @default(uuid())
+  clientId   String
+  client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type       AddressType
+  street     String?
+  postalCode String?
+  city       String?
+  province   String?
+  country    String?
+}
+
+model ClientBankAccount {
+  id       String      @id @default(uuid())
+  clientId String
+  client   Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type     AccountType
+  iban     String
 }
 
 // ── Sale ──────────────────────────────────────────────────────────────────────

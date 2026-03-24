@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "tsx src/index.ts",
     "seed": "tsx prisma/seed.ts",
-    "provision": "tsx db_provision/provision.ts"
+    "provision": "prisma migrate deploy && prisma generate && tsx db_provision/provision.ts"
   },
   "dependencies": {
     "@crm/shared": "*",

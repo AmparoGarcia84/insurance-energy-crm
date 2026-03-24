@@ -49,101 +49,84 @@ async function main() {
       // Individuals — ACTIVE
       {
         type: 'INDIVIDUAL', status: 'ACTIVE',
-        displayName: 'Carmen López Martínez',
-        taxId: '12345678A', phone: '612 345 678', email: 'carmen.lopez@gmail.com',
-        address: 'Calle Mayor 14, 3ºB, Madrid',
+        name: 'Carmen López Martínez',
+        nif: '12345678A', mobilePhone: '612 345 678', email: 'carmen.lopez@gmail.com',
       },
       {
         type: 'INDIVIDUAL', status: 'ACTIVE',
-        displayName: 'Francisco Ruiz Sánchez',
-        taxId: '87654321B', phone: '623 456 789', email: 'fran.ruiz@hotmail.com',
-        address: 'Av. de la Constitución 7, Valencia',
+        name: 'Francisco Ruiz Sánchez',
+        nif: '87654321B', mobilePhone: '623 456 789', email: 'fran.ruiz@hotmail.com',
       },
       {
         type: 'INDIVIDUAL', status: 'ACTIVE',
-        displayName: 'Elena Moreno Fernández',
-        taxId: '11223344C', phone: '634 567 890', email: 'elena.moreno@gmail.com',
-        address: 'C/ Sierpes 22, Sevilla',
+        name: 'Elena Moreno Fernández',
+        nif: '11223344C', mobilePhone: '634 567 890', email: 'elena.moreno@gmail.com',
       },
       {
         type: 'INDIVIDUAL', status: 'ACTIVE',
-        displayName: 'Antonio García Pérez',
-        taxId: '44332211D', phone: '645 678 901', email: 'antonio.garcia@outlook.com',
-        address: 'Paseo de Gracia 55, 2º1ª, Barcelona',
+        name: 'Antonio García Pérez',
+        nif: '44332211D', mobilePhone: '645 678 901', email: 'antonio.garcia@outlook.com',
       },
       {
         type: 'INDIVIDUAL', status: 'ACTIVE',
-        displayName: 'Lucía Hernández Jiménez',
-        taxId: '55667788E', phone: '656 789 012', email: 'lucia.hdz@gmail.com',
-        address: 'C/ Larios 3, Málaga',
+        name: 'Lucía Hernández Jiménez',
+        nif: '55667788E', mobilePhone: '656 789 012', email: 'lucia.hdz@gmail.com',
       },
       // Individuals — LEAD
       {
         type: 'INDIVIDUAL', status: 'LEAD',
-        displayName: 'Roberto Díaz Torres',
-        phone: '667 890 123', email: 'roberto.diaz@gmail.com',
-        address: 'Calle Colón 8, Zaragoza',
+        name: 'Roberto Díaz Torres',
+        mobilePhone: '667 890 123', email: 'roberto.diaz@gmail.com',
       },
       {
         type: 'INDIVIDUAL', status: 'LEAD',
-        displayName: 'María Sanz Romero',
-        phone: '678 901 234', email: 'maria.sanz@icloud.com',
+        name: 'María Sanz Romero',
+        mobilePhone: '678 901 234', email: 'maria.sanz@icloud.com',
       },
       // Individuals — INACTIVE / LOST
       {
         type: 'INDIVIDUAL', status: 'INACTIVE',
-        displayName: 'Pablo Navarro Gil',
-        taxId: '99887766F', phone: '689 012 345', email: 'pablo.navarro@gmail.com',
-        address: 'Av. Diagonal 100, Barcelona',
+        name: 'Pablo Navarro Gil',
+        nif: '99887766F', mobilePhone: '689 012 345', email: 'pablo.navarro@gmail.com',
       },
       {
         type: 'INDIVIDUAL', status: 'LOST',
-        displayName: 'Sara Muñoz Delgado',
-        phone: '690 123 456', email: 'sara.munoz@gmail.com',
+        name: 'Sara Muñoz Delgado',
+        mobilePhone: '690 123 456', email: 'sara.munoz@gmail.com',
       },
       // Businesses — ACTIVE
       {
         type: 'BUSINESS', status: 'ACTIVE',
-        displayName: 'Talleres Rápidos S.L.',
-        legalName: 'Talleres Rápidos Servicios Integrales S.L.',
-        taxId: 'B12345678', phone: '91 234 56 78', email: 'info@talleresrapidos.es',
-        address: 'Polígono Industrial Norte, Nave 12, Alcobendas',
+        name: 'Talleres Rápidos S.L.',
+        nif: 'B12345678', mobilePhone: '91 234 56 78', email: 'info@talleresrapidos.es',
       },
       {
         type: 'BUSINESS', status: 'ACTIVE',
-        displayName: 'Restaurante El Patio',
-        legalName: 'Gastronomía Andaluza S.L.',
-        taxId: 'B87654321', phone: '95 678 12 34', email: 'reservas@restauranteelpatio.com',
-        address: 'Plaza de España 1, Sevilla',
+        name: 'Restaurante El Patio',
+        nif: 'B87654321', mobilePhone: '95 678 12 34', email: 'reservas@restauranteelpatio.com',
       },
       {
         type: 'BUSINESS', status: 'ACTIVE',
-        displayName: 'Clínica DentalCare',
-        legalName: 'Clínica Dental Avanzada S.L.P.',
-        taxId: 'B11223344', phone: '93 456 78 90', email: 'admin@dentalcare.es',
-        address: 'C/ Provença 200, Barcelona',
+        name: 'Clínica DentalCare',
+        nif: 'B11223344', mobilePhone: '93 456 78 90', email: 'admin@dentalcare.es',
       },
       {
         type: 'BUSINESS', status: 'LEAD',
-        displayName: 'Academia Lingua',
-        legalName: 'Academia de Idiomas Lingua S.C.',
-        taxId: 'J44332211', phone: '96 789 01 23', email: 'info@academia-lingua.es',
-        address: 'C/ Colón 45, Valencia',
+        name: 'Academia Lingua',
+        nif: 'J44332211', mobilePhone: '96 789 01 23', email: 'info@academia-lingua.es',
       },
       {
         type: 'BUSINESS', status: 'INACTIVE',
-        displayName: 'Construcciones Vega',
-        legalName: 'Vega Construcciones y Reformas S.A.',
-        taxId: 'A55667788', phone: '91 890 12 34',
-        address: 'Polígono Sur, Calle B Nº 3, Leganés',
+        name: 'Construcciones Vega',
+        nif: 'A55667788', mobilePhone: '91 890 12 34',
       },
     ],
   })
 
   console.log(`  ✓ Clients (${clients.length})`)
 
-  // Helper: find client by displayName
-  const c = (name: string) => clients.find(cl => cl.displayName === name)!
+  // Helper: find client by name
+  const c = (name: string) => clients.find(cl => cl.name === name)!
 
   // ─── Sales ────────────────────────────────────────────────────────────────
   await prisma.sale.createMany({

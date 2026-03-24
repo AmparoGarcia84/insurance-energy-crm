@@ -13,24 +13,60 @@ export interface BaseEntity {
 }
 
 export enum AddressType {
-  FISCAL = "fiscal",
-  BUSINESS = "business",
-  PERSONAL = "personal",
+  FISCAL   = "FISCAL",
+  BUSINESS = "BUSINESS",
+  PERSONAL = "PERSONAL",
 }
 
 export const AddressTypeLabels: Record<AddressType, string> = {
-  [AddressType.FISCAL]: "Dirección fiscal",
-  [AddressType.BUSINESS]: "Dirección de la empresa",
-  [AddressType.PERSONAL]: "Dirección particular",
+  [AddressType.FISCAL]:   "Fiscal",
+  [AddressType.BUSINESS]: "Empresa",
+  [AddressType.PERSONAL]: "Particular",
 }
 
 export interface Address {
-  street?: string      // covers former line1
+  street?: string
   postalCode?: string
   city?: string
-  province?: string   // covers former state
+  province?: string
   country?: string
   type?: AddressType
+}
+
+// ----------------------------------------------------
+// Client addresses and bank accounts
+// ----------------------------------------------------
+
+export interface ClientAddressInput {
+  type: AddressType
+  street?: string
+  postalCode?: string
+  city?: string
+  province?: string
+  country?: string
+}
+
+export interface ClientAddress extends ClientAddressInput {
+  id: string
+}
+
+export enum AccountType {
+  PERSONAL = "PERSONAL",
+  BUSINESS = "BUSINESS",
+}
+
+export const AccountTypeLabels: Record<AccountType, string> = {
+  [AccountType.PERSONAL]: "Personal",
+  [AccountType.BUSINESS]: "Empresa",
+}
+
+export interface ClientBankAccountInput {
+  type: AccountType
+  iban: string
+}
+
+export interface ClientBankAccount extends ClientBankAccountInput {
+  id: string
 }
 
 // ----------------------------------------------------
@@ -305,40 +341,12 @@ export const ClientSectorLabels: Record<ClientSector, string> = {
   [ClientSector.TRANSPORT]: "Transportes",
 }
 
-export interface ConsentRecord {
-  consentGiven?: boolean
-  consentAt?: ISODateTime
-  source?: string // BNI, web, RRSS...
-}
-
-export interface TypedAddress extends Address {
-  type?: AddressType
-}
-
-export interface ClientContactInfo {
-  mobilePhone?: string
-  phone?: string
-  secondaryPhone?: string
-  email?: string
-  fax?: string
-  website?: string
-}
-
 export interface Client {
   // Identificación
   id: string
   clientNumber?: string
   name: string
   nif?: string
-
-  // Campos incorporados desde Customer (eliminado)
-  displayName?: string
-  legalName?: string
-  tags?: string[]
-  consent?: ConsentRecord
-
-  // Integraciones / sistemas externos
-  contractsCounterpartyId?: string
 
   // Clasificación
   type?: ClientType
@@ -353,15 +361,16 @@ export interface Client {
   dniExpiryDate?: ISODate
 
   // Contacto
-  contact?: ClientContactInfo
+  mobilePhone?: string
+  secondaryPhone?: string
+  email?: string
+  website?: string
 
   // Direcciones
-  mainAddress?: Address
-  secondaryAddress?: TypedAddress
-  billingAddress?: Address
+  addresses?: ClientAddress[]
 
-  // Facturación
-  iban?: string // array con iban personal y empresa
+  // Cuentas bancarias
+  bankAccounts?: ClientBankAccount[]
 
   // Empresa
   employees?: number
@@ -371,12 +380,14 @@ export interface Client {
   // Gestión comercial
   accountOwnerUserId?: string
   commercialAgentUserId?: string
-  gexbrokExecutiveUserId?: string // dato que no nos interesa pero se descarga, ignorar?
   collectionManager?: CollectionManager
 
-  // Jerarquía (para agrupar contactos bajo una empresa/cliente principal)
+  // Jerarquía
   isMainClient?: boolean
   mainClientId?: string
+
+  // Integraciones
+  contractsCounterpartyId?: string
 
   // Observaciones
   description?: string

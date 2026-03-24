@@ -17,16 +17,16 @@ export async function getClient(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function createClient(req: AuthRequest, res: Response): Promise<void> {
-  const { displayName, type } = req.body
-  if (!displayName || !type) {
-    res.status(400).json({ error: 'displayName and type are required' })
+  const { name, type } = req.body
+  if (!name || !type) {
+    res.status(400).json({ error: 'name and type are required' })
     return
   }
   try {
     const client = await clientService.createClient(req.body)
     res.status(201).json(client)
-  } catch {
-    res.status(500).json({ error: 'Failed to create client' })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create client', detail: String(err) })
   }
 }
 
@@ -34,8 +34,12 @@ export async function updateClient(req: AuthRequest, res: Response): Promise<voi
   try {
     const client = await clientService.updateClient(req.params.id as string, req.body)
     res.json(client)
-  } catch {
-    res.status(404).json({ error: 'Client not found' })
+  } catch (err: any) {
+    if (err?.code === 'P2025') {
+      res.status(404).json({ error: 'Client not found' })
+    } else {
+      res.status(500).json({ error: 'Failed to update client', detail: String(err) })
+    }
   }
 }
 

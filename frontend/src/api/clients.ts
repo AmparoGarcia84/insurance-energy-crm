@@ -3,18 +3,30 @@ import {
   ClientStatus,
   ClientQualification,
   CollectionManager,
+  ClientAddress,
+  ClientBankAccount,
+  ClientAddressInput,
+  ClientBankAccountInput,
 } from '@crm/shared'
 
-export { ClientType, ClientStatus, ClientQualification, CollectionManager }
+export {
+  ClientType,
+  ClientStatus,
+  ClientQualification,
+  CollectionManager,
+  type ClientAddress,
+  type ClientBankAccount,
+  type ClientAddressInput,
+  type ClientBankAccountInput,
+}
 
 const BASE = 'http://localhost:3000/clients'
 
 export interface Client {
   id: string
   clientNumber?: string
-  displayName: string
-  legalName?: string
-  taxId?: string
+  name: string
+  nif?: string
 
   type: ClientType
   status: ClientStatus
@@ -27,33 +39,36 @@ export interface Client {
   drivingLicenseIssueDate?: string
   dniExpiryDate?: string
 
-  phone?: string
   mobilePhone?: string
   secondaryPhone?: string
   email?: string
-  fax?: string
   website?: string
 
-  street?: string
-  postalCode?: string
-  city?: string
-  province?: string
-  country?: string
-  iban?: string
   employees?: number
   annualRevenue?: number
+  sicCode?: string
+
+  accountOwnerUserId?: string
+  commercialAgentUserId?: string
+
+  contractsCounterpartyId?: string
 
   isMainClient?: boolean
   mainClientId?: string
 
-  notes?: string
   description?: string
+
+  addresses?: ClientAddress[]
+  bankAccounts?: ClientBankAccount[]
 
   createdAt: string
   updatedAt: string
 }
 
-export type ClientInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>
+export type ClientInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'addresses' | 'bankAccounts'> & {
+  addresses?: ClientAddressInput[]
+  bankAccounts?: ClientBankAccountInput[]
+}
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: 'include', ...options })
