@@ -61,7 +61,7 @@ export default {
       sicCode: 'CNAE / Código SIC',
       birthDate: 'Fecha de nacimiento',
       dniExpiryDate: 'Caducidad DNI',
-      drivingLicenseIssueDate: 'Fecha expedición carné',
+      drivingLicenseIssueDate: 'Fecha carnet de conducir',
       accountOwnerUserId: 'Propietario de cliente',
       commercialAgentUserId: 'Agente comercial',
       contractsCounterpartyId: 'ID contraparte contratos',
@@ -107,6 +107,18 @@ export default {
       BROKER: 'Mediador',
       CARD_PAYMENT: 'Pago con tarjeta',
       UNPAID: 'Impagados',
+    },
+    tabs: {
+      info: 'Información',
+      sales: 'Ventas',
+      policies: 'Pólizas',
+      energy: 'Energía',
+      cases: 'Casos',
+    },
+    detail: {
+      back: 'Volver al listado',
+      edit: 'Editar',
+      comingSoon: 'Próximamente',
     },
     actions: {
       save: 'Guardar',

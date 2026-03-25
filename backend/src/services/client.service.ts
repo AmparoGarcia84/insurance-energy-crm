@@ -1,19 +1,15 @@
 import prisma from '../db/prisma.js'
-import type { ClientType, ClientStatus } from '../generated/prisma/enums.js'
+import { Prisma } from '../generated/prisma/client.js'
+import type {
+  ClientType,
+  ClientStatus,
+  ClientQualification,
+  CollectionManager,
+  AddressType,
+  AccountType,
+} from '../generated/prisma/enums.js'
 
-// String unions matching DB enum values — will be importable from generated enums after prisma generate
-type ClientQualification =
-  | 'NEW_BUSINESS' | 'PORTFOLIO' | 'REFERRED_CLIENT' | 'BNI_REFERRAL'
-  | 'MARKETING_SOCIAL_MEDIA' | 'MARKET_LOSS' | 'PROJECT_CANCELLED'
-  | 'CANCELLED' | 'NOT_PROFITABLE' | 'PAYMENT_DEFAULT'
-
-type CollectionManager =
-  | 'INSURANCE_COMPANY' | 'BANK_TRANSFER' | 'BROKER' | 'CARD_PAYMENT' | 'UNPAID'
-
-type AddressType = 'FISCAL' | 'BUSINESS' | 'PERSONAL'
-type AccountType = 'PERSONAL' | 'BUSINESS'
-
-interface ClientAddressInput {
+export interface ClientAddressInput {
   type: AddressType
   street?: string
   postalCode?: string
@@ -22,7 +18,7 @@ interface ClientAddressInput {
   country?: string
 }
 
-interface ClientBankAccountInput {
+export interface ClientBankAccountInput {
   type: AccountType
   iban: string
 }
@@ -76,9 +72,7 @@ export interface ClientInput {
   bankAccounts?: ClientBankAccountInput[]
 }
 
-// include and nested relation data use `as any` until `prisma generate` runs with the updated schema
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const include: any = { addresses: true, bankAccounts: true }
+const include = { addresses: true, bankAccounts: true } satisfies Prisma.ClientInclude
 
 const DATE_FIELDS = ['birthDate', 'drivingLicenseIssueDate', 'dniExpiryDate'] as const
 
@@ -105,33 +99,26 @@ export function getClientById(id: string) {
 
 export function createClient(data: ClientInput) {
   const { addresses, bankAccounts, ...rest } = data
-  return prisma.client.create({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: {
-      ...sanitize(rest),
-      addresses:    addresses    ? { create: addresses }    : undefined,
-      bankAccounts: bankAccounts ? { create: bankAccounts } : undefined,
-    } as any,
-    include,
-  })
+  const createData: Prisma.ClientUncheckedCreateInput = {
+    ...(sanitize(rest) as Prisma.ClientUncheckedCreateInput),
+    addresses:    addresses    ? { create: addresses }    : undefined,
+    bankAccounts: bankAccounts ? { create: bankAccounts } : undefined,
+  }
+  return prisma.client.create({ data: createData, include })
 }
 
 export function updateClient(id: string, data: Partial<ClientInput>) {
   const { addresses, bankAccounts, ...rest } = data
-  return prisma.client.update({
-    where: { id },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: {
-      ...sanitize(rest),
-      ...(addresses !== undefined && {
-        addresses: { deleteMany: {}, create: addresses },
-      }),
-      ...(bankAccounts !== undefined && {
-        bankAccounts: { deleteMany: {}, create: bankAccounts },
-      }),
-    } as any,
-    include,
-  })
+  const updateData: Prisma.ClientUncheckedUpdateInput = {
+    ...(sanitize(rest) as Prisma.ClientUncheckedUpdateInput),
+    ...(addresses !== undefined && {
+      addresses: { deleteMany: {}, create: addresses },
+    }),
+    ...(bankAccounts !== undefined && {
+      bankAccounts: { deleteMany: {}, create: bankAccounts },
+    }),
+  }
+  return prisma.client.update({ where: { id }, data: updateData, include })
 }
 
 export function deleteClient(id: string) {

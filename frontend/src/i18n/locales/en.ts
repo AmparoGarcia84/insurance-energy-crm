@@ -108,6 +108,18 @@ export default {
       CARD_PAYMENT: 'Card payment',
       UNPAID: 'Unpaid',
     },
+    tabs: {
+      info: 'Information',
+      sales: 'Sales',
+      policies: 'Policies',
+      energy: 'Energy',
+      cases: 'Cases',
+    },
+    detail: {
+      back: 'Back to list',
+      edit: 'Edit',
+      comingSoon: 'Coming soon',
+    },
     actions: {
       save: 'Save',
       saving: 'Saving...',

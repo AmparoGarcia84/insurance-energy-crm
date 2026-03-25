@@ -29,6 +29,7 @@ import SelectField from '../FormField/SelectField'
 import TextareaField from '../FormField/TextareaField'
 import AddressList from '../AddressList/AddressList'
 import BankAccountList from '../BankAccountList/BankAccountList'
+import ClientDetail from '../ClientDetail/ClientDetail'
 import './Clients.css'
 
 const CLIENT_TYPES          = Object.values(ClientType)
@@ -67,13 +68,14 @@ export default function Clients() {
   const { user } = useAuth()
   const canDelete = user?.role === 'OWNER'
 
-  const [clients, setClients]   = useState<Client[]>([])
-  const [search, setSearch]     = useState('')
-  const [loading, setLoading]   = useState(true)
-  const [editing, setEditing]   = useState<Client | null>(null)
-  const [isNew, setIsNew]       = useState(false)
-  const [form, setForm]         = useState<ClientInput>(EMPTY_FORM)
-  const [saving, setSaving]     = useState(false)
+  const [clients, setClients]       = useState<Client[]>([])
+  const [search, setSearch]         = useState('')
+  const [loading, setLoading]       = useState(true)
+  const [viewing, setViewing]       = useState<Client | null>(null)
+  const [editing, setEditing]       = useState<Client | null>(null)
+  const [isNew, setIsNew]           = useState(false)
+  const [form, setForm]             = useState<ClientInput>(EMPTY_FORM)
+  const [saving, setSaving]         = useState(false)
 
   useEffect(() => {
     getClients().then(setClients).finally(() => setLoading(false))
@@ -111,6 +113,9 @@ export default function Clients() {
     setEditing(client); setIsNew(false)
   }
 
+  function openDetail(client: Client) { setViewing(client) }
+  function closeDetail() { setViewing(null) }
+
   function closeForm() { setEditing(null); setIsNew(false) }
 
   function set<K extends keyof ClientInput>(key: K, value: ClientInput[K]) {
@@ -138,6 +143,17 @@ export default function Clients() {
     if (!confirm(t('clients.deleteConfirm', { name: client.name }))) return
     await deleteClient(client.id)
     setClients((prev) => prev.filter((c) => c.id !== client.id))
+  }
+
+  // ── Detail view ──────────────────────────────────────────────────────────
+  if (viewing && !editing && !isNew) {
+    return (
+      <ClientDetail
+        client={viewing}
+        onBack={closeDetail}
+        onEdit={(client) => { closeDetail(); openEdit(client) }}
+      />
+    )
   }
 
   // ── Form view ────────────────────────────────────────────────────────────
@@ -351,10 +367,12 @@ export default function Clients() {
             </thead>
             <tbody>
               {filtered.map((c) => (
-                <tr key={c.id}>
-                  <td className="clients-name">
-                    <span>{c.name}</span>
-                    {c.nif && <small>{c.nif}</small>}
+                <tr key={c.id} onClick={() => openDetail(c)} style={{ cursor: 'pointer' }}>
+                  <td>
+                    <div className="clients-name">
+                      <span>{c.name}</span>
+                      <small>{c.nif ?? ''}</small>
+                    </div>
                   </td>
                   <td>
                     <span className={`badge badge-type badge-type-${c.type.toLowerCase()}`}>
@@ -369,15 +387,17 @@ export default function Clients() {
                   <td>{c.accountOwnerUserId ?? '—'}</td>
                   <td>{c.mobilePhone ?? '—'}</td>
                   <td>{c.email ?? '—'}</td>
-                  <td className="clients-actions">
-                    <button className="icon-btn" onClick={() => openEdit(c)} title={t('clients.edit')}>
-                      <Pencil size={15} />
-                    </button>
-                    {canDelete && (
-                      <button className="icon-btn icon-btn-danger" onClick={() => handleDelete(c)} title={t('clients.actions.delete')}>
-                        <Trash2 size={15} />
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <div className="clients-actions">
+                      <button className="icon-btn" onClick={() => openEdit(c)} title={t('clients.edit')}>
+                        <Pencil size={15} />
                       </button>
-                    )}
+                      {canDelete && (
+                        <button className="icon-btn icon-btn-danger" onClick={() => handleDelete(c)} title={t('clients.actions.delete')}>
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

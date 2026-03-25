@@ -1,0 +1,221 @@
+.cd-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.cd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px 10px 0 0;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0;
+}
+
+.cd-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cd-back {
+  color: var(--corp-muted);
+  flex-shrink: 0;
+}
+
+.cd-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--corp-gold);
+  color: var(--corp-black);
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cd-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cd-header-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.cd-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.cd-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+  flex-wrap: wrap;
+}
+
+.cd-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ── Tabs ───────────────────────────────────────────── */
+.cd-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--corp-beige);
+  background: var(--corp-card);
+  border-left: 1px solid var(--corp-beige);
+  border-right: 1px solid var(--corp-beige);
+  padding: 0 1rem;
+}
+
+.cd-tab {
+  padding: 0.7rem 1.1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--corp-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.cd-tab:hover {
+  color: var(--corp-black);
+}
+
+.cd-tab-active {
+  color: var(--corp-black);
+  border-bottom-color: var(--corp-gold);
+  font-weight: 600;
+}
+
+/* ── Content ────────────────────────────────────────── */
+.cd-content {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 1.5rem;
+}
+
+/* ── Sections ───────────────────────────────────────── */
+.cd-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cd-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--corp-muted);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--corp-beige);
+  margin: 0;
+}
+
+/* ── Field ──────────────────────────────────────────── */
+.cd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem 1.5rem;
+}
+
+.cd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cd-field-label {
+  font-size: 0.75rem;
+  color: var(--corp-muted);
+  font-weight: 500;
+}
+
+.cd-field-value {
+  font-size: 0.9rem;
+  color: var(--corp-black);
+}
+
+/* ── Addresses & bank accounts ──────────────────────── */
+.cd-address-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cd-address-card {
+  background: var(--corp-muted-bg);
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--corp-black);
+  min-width: 200px;
+}
+
+.cd-address-type {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  margin-bottom: 0.25rem;
+}
+
+.cd-iban {
+  font-family: monospace;
+  font-size: 0.875rem;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+/* ── Description ────────────────────────────────────── */
+.cd-description {
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Placeholder ────────────────────────────────────── */
+.cd-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--corp-muted);
+  font-size: 0.95rem;
+}
