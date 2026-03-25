@@ -65,9 +65,23 @@ describe('ClientForm', () => {
     expect(screen.getByText('clients.actions.save')).toBeDisabled()
   })
 
-  it('save button is enabled when name is filled', () => {
+  it('save button is disabled when name is filled but NIF is empty and status is not PROSPECTING', () => {
     render(<ClientForm client={null} onSave={onSave} onCancel={onCancel} />)
     fireEvent.change(screen.getByLabelText(/clients.fields.name/i), { target: { value: 'Test' } })
+    expect(screen.getByText('clients.actions.save')).toBeDisabled()
+  })
+
+  it('save button is enabled when name and NIF are filled', () => {
+    render(<ClientForm client={null} onSave={onSave} onCancel={onCancel} />)
+    fireEvent.change(screen.getByLabelText(/clients.fields.name/i), { target: { value: 'Test' } })
+    fireEvent.change(screen.getByLabelText(/clients.fields.nif/i), { target: { value: '12345678A' } })
+    expect(screen.getByText('clients.actions.save')).not.toBeDisabled()
+  })
+
+  it('save button is enabled when name is filled and status is PROSPECTING even without NIF', () => {
+    render(<ClientForm client={null} onSave={onSave} onCancel={onCancel} />)
+    fireEvent.change(screen.getByLabelText(/clients.fields.name/i), { target: { value: 'Test' } })
+    fireEvent.change(screen.getByLabelText(/clients.fields.status/i), { target: { value: ClientStatus.PROSPECTING } })
     expect(screen.getByText('clients.actions.save')).not.toBeDisabled()
   })
 

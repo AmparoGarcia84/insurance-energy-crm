@@ -14,4 +14,3 @@ ALTER TABLE "Client" DROP COLUMN IF EXISTS "notes";
 ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "sicCode"                 TEXT;
 ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "accountOwnerUserId"      TEXT;
 ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "commercialAgentUserId"   TEXT;
-ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "contractsCounterpartyId" TEXT;

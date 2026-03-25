@@ -33,4 +33,26 @@ describe('InputField', () => {
     const { container } = render(<InputField id="test" label="Name" className="col-span-2" />)
     expect(container.firstChild).toHaveClass('form-field', 'col-span-2')
   })
+
+  it('shows error message when error prop is provided', () => {
+    render(<InputField id="test" label="Email" error="Invalid email" />)
+    expect(screen.getByText('Invalid email')).toBeInTheDocument()
+  })
+
+  it('adds form-field--error class when error prop is provided', () => {
+    const { container } = render(<InputField id="test" label="Email" error="Invalid email" />)
+    expect(container.firstChild).toHaveClass('form-field--error')
+  })
+
+  it('does not render error element when error prop is absent', () => {
+    render(<InputField id="test" label="Email" />)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(document.querySelector('.form-field__error')).not.toBeInTheDocument()
+  })
+
+  it('links input to error message via aria-describedby', () => {
+    render(<InputField id="test" label="Email" error="Invalid email" />)
+    expect(screen.getByLabelText('Email')).toHaveAttribute('aria-describedby', 'test-error')
+    expect(document.getElementById('test-error')).toHaveTextContent('Invalid email')
+  })
 })

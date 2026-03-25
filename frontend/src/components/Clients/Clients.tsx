@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getClients, deleteClient, type Client } from '../../api/clients'
+import { getClients, getClient, deleteClient, type Client } from '../../api/clients'
 import ClientsList from '../ClientsList/ClientsList'
 import ClientDetail from '../ClientDetail/ClientDetail'
 import ClientForm from '../ClientForm/ClientForm'
@@ -17,6 +17,11 @@ export default function Clients() {
   useEffect(() => {
     getClients().then(setClients).finally(() => setLoading(false))
   }, [])
+
+  async function handleEditExisting(id: string) {
+    const existing = await getClient(id)
+    setEditing(existing)
+  }
 
   // Insert or update the saved client in the list, keeping alphabetical order
   function handleSaved(saved: Client) {
@@ -51,9 +56,11 @@ export default function Clients() {
   if (editing !== null) {
     return (
       <ClientForm
+        key={editing === 'new' ? 'new' : editing.id}
         client={editing === 'new' ? null : editing}
         onSave={handleSaved}
         onCancel={() => setEditing(null)}
+        onEditExisting={handleEditExisting}
       />
     )
   }

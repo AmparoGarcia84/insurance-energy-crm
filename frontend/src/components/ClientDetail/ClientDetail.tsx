@@ -146,22 +146,13 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
               </div>
             </section>
 
-            {/* Clasificación */}
+            {/* Documentación */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.classification')}</h2>
+              <h2 className="cd-section-title">{t('clients.sections.personal')}</h2>
               <div className="cd-grid">
-                <Field label={t('clients.fields.type')}
-                  value={client.type ? ClientTypeLabels[client.type] : undefined} />
-                <Field label={t('clients.fields.status')}
-                  value={client.status ? ClientStatusLabels[client.status] : undefined} />
-                <Field label={t('clients.fields.qualification')}
-                  value={client.qualification ? ClientQualificationLabels[client.qualification] : undefined} />
-                <Field label={t('clients.fields.collectionManager')}
-                  value={client.collectionManager ? CollectionManagerLabels[client.collectionManager] : undefined} />
-                <Field label={t('clients.fields.activity')}
-                  value={client.activity ? (ClientActivityLabels as Record<string, string>)[client.activity] : undefined} />
-                <Field label={t('clients.fields.sector')}
-                  value={client.sector ? (ClientSectorLabels as Record<string, string>)[client.sector] : undefined} />
+                <Field label={t('clients.fields.birthDate')}               value={formatDate(client.birthDate)} />
+                <Field label={t('clients.fields.dniExpiryDate')}           value={formatDate(client.dniExpiryDate)} />
+                <Field label={t('clients.fields.drivingLicenseIssueDate')} value={formatDate(client.drivingLicenseIssueDate)} />
               </div>
             </section>
 
@@ -193,33 +184,15 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
               </section>
             )}
 
-            {/* Documentación */}
-            <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.personal')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.birthDate')}              value={formatDate(client.birthDate)} />
-                <Field label={t('clients.fields.dniExpiryDate')}          value={formatDate(client.dniExpiryDate)} />
-                <Field label={t('clients.fields.drivingLicenseIssueDate')} value={formatDate(client.drivingLicenseIssueDate)} />
-              </div>
-            </section>
-
-            {/* Empresa */}
+            {/* Empresa y facturación */}
             <section className="cd-section">
               <h2 className="cd-section-title">{t('clients.sections.business')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.employees')}    value={client.employees} />
                 <Field label={t('clients.fields.annualRevenue')} value={client.annualRevenue != null ? `${client.annualRevenue.toLocaleString('es-ES')} €` : undefined} />
                 <Field label={t('clients.fields.sicCode')}      value={client.sicCode} />
-              </div>
-            </section>
-
-            {/* Gestión comercial */}
-            <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.commercial')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerUserId} />
-                <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentUserId} />
-                <Field label={t('clients.fields.contractsCounterpartyId')} value={client.contractsCounterpartyId} />
+                <Field label={t('clients.fields.activity')}
+                  value={client.activity ? (ClientActivityLabels as Record<string, string>)[client.activity] : undefined} />
               </div>
             </section>
 
@@ -234,6 +207,47 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
                       <p className="cd-iban">{acc.iban}</p>
                     </div>
                   ))}
+                </div>
+              </section>
+            )}
+
+            {/* Clasificación */}
+            <section className="cd-section">
+              <h2 className="cd-section-title">{t('clients.sections.classification')}</h2>
+              <div className="cd-grid">
+                <Field label={t('clients.fields.type')}
+                  value={client.type ? ClientTypeLabels[client.type] : undefined} />
+                <Field label={t('clients.fields.status')}
+                  value={client.status ? ClientStatusLabels[client.status] : undefined} />
+                <Field label={t('clients.fields.qualification')}
+                  value={client.qualification ? ClientQualificationLabels[client.qualification] : undefined} />
+                <Field label={t('clients.fields.collectionManager')}
+                  value={client.collectionManager ? CollectionManagerLabels[client.collectionManager] : undefined} />
+                <Field label={t('clients.fields.sector')}
+                  value={client.sector ? (ClientSectorLabels as Record<string, string>)[client.sector] : undefined} />
+              </div>
+            </section>
+
+            {/* Gestión comercial */}
+            <section className="cd-section">
+              <h2 className="cd-section-title">{t('clients.sections.commercial')}</h2>
+              <div className="cd-grid">
+                <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerUserId} />
+                <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentUserId} />
+              </div>
+            </section>
+
+            {/* Jerarquía */}
+            {(client.isMainClient || client.mainClientId) && (
+              <section className="cd-section">
+                <h2 className="cd-section-title">{t('clients.sections.hierarchy')}</h2>
+                <div className="cd-grid">
+                  {client.isMainClient && (
+                    <Field label={t('clients.fields.isMainClient')} value={t('clients.fields.isMainClient')} />
+                  )}
+                  {client.mainClientId && (
+                    <Field label={t('clients.fields.mainClientId')} value={client.mainClientId} />
+                  )}
                 </div>
               </section>
             )}

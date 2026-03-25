@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { Prisma } from '../generated/prisma/client.js'
 import { AuthRequest } from '../middleware/auth.js'
 import * as clientService from '../services/client.service.js'
 
@@ -26,6 +27,13 @@ export async function createClient(req: AuthRequest, res: Response): Promise<voi
     const client = await clientService.createClient(req.body)
     res.status(201).json(client)
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      const existing = req.body.nif
+        ? await clientService.findClientByNif(req.body.nif)
+        : null
+      res.status(409).json({ error: 'nif_duplicate', existing })
+      return
+    }
     res.status(500).json({ error: 'Failed to create client', detail: String(err) })
   }
 }

@@ -51,8 +51,6 @@ export interface Client {
   accountOwnerUserId?: string
   commercialAgentUserId?: string
 
-  contractsCounterpartyId?: string
-
   isMainClient?: boolean
   mainClientId?: string
 
@@ -70,9 +68,22 @@ export type ClientInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'addre
   bankAccounts?: ClientBankAccountInput[]
 }
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code?: string,
+    public payload?: unknown,
+  ) {
+    super(`HTTP ${status}`)
+  }
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: 'include', ...options })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new ApiError(res.status, body?.error, body)
+  }
   if (res.status === 204) return undefined as T
   return res.json()
 }

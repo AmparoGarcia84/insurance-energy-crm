@@ -386,9 +386,6 @@ export interface Client {
   isMainClient?: boolean
   mainClientId?: string
 
-  // Integraciones
-  contractsCounterpartyId?: string
-
   // Observaciones
   description?: string
 }

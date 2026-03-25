@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite } from '../../utils/validation'
 import {
   ClientType,
   ClientStatus,
@@ -17,14 +18,18 @@ import {
 import {
   createClient,
   updateClient,
+  getClients,
+  ApiError,
   type Client,
   type ClientInput,
 } from '../../api/clients'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
+import CheckboxField from '../FormField/CheckboxField'
 import TextareaField from '../FormField/TextareaField'
 import AddressList from '../AddressList/AddressList'
 import BankAccountList from '../BankAccountList/BankAccountList'
+import ConfirmModal from '../ConfirmModal/ConfirmModal'
 import './ClientForm.css'
 
 const CLIENT_TYPES          = Object.values(ClientType)
@@ -43,7 +48,6 @@ const EMPTY_FORM: ClientInput = {
   mobilePhone: '', secondaryPhone: '', email: '', website: '',
   employees: undefined, annualRevenue: undefined, sicCode: '',
   accountOwnerUserId: '', commercialAgentUserId: '',
-  contractsCounterpartyId: '',
   isMainClient: false, mainClientId: '',
   description: '',
   addresses: [], bankAccounts: [],
@@ -69,7 +73,6 @@ function toFormValues(client: Client): ClientInput {
     email: client.email ?? '', website: client.website ?? '',
     employees: client.employees, annualRevenue: client.annualRevenue, sicCode: client.sicCode ?? '',
     accountOwnerUserId: client.accountOwnerUserId ?? '', commercialAgentUserId: client.commercialAgentUserId ?? '',
-    contractsCounterpartyId: client.contractsCounterpartyId ?? '',
     isMainClient: client.isMainClient ?? false, mainClientId: client.mainClientId ?? '',
     description: client.description ?? '',
     addresses:    client.addresses?.map(({ type, street, postalCode, city, province, country }) => ({ type, street, postalCode, city, province, country })) ?? [],
@@ -77,13 +80,20 @@ function toFormValues(client: Client): ClientInput {
   }
 }
 
+interface DuplicateClient {
+  id: string
+  name: string
+  nif: string
+}
+
 interface Props {
   client: Client | null
   onSave: (saved: Client) => void
   onCancel: () => void
+  onEditExisting?: (id: string) => void
 }
 
-export default function ClientForm({ client, onSave, onCancel }: Props) {
+export default function ClientForm({ client, onSave, onCancel, onEditExisting }: Props) {
   const { t } = useTranslation()
   const isNew = client === null
 
@@ -92,6 +102,26 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
     client ? toFormValues(client) : EMPTY_FORM
   )
   const [saving, setSaving] = useState(false)
+  const [duplicateClient, setDuplicateClient] = useState<DuplicateClient | null>(null)
+  const [clientsList, setClientsList] = useState<Client[]>([])
+
+  useEffect(() => {
+    getClients().then(setClientsList).catch(() => {})
+  }, [])
+
+  const [errors, setErrors] = useState({
+    nif: '', mobilePhone: '', secondaryPhone: '', email: '', website: '',
+  })
+
+  function setError(field: keyof typeof errors, value: string) {
+    setErrors((e) => ({ ...e, [field]: value }))
+  }
+
+  // NIF is required unless the client is in PROSPECTING (captación) status
+  const nifRequired = form.status !== ClientStatus.PROSPECTING && !form.nif
+  const nifError = nifRequired ? t('validation.nifRequired') : errors.nif
+
+  const hasErrors = nifRequired || Object.values(errors).some(Boolean)
 
   function set<K extends keyof ClientInput>(key: K, value: ClientInput[K]) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -105,6 +135,13 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
         ? await createClient(form)
         : await updateClient(client.id, form)
       onSave(saved)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409 && err.code === 'nif_duplicate') {
+        const payload = err.payload as { existing?: DuplicateClient }
+        setDuplicateClient(payload?.existing ?? null)
+      } else {
+        throw err
+      }
     } finally {
       setSaving(false)
     }
@@ -112,6 +149,18 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
 
   return (
     <div className="client-form-view">
+      {duplicateClient && (
+        <ConfirmModal
+          title={t('validation.nifDuplicateTitle')}
+          message={t('validation.nifDuplicateMessage', { nif: duplicateClient.nif, name: duplicateClient.name })}
+          onClose={() => setDuplicateClient(null)}
+          actions={[
+            { label: t('validation.nifDuplicateBack'), onClick: () => setDuplicateClient(null), variant: 'secondary' },
+            { label: t('validation.nifDuplicateEdit'), onClick: () => { setDuplicateClient(null); onEditExisting?.(duplicateClient.id) }, variant: 'primary' },
+          ]}
+        />
+      )}
+
       <div className="client-form-header">
         <h1>{isNew ? t('clients.new') : t('clients.edit')}</h1>
       </div>
@@ -127,11 +176,96 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
               value={form.name} onChange={(e) => set('name', e.target.value)} />
             <InputField id="client-nif" label={t('clients.fields.nif')}
               name="nif" type="text" autoComplete="off"
-              value={form.nif} onChange={(e) => set('nif', e.target.value)} />
+              value={form.nif} onChange={(e) => set('nif', e.target.value)}
+              onBlur={(e) => setError('nif', e.target.value && !isValidNifCif(e.target.value) ? t('validation.nifCif') : '')}
+              error={nifError} />
             <InputField id="client-clientNumber" label={t('clients.fields.clientNumber')}
               name="clientNumber" type="text" autoComplete="off"
               value={form.clientNumber} onChange={(e) => set('clientNumber', e.target.value)} />
           </div>
+        </section>
+
+        {/* ── Documentación ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.personal')}</h2>
+          <div className="client-form-grid">
+            <InputField id="client-birthDate" label={t('clients.fields.birthDate')}
+              name="birthDate" type="date" autoComplete="off"
+              value={form.birthDate ?? ''} onChange={(e) => set('birthDate', e.target.value || undefined)} />
+            <InputField id="client-dniExpiryDate" label={t('clients.fields.dniExpiryDate')}
+              name="dniExpiryDate" type="date" autoComplete="off"
+              value={form.dniExpiryDate ?? ''} onChange={(e) => set('dniExpiryDate', e.target.value || undefined)} />
+            <InputField id="client-drivingLicenseIssueDate" label={t('clients.fields.drivingLicenseIssueDate')}
+              name="drivingLicenseIssueDate" type="date" autoComplete="off"
+              value={form.drivingLicenseIssueDate ?? ''} onChange={(e) => set('drivingLicenseIssueDate', e.target.value || undefined)} />
+          </div>
+        </section>
+
+        {/* ── Contacto ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.contact')}</h2>
+          <div className="client-form-grid">
+            <InputField id="client-mobilePhone" label={t('clients.fields.mobilePhone')}
+              name="mobilePhone" type="tel" autoComplete="off"
+              value={form.mobilePhone} onChange={(e) => set('mobilePhone', e.target.value)}
+              onBlur={(e) => setError('mobilePhone', isValidPhone(e.target.value) ? '' : t('validation.phone'))}
+              error={errors.mobilePhone} />
+            <InputField id="client-secondaryPhone" label={t('clients.fields.secondaryPhone')}
+              name="secondaryPhone" type="tel" autoComplete="off"
+              value={form.secondaryPhone} onChange={(e) => set('secondaryPhone', e.target.value)}
+              onBlur={(e) => setError('secondaryPhone', isValidPhone(e.target.value) ? '' : t('validation.phone'))}
+              error={errors.secondaryPhone} />
+            <InputField id="client-email" label={t('clients.fields.email')}
+              name="email" type="email" autoComplete="off"
+              value={form.email} onChange={(e) => set('email', e.target.value)}
+              onBlur={(e) => setError('email', isValidEmail(e.target.value) ? '' : t('validation.email'))}
+              error={errors.email} />
+            <InputField id="client-website" label={t('clients.fields.website')}
+              name="website" type="text" autoComplete="off"
+              value={form.website} onChange={(e) => set('website', e.target.value)}
+              onBlur={(e) => setError('website', isValidWebsite(e.target.value) ? '' : t('validation.website'))}
+              error={errors.website} />
+          </div>
+        </section>
+
+        {/* ── Direcciones ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.addresses')}</h2>
+          <AddressList
+            value={form.addresses ?? []}
+            onChange={(addresses) => set('addresses', addresses)}
+          />
+        </section>
+
+        {/* ── Empresa y facturación ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.business')}</h2>
+          <div className="client-form-grid">
+            <InputField id="client-employees" label={t('clients.fields.employees')}
+              name="employees" type="number" min={0} autoComplete="off"
+              value={form.employees ?? ''} onChange={(e) => set('employees', e.target.value ? Number(e.target.value) : undefined)} />
+            <InputField id="client-annualRevenue" label={t('clients.fields.annualRevenue')}
+              name="annualRevenue" type="number" min={0} step={0.01} autoComplete="off"
+              value={form.annualRevenue ?? ''} onChange={(e) => set('annualRevenue', e.target.value ? Number(e.target.value) : undefined)} />
+            <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
+              name="sicCode" type="text" autoComplete="off"
+              value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />
+            <SelectField id="client-activity" label={t('clients.fields.activity')}
+              name="activity" value={form.activity ?? ''}
+              onChange={(e) => set('activity', e.target.value || '')}>
+              <option value="">{t('clients.fields.none')}</option>
+              {ACTIVITIES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+            </SelectField>
+          </div>
+        </section>
+
+        {/* ── Cuentas bancarias ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.bankAccounts')}</h2>
+          <BankAccountList
+            value={form.bankAccounts ?? []}
+            onChange={(bankAccounts) => set('bankAccounts', bankAccounts)}
+          />
         </section>
 
         {/* ── Clasificación ── */}
@@ -158,78 +292,12 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
               <option value="">{t('clients.fields.none')}</option>
               {COLLECTION_MANAGERS.map((v) => <option key={v} value={v}>{CollectionManagerLabels[v]}</option>)}
             </SelectField>
-            <SelectField id="client-activity" label={t('clients.fields.activity')}
-              name="activity" value={form.activity ?? ''}
-              onChange={(e) => set('activity', e.target.value || '')}>
-              <option value="">{t('clients.fields.none')}</option>
-              {ACTIVITIES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-            </SelectField>
             <SelectField id="client-sector" label={t('clients.fields.sector')}
               name="sector" value={form.sector ?? ''}
               onChange={(e) => set('sector', e.target.value || '')}>
               <option value="">{t('clients.fields.none')}</option>
               {SECTORS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
             </SelectField>
-          </div>
-        </section>
-
-        {/* ── Contacto ── */}
-        <section className="form-section">
-          <h2 className="form-section-title">{t('clients.sections.contact')}</h2>
-          <div className="client-form-grid">
-            <InputField id="client-mobilePhone" label={t('clients.fields.mobilePhone')}
-              name="mobilePhone" type="tel" autoComplete="off"
-              value={form.mobilePhone} onChange={(e) => set('mobilePhone', e.target.value)} />
-            <InputField id="client-secondaryPhone" label={t('clients.fields.secondaryPhone')}
-              name="secondaryPhone" type="tel" autoComplete="off"
-              value={form.secondaryPhone} onChange={(e) => set('secondaryPhone', e.target.value)} />
-            <InputField id="client-email" label={t('clients.fields.email')}
-              name="email" type="email" autoComplete="off"
-              value={form.email} onChange={(e) => set('email', e.target.value)} />
-            <InputField id="client-website" label={t('clients.fields.website')}
-              name="website" type="text" autoComplete="off"
-              value={form.website} onChange={(e) => set('website', e.target.value)} />
-          </div>
-        </section>
-
-        {/* ── Direcciones ── */}
-        <section className="form-section">
-          <h2 className="form-section-title">{t('clients.sections.addresses')}</h2>
-          <AddressList
-            value={form.addresses ?? []}
-            onChange={(addresses) => set('addresses', addresses)}
-          />
-        </section>
-
-        {/* ── Documentación y datos personales ── */}
-        <section className="form-section">
-          <h2 className="form-section-title">{t('clients.sections.personal')}</h2>
-          <div className="client-form-grid">
-            <InputField id="client-birthDate" label={t('clients.fields.birthDate')}
-              name="birthDate" type="date" autoComplete="off"
-              value={form.birthDate ?? ''} onChange={(e) => set('birthDate', e.target.value || undefined)} />
-            <InputField id="client-dniExpiryDate" label={t('clients.fields.dniExpiryDate')}
-              name="dniExpiryDate" type="date" autoComplete="off"
-              value={form.dniExpiryDate ?? ''} onChange={(e) => set('dniExpiryDate', e.target.value || undefined)} />
-            <InputField id="client-drivingLicenseIssueDate" label={t('clients.fields.drivingLicenseIssueDate')}
-              name="drivingLicenseIssueDate" type="date" autoComplete="off"
-              value={form.drivingLicenseIssueDate ?? ''} onChange={(e) => set('drivingLicenseIssueDate', e.target.value || undefined)} />
-          </div>
-        </section>
-
-        {/* ── Empresa y facturación ── */}
-        <section className="form-section">
-          <h2 className="form-section-title">{t('clients.sections.business')}</h2>
-          <div className="client-form-grid">
-            <InputField id="client-employees" label={t('clients.fields.employees')}
-              name="employees" type="number" min={0} autoComplete="off"
-              value={form.employees ?? ''} onChange={(e) => set('employees', e.target.value ? Number(e.target.value) : undefined)} />
-            <InputField id="client-annualRevenue" label={t('clients.fields.annualRevenue')}
-              name="annualRevenue" type="number" min={0} step={0.01} autoComplete="off"
-              value={form.annualRevenue ?? ''} onChange={(e) => set('annualRevenue', e.target.value ? Number(e.target.value) : undefined)} />
-            <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
-              name="sicCode" type="text" autoComplete="off"
-              value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />
           </div>
         </section>
 
@@ -243,19 +311,29 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
             <InputField id="client-commercialAgentUserId" label={t('clients.fields.commercialAgentUserId')}
               name="commercialAgentUserId" type="text" autoComplete="off"
               value={form.commercialAgentUserId ?? ''} onChange={(e) => set('commercialAgentUserId', e.target.value)} />
-            <InputField id="client-contractsCounterpartyId" label={t('clients.fields.contractsCounterpartyId')}
-              name="contractsCounterpartyId" type="text" autoComplete="off"
-              value={form.contractsCounterpartyId ?? ''} onChange={(e) => set('contractsCounterpartyId', e.target.value)} />
           </div>
         </section>
 
-        {/* ── Cuentas bancarias ── */}
+        {/* ── Jerarquía ── */}
         <section className="form-section">
-          <h2 className="form-section-title">{t('clients.sections.bankAccounts')}</h2>
-          <BankAccountList
-            value={form.bankAccounts ?? []}
-            onChange={(bankAccounts) => set('bankAccounts', bankAccounts)}
-          />
+          <h2 className="form-section-title">{t('clients.sections.hierarchy')}</h2>
+          <div className="client-form-grid">
+            <SelectField id="client-mainClientId" label={t('clients.fields.mainClientId')}
+              name="mainClientId" value={form.mainClientId ?? ''}
+              onChange={(e) => set('mainClientId', e.target.value || undefined)}
+              disabled={form.isMainClient}>
+              <option value="">{t('clients.fields.noMainClient')}</option>
+              {clientsList
+                .filter((c) => c.id !== client?.id)
+                .map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </SelectField>
+            <CheckboxField id="client-isMainClient" label={t('clients.fields.isMainClient')}
+              checked={form.isMainClient ?? false}
+              onChange={(e) => {
+                set('isMainClient', e.target.checked)
+                if (e.target.checked) set('mainClientId', undefined)
+              }} />
+          </div>
         </section>
 
         {/* ── Observaciones ── */}
@@ -270,7 +348,7 @@ export default function ClientForm({ client, onSave, onCancel }: Props) {
           <button type="button" className="btn-secondary" onClick={onCancel}>
             {t('clients.actions.cancel')}
           </button>
-          <button type="submit" className="btn-primary" disabled={saving || !form.name}>
+          <button type="submit" className="btn-primary" disabled={saving || !form.name || hasErrors}>
             {saving ? t('clients.actions.saving') : t('clients.actions.save')}
           </button>
         </div>

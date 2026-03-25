@@ -57,9 +57,6 @@ export interface ClientInput {
   accountOwnerUserId?: string
   commercialAgentUserId?: string
 
-  // Integraciones
-  contractsCounterpartyId?: string
-
   // Jerarquía
   isMainClient?: boolean
   mainClientId?: string | null
@@ -100,6 +97,10 @@ export function listClients() {
 
 export function getClientById(id: string) {
   return prisma.client.findUnique({ where: { id }, include })
+}
+
+export function findClientByNif(nif: string) {
+  return prisma.client.findFirst({ where: { nif }, select: { id: true, name: true, nif: true } })
 }
 
 export function createClient(data: ClientInput) {

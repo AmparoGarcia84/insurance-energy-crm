@@ -90,7 +90,7 @@ model Client {
   // Identificación
   clientNumber String?
   name         String
-  nif          String?
+  nif          String? @unique
 
   // Clasificación
   type              ClientType
@@ -119,9 +119,6 @@ model Client {
   // Gestión comercial
   accountOwnerUserId    String?
   commercialAgentUserId String?
-
-  // Integraciones
-  contractsCounterpartyId String?
 
   // Relaciones
   addresses    ClientAddress[]
