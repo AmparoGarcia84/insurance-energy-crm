@@ -72,11 +72,16 @@ export interface ClientInput {
   bankAccounts?: ClientBankAccountInput[]
 }
 
+// Always include related addresses and bank accounts in every query result
 const include = { addresses: true, bankAccounts: true } satisfies Prisma.ClientInclude
 
 const DATE_FIELDS = ['birthDate', 'drivingLicenseIssueDate', 'dniExpiryDate'] as const
 
-/** Convert empty strings to undefined and date strings to Date objects */
+/**
+ * Normalize raw form data before passing it to Prisma:
+ * - Empty strings → undefined (avoids storing empty strings in optional fields)
+ * - Date string fields → Date objects (Prisma DateTime requires a JS Date, not a string)
+ */
 function sanitize<T extends Record<string, unknown>>(data: T): T {
   return Object.fromEntries(
     Object.entries(data).map(([k, v]) => {
@@ -99,6 +104,8 @@ export function getClientById(id: string) {
 
 export function createClient(data: ClientInput) {
   const { addresses, bankAccounts, ...rest } = data
+  // ClientUncheckedCreateInput is used instead of ClientCreateInput so that
+  // mainClientId can be passed as a plain string rather than a nested relation object
   const createData: Prisma.ClientUncheckedCreateInput = {
     ...(sanitize(rest) as Prisma.ClientUncheckedCreateInput),
     addresses:    addresses    ? { create: addresses }    : undefined,
@@ -109,6 +116,8 @@ export function createClient(data: ClientInput) {
 
 export function updateClient(id: string, data: Partial<ClientInput>) {
   const { addresses, bankAccounts, ...rest } = data
+  // Replace all addresses/bankAccounts on each update (deleteMany + create)
+  // so the stored list always matches exactly what the form submitted
   const updateData: Prisma.ClientUncheckedUpdateInput = {
     ...(sanitize(rest) as Prisma.ClientUncheckedUpdateInput),
     ...(addresses !== undefined && {

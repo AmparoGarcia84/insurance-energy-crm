@@ -11,6 +11,95 @@
   --corp-card: #ffffff;
 }
 
+/* ── Buttons ────────────────────────────────────────── */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: var(--corp-black);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) { opacity: 0.8; }
+.btn-primary:disabled              { opacity: 0.45; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  color: var(--corp-muted);
+  border: 1px solid var(--corp-beige);
+  border-radius: 7px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover { background: var(--corp-muted-bg); }
+
+/* ── Icon buttons ────────────────────────────────────── */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  color: var(--corp-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--corp-muted-bg);
+  color: var(--corp-black);
+}
+
+.icon-btn-danger:hover {
+  background: #fde8e8;
+  color: #a03030;
+}
+
+/* ── Badges ──────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-type-individual { background: #e8e4df; color: var(--corp-muted); }
+.badge-type-business   { background: #e8e8ff; color: #4444aa; }
+
+.badge-status-lead     { background: #fff4d6; color: #a07800; }
+.badge-status-active   { background: #d6f0e0; color: #1a7a3e; }
+.badge-status-inactive { background: #e8e4df; color: var(--corp-muted); }
+.badge-status-lost     { background: #fde8e8; color: #a03030; }
+
+/* ── Form sections ───────────────────────────────────── */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--corp-muted);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--corp-beige);
+}
+
 /* ── Dashboard layout ── */
 .dashboard {
   display: flex;
