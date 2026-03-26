@@ -1,2 +1,1 @@
-/* BankAccountList shares AddressList.css base styles.
-   Add overrides here if needed. */
+/* BankAccountList uses .item-list* and .btn-add-item from App.css */

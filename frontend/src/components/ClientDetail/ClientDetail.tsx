@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Pencil, Phone, Mail, User } from 'lucide-react'
 import {
+  ClientActivity,
+  ClientSector,
   ClientTypeLabels,
   ClientStatusLabels,
   ClientQualificationLabels,
@@ -190,10 +192,10 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
               <h2 className="form-section-title">{t('clients.sections.business')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.employees')}    value={client.employees} />
-                <Field label={t('clients.fields.annualRevenue')} value={client.annualRevenue != null ? `${client.annualRevenue.toLocaleString('es-ES')} €` : undefined} />
+                <Field label={t('clients.fields.annualRevenue')} value={client.annualRevenue != null ? `${client.annualRevenue.toLocaleString(i18n.language)} €` : undefined} />
                 <Field label={t('clients.fields.sicCode')}      value={client.sicCode} />
                 <Field label={t('clients.fields.activity')}
-                  value={client.activity ? (ClientActivityLabels as Record<string, string>)[client.activity] : undefined} />
+                  value={client.activity ? ClientActivityLabels[client.activity as ClientActivity] : undefined} />
               </div>
             </section>
 
@@ -225,7 +227,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
                 <Field label={t('clients.fields.collectionManager')}
                   value={client.collectionManager ? CollectionManagerLabels[client.collectionManager] : undefined} />
                 <Field label={t('clients.fields.sector')}
-                  value={client.sector ? (ClientSectorLabels as Record<string, string>)[client.sector] : undefined} />
+                  value={client.sector ? ClientSectorLabels[client.sector as ClientSector] : undefined} />
               </div>
             </section>
 

@@ -7,6 +7,7 @@ import { ClientType, ClientStatus, AddressType, AccountType } from '@crm/shared'
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: { language: 'es' },
   }),
 }))
 

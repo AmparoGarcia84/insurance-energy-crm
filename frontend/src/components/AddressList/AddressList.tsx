@@ -32,10 +32,10 @@ export default function AddressList({ value, onChange }: AddressListProps) {
   }
 
   return (
-    <div className="address-list">
+    <div className="item-list">
       {value.map((entry, index) => (
-        <div key={index} className="address-list-item">
-          <div className="address-list-item-header">
+        <div key={index} className="item-list-item">
+          <div className="item-list-item-header">
             <SelectField
               id={`addr-type-${index}`}
               label={t('address.type')}

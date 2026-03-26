@@ -5,7 +5,6 @@ import { AccountType, AccountTypeLabels, type ClientBankAccountInput } from '@cr
 import { isValidIban } from '../../utils/validation'
 import SelectField from '../FormField/SelectField'
 import InputField from '../FormField/InputField'
-import '../AddressList/AddressList.css'
 import './BankAccountList.css'
 
 const ACCOUNT_TYPES = Object.values(AccountType)
@@ -50,10 +49,10 @@ export default function BankAccountList({ value, onChange }: BankAccountListProp
   }
 
   return (
-    <div className="address-list">
+    <div className="item-list">
       {value.map((entry, index) => (
-        <div key={index} className="address-list-item">
-          <div className="address-list-item-header">
+        <div key={index} className="item-list-item">
+          <div className="item-list-item-header">
             <SelectField
               id={`account-type-${index}`}
               label={t('bankAccount.type')}
