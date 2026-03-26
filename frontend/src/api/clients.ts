@@ -28,8 +28,8 @@ export interface Client {
   name: string
   nif?: string
 
-  type: ClientType
-  status: ClientStatus
+  type?: ClientType
+  status?: ClientStatus
   qualification?: ClientQualification
   activity?: string
   sector?: string

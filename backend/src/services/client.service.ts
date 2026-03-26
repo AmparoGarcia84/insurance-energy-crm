@@ -59,7 +59,7 @@ export interface ClientInput {
   nif?: string
 
   // Clasificación
-  type: ClientType
+  type?: ClientType
   status?: ClientStatus
   qualification?: ClientQualification
   activity?: string

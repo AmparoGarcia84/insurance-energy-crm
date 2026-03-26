@@ -68,7 +68,8 @@ export function parseIBAN(value: string): string | null {
 
 // ─── Enum mappings ────────────────────────────────────────────────────────────
 
-export function mapType(value: string): ClientType {
+export function mapType(value: string): ClientType | undefined {
+  if (!value) return undefined
   const map: Record<string, ClientType> = {
     'Particular':  'INDIVIDUAL',
     'Empresa':     'COMPANY',
@@ -82,17 +83,18 @@ export function mapType(value: string): ClientType {
     'Posible':     'PROSPECT',
     'CCPP':        'COMMUNITY_OF_OWNERS',
   }
-  return map[value] ?? 'INDIVIDUAL'
+  return map[value]
 }
 
-export function mapStatus(value: string): ClientStatus {
+export function mapStatus(value: string): ClientStatus | undefined {
+  if (!value) return undefined
   const v = value.toLowerCase()
-  if (v === 'vigor' || v === 'activo' || v === 'active')          return 'ACTIVE'
-  if (v === 'prospect' || v === 'posible')                        return 'PROSPECTING'
-  if (v === 'baja' || v === 'inactive')                           return 'INACTIVE'
-  if (v === 'captación' || v === 'captacion' || v === 'lead')     return 'LEAD'
-  if (v === 'perdido' || v === 'lost')                            return 'LOST'
-  return 'LEAD'
+  if (v === 'vigor' || v === 'activo' || v === 'active')      return 'ACTIVE'
+  if (v === 'prospect' || v === 'posible')                    return 'PROSPECTING'
+  if (v === 'baja' || v === 'inactive')                       return 'INACTIVE'
+  if (v === 'captación' || v === 'captacion' || v === 'lead') return 'LEAD'
+  if (v === 'perdido' || v === 'lost')                        return 'LOST'
+  return undefined
 }
 
 export function mapQualification(value: string): ClientQualification | undefined {

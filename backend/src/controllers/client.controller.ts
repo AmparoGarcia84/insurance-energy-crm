@@ -18,9 +18,9 @@ export async function getClient(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function createClient(req: AuthRequest, res: Response): Promise<void> {
-  const { name, type } = req.body
-  if (!name || !type) {
-    res.status(400).json({ error: 'name and type are required' })
+  const { name } = req.body
+  if (!name) {
+    res.status(400).json({ error: 'name is required' })
     return
   }
   try {

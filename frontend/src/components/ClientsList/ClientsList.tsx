@@ -137,14 +137,18 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
                     </div>
                   </td>
                   <td>
-                    <span className={`badge badge-type badge-type-${c.type.toLowerCase()}`}>
-                      {ClientTypeLabels[c.type]}
-                    </span>
+                    {c.type && (
+                      <span className={`badge badge-type badge-type-${c.type.toLowerCase()}`}>
+                        {ClientTypeLabels[c.type]}
+                      </span>
+                    )}
                   </td>
                   <td>
-                    <span className={`badge badge-status badge-status-${c.status.toLowerCase()}`}>
-                      {ClientStatusLabels[c.status]}
-                    </span>
+                    {c.status && (
+                      <span className={`badge badge-status badge-status-${c.status.toLowerCase()}`}>
+                        {ClientStatusLabels[c.status]}
+                      </span>
+                    )}
                   </td>
                   <td>{c.accountOwnerUserId ?? '—'}</td>
                   <td>{c.mobilePhone ?? '—'}</td>

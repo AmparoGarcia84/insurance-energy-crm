@@ -93,8 +93,8 @@ model Client {
   nif          String? @unique
 
   // Clasificación
-  type              ClientType
-  status            ClientStatus         @default(LEAD)
+  type              ClientType?
+  status            ClientStatus?
   qualification     ClientQualification?
   activity          String?              // valores de ClientActivity (domain-types)
   sector            String?              // valores de ClientSector (domain-types)
