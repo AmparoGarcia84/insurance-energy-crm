@@ -246,7 +246,12 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
                     <Field label={t('clients.fields.isMainClient')} value={t('clients.fields.isMainClient')} />
                   )}
                   {client.mainClientId && (
-                    <Field label={t('clients.fields.mainClientId')} value={client.mainClientId} />
+                    <Field
+                      label={t('clients.fields.mainClientId')}
+                      value={client.mainClient
+                        ? [client.mainClient.clientNumber, client.mainClient.name].filter(Boolean).join(' · ')
+                        : client.mainClientId}
+                    />
                   )}
                 </div>
               </section>

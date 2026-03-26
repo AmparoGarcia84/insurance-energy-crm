@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite } from './validation'
+import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite, isValidIban } from './validation'
 
 describe('isValidPhone', () => {
   it('accepts empty string (field is optional)', () => {
@@ -139,5 +139,43 @@ describe('isValidWebsite', () => {
 
   it('rejects string with spaces', () => {
     expect(isValidWebsite('www.my site.com')).toBe(false)
+  })
+})
+
+describe('isValidIban', () => {
+  it('accepts empty string (field is optional)', () => {
+    expect(isValidIban('')).toBe(true)
+  })
+
+  it('accepts valid Spanish IBAN without spaces', () => {
+    expect(isValidIban('ES9121000418450200051332')).toBe(true)
+  })
+
+  it('accepts valid Spanish IBAN with spaces', () => {
+    expect(isValidIban('ES91 2100 0418 4502 0005 1332')).toBe(true)
+  })
+
+  it('accepts valid German IBAN', () => {
+    expect(isValidIban('DE89370400440532013000')).toBe(true)
+  })
+
+  it('accepts valid French IBAN', () => {
+    expect(isValidIban('FR7630006000011234567890189')).toBe(true)
+  })
+
+  it('rejects IBAN with wrong checksum', () => {
+    expect(isValidIban('ES9221000418450200051332')).toBe(false)
+  })
+
+  it('rejects IBAN that is too short', () => {
+    expect(isValidIban('ES91210004')).toBe(false)
+  })
+
+  it('rejects IBAN with invalid characters', () => {
+    expect(isValidIban('ES91 2100 XXXX 4502 0005 1332')).toBe(false)
+  })
+
+  it('rejects plain text', () => {
+    expect(isValidIban('not-an-iban')).toBe(false)
   })
 })

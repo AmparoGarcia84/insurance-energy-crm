@@ -48,74 +48,88 @@ async function main() {
     data: [
       // Individuals — ACTIVE
       {
+        clientNumber: '000001',
         type: 'INDIVIDUAL', status: 'ACTIVE',
         name: 'Carmen López Martínez',
         nif: '12345678A', mobilePhone: '612 345 678', email: 'carmen.lopez@gmail.com',
       },
       {
+        clientNumber: '000002',
         type: 'INDIVIDUAL', status: 'ACTIVE',
         name: 'Francisco Ruiz Sánchez',
         nif: '87654321B', mobilePhone: '623 456 789', email: 'fran.ruiz@hotmail.com',
       },
       {
+        clientNumber: '000003',
         type: 'INDIVIDUAL', status: 'ACTIVE',
         name: 'Elena Moreno Fernández',
         nif: '11223344C', mobilePhone: '634 567 890', email: 'elena.moreno@gmail.com',
       },
       {
+        clientNumber: '000004',
         type: 'INDIVIDUAL', status: 'ACTIVE',
         name: 'Antonio García Pérez',
         nif: '44332211D', mobilePhone: '645 678 901', email: 'antonio.garcia@outlook.com',
       },
       {
+        clientNumber: '000005',
         type: 'INDIVIDUAL', status: 'ACTIVE',
         name: 'Lucía Hernández Jiménez',
         nif: '55667788E', mobilePhone: '656 789 012', email: 'lucia.hdz@gmail.com',
       },
       // Individuals — LEAD
       {
+        clientNumber: '000006',
         type: 'INDIVIDUAL', status: 'LEAD',
         name: 'Roberto Díaz Torres',
         mobilePhone: '667 890 123', email: 'roberto.diaz@gmail.com',
       },
       {
+        clientNumber: '000007',
         type: 'INDIVIDUAL', status: 'LEAD',
         name: 'María Sanz Romero',
         mobilePhone: '678 901 234', email: 'maria.sanz@icloud.com',
       },
       // Individuals — INACTIVE / LOST
       {
+        clientNumber: '000008',
         type: 'INDIVIDUAL', status: 'INACTIVE',
         name: 'Pablo Navarro Gil',
         nif: '99887766F', mobilePhone: '689 012 345', email: 'pablo.navarro@gmail.com',
       },
       {
+        clientNumber: '000009',
         type: 'INDIVIDUAL', status: 'LOST',
         name: 'Sara Muñoz Delgado',
         mobilePhone: '690 123 456', email: 'sara.munoz@gmail.com',
       },
       // Businesses — ACTIVE
       {
+        clientNumber: '000010',
         type: 'BUSINESS', status: 'ACTIVE',
         name: 'Talleres Rápidos S.L.',
         nif: 'B12345678', mobilePhone: '91 234 56 78', email: 'info@talleresrapidos.es',
       },
       {
+        clientNumber: '000011',
         type: 'BUSINESS', status: 'ACTIVE',
         name: 'Restaurante El Patio',
         nif: 'B87654321', mobilePhone: '95 678 12 34', email: 'reservas@restauranteelpatio.com',
       },
       {
+        clientNumber: '000012',
         type: 'BUSINESS', status: 'ACTIVE',
         name: 'Clínica DentalCare',
         nif: 'B11223344', mobilePhone: '93 456 78 90', email: 'admin@dentalcare.es',
       },
       {
+        clientNumber: '000013',
         type: 'BUSINESS', status: 'LEAD',
         name: 'Academia Lingua',
         nif: 'J44332211', mobilePhone: '96 789 01 23', email: 'info@academia-lingua.es',
       },
       {
+        clientNumber: '000014',
         type: 'BUSINESS', status: 'INACTIVE',
         name: 'Construcciones Vega',
         nif: 'A55667788', mobilePhone: '91 890 12 34',

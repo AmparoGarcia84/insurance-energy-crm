@@ -17,6 +17,50 @@
   color: var(--corp-black);
 }
 
+.clients-list-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ── Import result banner ───────────────────────────── */
+.clients-import-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #2e7d32;
+}
+
+.clients-import-banner--warn {
+  background: #fff8e1;
+  border-color: #ffe082;
+  color: #7b5800;
+}
+
+.clients-import-errors {
+  font-weight: 500;
+}
+
+.clients-import-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0 0.2rem;
+}
+
+.clients-import-dismiss:hover {
+  opacity: 1;
+}
+
 /* ── Search ─────────────────────────────────────────── */
 .clients-search {
   display: flex;
@@ -78,6 +122,13 @@
 
 .clients-table tbody tr:hover {
   background: var(--corp-muted-bg);
+}
+
+.clients-number {
+  width: 7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--corp-muted);
+  font-size: 0.85rem;
 }
 
 .clients-name {

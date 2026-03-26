@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite } from '../../utils/validation'
+import { ACTIVITY_CNAE } from '../../utils/cnae'
 import {
   ClientType,
   ClientStatus,
@@ -41,7 +42,7 @@ const SECTORS               = Object.entries(ClientSectorLabels)   as [ClientSec
 
 // Default values for a blank new-client form
 const EMPTY_FORM: ClientInput = {
-  name: '', clientNumber: '', nif: '',
+  name: '', nif: '',
   type: ClientType.INDIVIDUAL, status: ClientStatus.LEAD, qualification: undefined,
   activity: '', sector: '', collectionManager: undefined,
   birthDate: '', drivingLicenseIssueDate: '', dniExpiryDate: '',
@@ -63,7 +64,7 @@ function toDateInput(iso?: string): string {
 // Relation arrays are stripped down to their input-only fields (no id, no clientId).
 function toFormValues(client: Client): ClientInput {
   return {
-    name: client.name, clientNumber: client.clientNumber ?? '', nif: client.nif ?? '',
+    name: client.name, nif: client.nif ?? '',
     type: client.type, status: client.status,
     qualification: client.qualification, activity: client.activity ?? '',
     sector: client.sector ?? '', collectionManager: client.collectionManager,
@@ -179,9 +180,12 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
               value={form.nif} onChange={(e) => set('nif', e.target.value)}
               onBlur={(e) => setError('nif', e.target.value && !isValidNifCif(e.target.value) ? t('validation.nifCif') : '')}
               error={nifError} />
-            <InputField id="client-clientNumber" label={t('clients.fields.clientNumber')}
-              name="clientNumber" type="text" autoComplete="off"
-              value={form.clientNumber} onChange={(e) => set('clientNumber', e.target.value)} />
+            {!isNew && client?.clientNumber && (
+              <div className="form-field">
+                <span className="form-field-label">{t('clients.fields.clientNumber')}</span>
+                <span className="form-field-readonly">{client.clientNumber}</span>
+              </div>
+            )}
           </div>
         </section>
 
@@ -247,15 +251,19 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
             <InputField id="client-annualRevenue" label={t('clients.fields.annualRevenue')}
               name="annualRevenue" type="number" min={0} step={0.01} autoComplete="off"
               value={form.annualRevenue ?? ''} onChange={(e) => set('annualRevenue', e.target.value ? Number(e.target.value) : undefined)} />
-            <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
-              name="sicCode" type="text" autoComplete="off"
-              value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />
             <SelectField id="client-activity" label={t('clients.fields.activity')}
               name="activity" value={form.activity ?? ''}
-              onChange={(e) => set('activity', e.target.value || '')}>
+              onChange={(e) => {
+                const activity = e.target.value
+                const cnae = activity ? ACTIVITY_CNAE[activity as ClientActivity] : undefined
+                setForm((f) => ({ ...f, activity: activity || '', ...(cnae ? { sicCode: cnae } : {}) }))
+              }}>
               <option value="">{t('clients.fields.none')}</option>
               {ACTIVITIES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
             </SelectField>
+            <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
+              name="sicCode" type="text" autoComplete="off"
+              value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />
           </div>
         </section>
 

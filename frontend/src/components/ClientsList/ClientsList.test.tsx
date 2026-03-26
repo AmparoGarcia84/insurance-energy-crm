@@ -14,13 +14,13 @@ vi.mock('../../auth/AuthContext', () => ({
 
 const clients: Client[] = [
   {
-    id: '1', name: 'Ana García', nif: '12345678A',
+    id: '1', clientNumber: '000001', name: 'Ana García', nif: '12345678A',
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     email: 'ana@example.com', mobilePhone: '600111222',
     createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: '2', name: 'Blas López',
+    id: '2', clientNumber: '000002', name: 'Blas López',
     type: ClientType.BUSINESS, status: ClientStatus.LEAD,
     createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
   },
@@ -52,11 +52,24 @@ describe('ClientsList', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
-  it('filters by search', () => {
+  it('filters by name', () => {
     render(<ClientsList {...defaultProps} />)
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'ana' } })
     expect(screen.getByText('Ana García')).toBeInTheDocument()
     expect(screen.queryByText('Blas López')).not.toBeInTheDocument()
+  })
+
+  it('filters by client number', () => {
+    render(<ClientsList {...defaultProps} />)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: '000001' } })
+    expect(screen.getByText('Ana García')).toBeInTheDocument()
+    expect(screen.queryByText('Blas López')).not.toBeInTheDocument()
+  })
+
+  it('shows client numbers in the table', () => {
+    render(<ClientsList {...defaultProps} />)
+    expect(screen.getByText('000001')).toBeInTheDocument()
+    expect(screen.getByText('000002')).toBeInTheDocument()
   })
 
   it('shows empty search state when no results', () => {

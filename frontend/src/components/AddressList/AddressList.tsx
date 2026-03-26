@@ -59,6 +59,7 @@ export default function AddressList({ value, onChange }: AddressListProps) {
           <AddressForm
             value={entry}
             onChange={(fields) => update(index, fields)}
+            prefix={`addr-${index}`}
           />
         </div>
       ))}

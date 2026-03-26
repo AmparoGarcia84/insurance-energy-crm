@@ -39,3 +39,23 @@ export function isValidWebsite(value: string): boolean {
   if (!value) return true
   return /^(https?:\/\/)?(www\.)?[\w-]+(\.[\w-]{2,})+(\/[\w\-./?%&=]*)?$/i.test(value.trim())
 }
+
+/**
+ * Returns true if the string is a valid IBAN (International Bank Account Number).
+ * Validates structure and checksum (mod-97 algorithm) for any country.
+ * Spaces are ignored — both "ES91 2100..." and "ES9121000..." are accepted.
+ */
+export function isValidIban(value: string): boolean {
+  if (!value) return true
+  const iban = value.replace(/\s/g, '').toUpperCase()
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(iban)) return false
+  // Move the first 4 characters to the end, then convert letters to digits (A=10…Z=35)
+  const rearranged = iban.slice(4) + iban.slice(0, 4)
+  const numeric = rearranged.replace(/[A-Z]/g, (ch) => String(ch.charCodeAt(0) - 55))
+  // Compute mod 97 in chunks to handle large numbers safely
+  let remainder = 0
+  for (let i = 0; i < numeric.length; i += 7) {
+    remainder = Number(String(remainder) + numeric.slice(i, i + 7)) % 97
+  }
+  return remainder === 1
+}

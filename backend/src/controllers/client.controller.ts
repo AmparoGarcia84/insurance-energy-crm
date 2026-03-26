@@ -51,6 +51,20 @@ export async function updateClient(req: AuthRequest, res: Response): Promise<voi
   }
 }
 
+export async function importClients(req: AuthRequest, res: Response): Promise<void> {
+  const csvText = req.body as string
+  if (!csvText || typeof csvText !== 'string') {
+    res.status(400).json({ error: 'CSV text body is required' })
+    return
+  }
+  try {
+    const result = await clientService.importClientsFromCsv(csvText)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Import failed', detail: String(err) })
+  }
+}
+
 export async function deleteClient(req: AuthRequest, res: Response): Promise<void> {
   if (req.user!.role !== 'OWNER') {
     res.status(403).json({ error: 'Forbidden' })

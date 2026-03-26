@@ -1,13 +1,17 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { AccountType } from '@crm/shared'
 import BankAccountList from './BankAccountList'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}))
+
 describe('BankAccountList', () => {
   it('renders the add button when empty', () => {
     render(<BankAccountList value={[]} onChange={vi.fn()} />)
-    expect(screen.getByRole('button', { name: /añadir cuenta/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /bankAccount\.add/i })).toBeInTheDocument()
   })
 
   it('renders one card per account', () => {
@@ -28,7 +32,7 @@ describe('BankAccountList', () => {
   it('calls onChange with a new empty entry when add is clicked', async () => {
     const onChange = vi.fn()
     render(<BankAccountList value={[]} onChange={onChange} />)
-    await userEvent.click(screen.getByRole('button', { name: /añadir cuenta/i }))
+    await userEvent.click(screen.getByRole('button', { name: /bankAccount\.add/i }))
     expect(onChange).toHaveBeenCalledWith([{ type: AccountType.PERSONAL, iban: '' }])
   })
 
@@ -43,7 +47,7 @@ describe('BankAccountList', () => {
         onChange={onChange}
       />
     )
-    const removeButtons = screen.getAllByRole('button', { name: /eliminar/i })
+    const removeButtons = screen.getAllByRole('button', { name: /bankAccount\.remove/i })
     await userEvent.click(removeButtons[0])
     expect(onChange).toHaveBeenCalledWith([{ type: AccountType.BUSINESS, iban: 'ES22222' }])
   })
@@ -74,5 +78,23 @@ describe('BankAccountList', () => {
     expect(onChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ iban: 'E' }),
     ])
+  })
+
+  it('shows no error for a valid IBAN on blur', () => {
+    render(<BankAccountList value={[{ type: AccountType.PERSONAL, iban: 'ES9121000418450200051332' }]} onChange={vi.fn()} />)
+    fireEvent.blur(screen.getByLabelText(/iban/i), { target: { value: 'ES9121000418450200051332' } })
+    expect(screen.queryByText('validation.iban')).not.toBeInTheDocument()
+  })
+
+  it('shows error for an invalid IBAN on blur', () => {
+    render(<BankAccountList value={[{ type: AccountType.PERSONAL, iban: 'INVALID' }]} onChange={vi.fn()} />)
+    fireEvent.blur(screen.getByLabelText(/iban/i), { target: { value: 'INVALID' } })
+    expect(screen.getByText('validation.iban')).toBeInTheDocument()
+  })
+
+  it('clears error when IBAN field is empty on blur', () => {
+    render(<BankAccountList value={[{ type: AccountType.PERSONAL, iban: '' }]} onChange={vi.fn()} />)
+    fireEvent.blur(screen.getByLabelText(/iban/i), { target: { value: '' } })
+    expect(screen.queryByText('validation.iban')).not.toBeInTheDocument()
   })
 })

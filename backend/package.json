@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "tsx src/index.ts",
     "seed": "tsx prisma/seed.ts",
-    "provision": "prisma migrate deploy && prisma generate && tsx db_provision/provision.ts"
+    "provision": "prisma migrate deploy && prisma generate && tsx db_provision/provision.ts",
+    "import-clients": "tsx db_provision/import-clients.ts"
   },
   "dependencies": {
     "@crm/shared": "*",

@@ -73,3 +73,19 @@
   font-size: 0.78rem;
   color: #c0392b;
 }
+
+.form-field-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--corp-muted);
+}
+
+.form-field-readonly {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--corp-beige);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  font-variant-numeric: tabular-nums;
+}

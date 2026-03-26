@@ -53,6 +53,7 @@ export interface Client {
 
   isMainClient?: boolean
   mainClientId?: string
+  mainClient?: { id: string; name: string; clientNumber?: string }
 
   description?: string
 
@@ -63,7 +64,7 @@ export interface Client {
   updatedAt: string
 }
 
-export type ClientInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'addresses' | 'bankAccounts'> & {
+export type ClientInput = Omit<Client, 'id' | 'clientNumber' | 'createdAt' | 'updatedAt' | 'addresses' | 'bankAccounts'> & {
   addresses?: ClientAddressInput[]
   bankAccounts?: ClientBankAccountInput[]
 }
@@ -88,8 +89,15 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
-export const getClients   = ()                                       => request<Client[]>(BASE)
-export const getClient    = (id: string)                             => request<Client>(`${BASE}/${id}`)
-export const createClient = (data: ClientInput)                      => request<Client>(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-export const updateClient = (id: string, data: Partial<ClientInput>) => request<Client>(`${BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-export const deleteClient = (id: string)                             => request<void>(`${BASE}/${id}`, { method: 'DELETE' })
+export interface ImportResult {
+  created: number
+  skipped: number
+  errors: string[]
+}
+
+export const getClients    = ()                                       => request<Client[]>(BASE)
+export const getClient     = (id: string)                             => request<Client>(`${BASE}/${id}`)
+export const createClient  = (data: ClientInput)                      => request<Client>(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+export const updateClient  = (id: string, data: Partial<ClientInput>) => request<Client>(`${BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+export const deleteClient  = (id: string)                             => request<void>(`${BASE}/${id}`, { method: 'DELETE' })
+export const importClients = (csvText: string)                        => request<ImportResult>(`${BASE}/import`, { method: 'POST', headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: csvText })

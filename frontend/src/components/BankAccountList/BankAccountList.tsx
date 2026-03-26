@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
 import { AccountType, AccountTypeLabels, type ClientBankAccountInput } from '@crm/shared'
+import { isValidIban } from '../../utils/validation'
 import SelectField from '../FormField/SelectField'
 import InputField from '../FormField/InputField'
 import '../AddressList/AddressList.css'
@@ -20,6 +22,11 @@ interface BankAccountListProps {
 
 export default function BankAccountList({ value, onChange }: BankAccountListProps) {
   const { t } = useTranslation()
+  const [errors, setErrors] = useState<Record<number, string>>({})
+
+  function setError(index: number, msg: string) {
+    setErrors((e) => ({ ...e, [index]: msg }))
+  }
 
   function add() {
     onChange([...value, { ...EMPTY_ACCOUNT }])
@@ -27,6 +34,15 @@ export default function BankAccountList({ value, onChange }: BankAccountListProp
 
   function remove(index: number) {
     onChange(value.filter((_, i) => i !== index))
+    setErrors((e) => {
+      const next: Record<number, string> = {}
+      Object.entries(e).forEach(([k, v]) => {
+        const n = Number(k)
+        if (n < index) next[n] = v
+        else if (n > index) next[n - 1] = v
+      })
+      return next
+    })
   }
 
   function update(index: number, patch: Partial<ClientBankAccountInput>) {
@@ -66,6 +82,8 @@ export default function BankAccountList({ value, onChange }: BankAccountListProp
             autoComplete="off"
             value={entry.iban}
             onChange={(e) => update(index, { iban: e.target.value })}
+            onBlur={(e) => setError(index, isValidIban(e.target.value) ? '' : t('validation.iban'))}
+            error={errors[index]}
           />
         </div>
       ))}

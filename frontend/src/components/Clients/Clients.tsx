@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getClients, getClient, deleteClient, type Client } from '../../api/clients'
+import { getClients, getClient, deleteClient, importClients, type Client, type ImportResult } from '../../api/clients'
 import ClientsList from '../ClientsList/ClientsList'
 import ClientDetail from '../ClientDetail/ClientDetail'
 import ClientForm from '../ClientForm/ClientForm'
@@ -33,6 +33,13 @@ export default function Clients() {
       return updated.sort((a, b) => a.name.localeCompare(b.name))
     })
     setEditing(null)
+  }
+
+  async function handleImport(csvText: string): Promise<ImportResult> {
+    const result = await importClients(csvText)
+    const fresh = await getClients()
+    setClients(fresh)
+    return result
   }
 
   async function handleDelete(client: Client) {
@@ -73,6 +80,7 @@ export default function Clients() {
       onView={setViewing}
       onEdit={setEditing}
       onDelete={handleDelete}
+      onImport={handleImport}
     />
   )
 }

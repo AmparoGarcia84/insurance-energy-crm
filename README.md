@@ -128,6 +128,7 @@ npm run dev                      # desarrollo con hot-reload
 npm run build                    # compilar TypeScript
 npm run provision                # (re)cargar datos de demo
 npm run seed                     # solo crear usuarios iniciales
+npm run import-clients -- ruta/al/archivo.csv  # importar clientes desde CSV de Zoho
 
 # Frontend
 npm run dev                      # desarrollo con hot-reload

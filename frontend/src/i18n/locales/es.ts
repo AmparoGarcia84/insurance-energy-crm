@@ -23,6 +23,10 @@ export default {
   clients: {
     title: 'Clientes',
     new: 'Nuevo cliente',
+    importCsv: 'Importar CSV',
+    importing: 'Importando...',
+    importSuccess: '{{created}} clientes importados ({{skipped}} omitidos)',
+    importErrors: '{{count}} filas con error',
     edit: 'Editar cliente',
     search: 'Buscar por nombre, email o NIF...',
     empty: 'No hay clientes',
@@ -168,5 +172,6 @@ export default {
     nifDuplicateBack: 'Volver al formulario',
     email: 'Email no válido',
     website: 'URL no válida',
+    iban: 'IBAN no válido',
   },
 }
