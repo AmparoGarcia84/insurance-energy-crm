@@ -75,13 +75,27 @@
   white-space: nowrap;
 }
 
-.badge-type-individual { background: #e8e4df; color: var(--corp-muted); }
-.badge-type-business   { background: #e8e8ff; color: #4444aa; }
+/* Client types */
+.badge-type-individual          { background: #e8e4df; color: var(--corp-muted); }
+.badge-type-business            { background: #e8e8ff; color: #4444aa; }
+.badge-type-company             { background: #dde8ff; color: #2244aa; }
+.badge-type-community_of_owners { background: #ddf4ee; color: #1a6a4a; }
+.badge-type-self_employed       { background: #fff4e0; color: #995500; }
+.badge-type-pensioner           { background: #f0e8ff; color: #6633aa; }
+.badge-type-retired             { background: #e8eeff; color: #334499; }
+.badge-type-collaborator        { background: #fdf4d8; color: #886600; }
+.badge-type-prospect            { background: #e0f4ff; color: #006699; }
+.badge-type-supplier            { background: #ede8e4; color: #6b5049; }
+.badge-type-other               { background: #eeeeee; color: #666666; }
 
-.badge-status-lead     { background: #fff4d6; color: #a07800; }
-.badge-status-active   { background: #d6f0e0; color: #1a7a3e; }
-.badge-status-inactive { background: #e8e4df; color: var(--corp-muted); }
-.badge-status-lost     { background: #fde8e8; color: #a03030; }
+/* Client statuses */
+.badge-status-lead             { background: #fff4d6; color: #a07800; }
+.badge-status-active           { background: #d6f0e0; color: #1a7a3e; }
+.badge-status-prospecting      { background: #ddeeff; color: #1a5a8a; }
+.badge-status-payment_default  { background: #fff0d6; color: #995000; }
+.badge-status-high_claims      { background: #ffe8d4; color: #b04000; }
+.badge-status-inactive         { background: #e8e4df; color: var(--corp-muted); }
+.badge-status-lost             { background: #fde8e8; color: #a03030; }
 
 /* ── Grid utilities ──────────────────────────────────── */
 .form-grid {
