@@ -31,11 +31,11 @@ function initials(name: string): string {
     .join('')
 }
 
-function formatDate(iso?: string): string {
+function formatDate(iso?: string, locale = 'es'): string {
   if (!iso) return '—'
   const d = new Date(iso)
   if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function Field({ label, value }: { label: string; value?: string | number | null }) {
@@ -48,7 +48,8 @@ function Field({ label, value }: { label: string; value?: string | number | null
 }
 
 export default function ClientDetail({ client, onBack, onEdit }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const fmt = (iso?: string) => formatDate(iso, i18n.language)
   const [tab, setTab] = useState<Tab>('info')
 
   const tabs: { id: Tab; label: string }[] = [
@@ -138,7 +139,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
             {/* Identificación */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.identification')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.identification')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.name')}         value={client.name} />
                 <Field label={t('clients.fields.nif')}          value={client.nif} />
@@ -148,17 +149,17 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
             {/* Documentación */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.personal')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.personal')}</h2>
               <div className="cd-grid">
-                <Field label={t('clients.fields.birthDate')}               value={formatDate(client.birthDate)} />
-                <Field label={t('clients.fields.dniExpiryDate')}           value={formatDate(client.dniExpiryDate)} />
-                <Field label={t('clients.fields.drivingLicenseIssueDate')} value={formatDate(client.drivingLicenseIssueDate)} />
+                <Field label={t('clients.fields.birthDate')}               value={fmt(client.birthDate)} />
+                <Field label={t('clients.fields.dniExpiryDate')}           value={fmt(client.dniExpiryDate)} />
+                <Field label={t('clients.fields.drivingLicenseIssueDate')} value={fmt(client.drivingLicenseIssueDate)} />
               </div>
             </section>
 
             {/* Contacto */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.contact')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.contact')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.mobilePhone')}    value={client.mobilePhone} />
                 <Field label={t('clients.fields.secondaryPhone')} value={client.secondaryPhone} />
@@ -170,7 +171,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
             {/* Direcciones */}
             {client.addresses && client.addresses.length > 0 && (
               <section className="cd-section">
-                <h2 className="cd-section-title">{t('clients.sections.addresses')}</h2>
+                <h2 className="form-section-title">{t('clients.sections.addresses')}</h2>
                 <div className="cd-address-list">
                   {client.addresses.map((addr) => (
                     <div key={addr.id} className="cd-address-card">
@@ -186,7 +187,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
             {/* Empresa y facturación */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.business')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.business')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.employees')}    value={client.employees} />
                 <Field label={t('clients.fields.annualRevenue')} value={client.annualRevenue != null ? `${client.annualRevenue.toLocaleString('es-ES')} €` : undefined} />
@@ -199,7 +200,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
             {/* Cuentas bancarias */}
             {client.bankAccounts && client.bankAccounts.length > 0 && (
               <section className="cd-section">
-                <h2 className="cd-section-title">{t('clients.sections.bankAccounts')}</h2>
+                <h2 className="form-section-title">{t('clients.sections.bankAccounts')}</h2>
                 <div className="cd-address-list">
                   {client.bankAccounts.map((acc) => (
                     <div key={acc.id} className="cd-address-card">
@@ -213,7 +214,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
             {/* Clasificación */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.classification')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.classification')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.type')}
                   value={client.type ? ClientTypeLabels[client.type] : undefined} />
@@ -230,7 +231,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
             {/* Gestión comercial */}
             <section className="cd-section">
-              <h2 className="cd-section-title">{t('clients.sections.commercial')}</h2>
+              <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
               <div className="cd-grid">
                 <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerUserId} />
                 <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentUserId} />
@@ -240,7 +241,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
             {/* Jerarquía */}
             {(client.isMainClient || client.mainClientId) && (
               <section className="cd-section">
-                <h2 className="cd-section-title">{t('clients.sections.hierarchy')}</h2>
+                <h2 className="form-section-title">{t('clients.sections.hierarchy')}</h2>
                 <div className="cd-grid">
                   {client.isMainClient && (
                     <Field label={t('clients.fields.isMainClient')} value={t('clients.fields.isMainClient')} />
@@ -260,7 +261,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
             {/* Observaciones */}
             {client.description && (
               <section className="cd-section">
-                <h2 className="cd-section-title">{t('clients.sections.notes')}</h2>
+                <h2 className="form-section-title">{t('clients.sections.notes')}</h2>
                 <p className="cd-description">{client.description}</p>
               </section>
             )}

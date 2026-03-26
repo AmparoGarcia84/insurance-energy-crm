@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil, Trash2, Search, Upload } from 'lucide-react'
-import { useAuth } from '../../auth/AuthContext'
+import { usePermissions } from '../../hooks/usePermissions'
 import { ClientTypeLabels, ClientStatusLabels } from '@crm/shared'
 import type { Client, ImportResult } from '../../api/clients'
 import './ClientsList.css'
@@ -18,8 +18,7 @@ interface Props {
 
 export default function ClientsList({ clients, loading, onNew, onView, onEdit, onDelete, onImport }: Props) {
   const { t } = useTranslation()
-  const { user } = useAuth()
-  const canDelete = user?.role === 'OWNER'
+  const { canDelete } = usePermissions()
 
   const [search, setSearch] = useState('')
   const [importing, setImporting] = useState(false)

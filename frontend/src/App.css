@@ -83,6 +83,17 @@
 .badge-status-inactive { background: #e8e4df; color: var(--corp-muted); }
 .badge-status-lost     { background: #fde8e8; color: #a03030; }
 
+/* ── Grid utilities ──────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.col-span-2 {
+  grid-column: span 2;
+}
+
 /* ── Form sections ───────────────────────────────────── */
 .form-section {
   display: flex;

@@ -171,7 +171,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Identificación ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.identification')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <InputField id="client-name" label={`${t('clients.fields.name')} *`} className="col-span-2"
               name="name" type="text" autoComplete="off" required
               value={form.name} onChange={(e) => set('name', e.target.value)} />
@@ -192,7 +192,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Documentación ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.personal')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <InputField id="client-birthDate" label={t('clients.fields.birthDate')}
               name="birthDate" type="date" autoComplete="off"
               value={form.birthDate ?? ''} onChange={(e) => set('birthDate', e.target.value || undefined)} />
@@ -208,7 +208,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Contacto ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.contact')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <InputField id="client-mobilePhone" label={t('clients.fields.mobilePhone')}
               name="mobilePhone" type="tel" autoComplete="off"
               value={form.mobilePhone} onChange={(e) => set('mobilePhone', e.target.value)}
@@ -244,7 +244,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Empresa y facturación ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.business')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <InputField id="client-employees" label={t('clients.fields.employees')}
               name="employees" type="number" min={0} autoComplete="off"
               value={form.employees ?? ''} onChange={(e) => set('employees', e.target.value ? Number(e.target.value) : undefined)} />
@@ -279,7 +279,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Clasificación ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.classification')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <SelectField id="client-type" label={t('clients.fields.type')}
               name="type" value={form.type} onChange={(e) => set('type', e.target.value as ClientType)}>
               {CLIENT_TYPES.map((v) => <option key={v} value={v}>{ClientTypeLabels[v]}</option>)}
@@ -312,7 +312,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Gestión comercial ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <InputField id="client-accountOwnerUserId" label={t('clients.fields.accountOwnerUserId')}
               name="accountOwnerUserId" type="text" autoComplete="off"
               value={form.accountOwnerUserId ?? ''} onChange={(e) => set('accountOwnerUserId', e.target.value)} />
@@ -325,7 +325,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         {/* ── Jerarquía ── */}
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.hierarchy')}</h2>
-          <div className="client-form-grid">
+          <div className="form-grid">
             <SelectField id="client-mainClientId" label={t('clients.fields.mainClientId')}
               name="mainClientId" value={form.mainClientId ?? ''}
               onChange={(e) => set('mainClientId', e.target.value || undefined)}

@@ -36,8 +36,8 @@ export default function AddressForm({ value, onChange, prefix = 'addr' }: Addres
   }
 
   return (
-    <div className="address-form-grid">
-      <InputField id={`${prefix}-street`} label={t('address.street')} className="addr-col-span-2"
+    <div className="form-grid">
+      <InputField id={`${prefix}-street`} label={t('address.street')} className="col-span-2"
         name="street" type="text" autoComplete="street-address"
         value={value.street ?? ''} onChange={(e) => set('street', e.target.value)} />
       <InputField id={`${prefix}-postalCode`} label={t('address.postalCode')}

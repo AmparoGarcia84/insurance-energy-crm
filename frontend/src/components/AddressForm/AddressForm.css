@@ -1,9 +1,1 @@
-.address-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.addr-col-span-2 {
-  grid-column: span 2;
-}
+/* AddressForm uses .form-grid and .col-span-2 from App.css */

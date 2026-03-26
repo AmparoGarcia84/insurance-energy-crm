@@ -27,15 +27,6 @@
   max-width: 780px;
 }
 
-.client-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.col-span-2 {
-  grid-column: span 2;
-}
 
 .client-form-actions {
   display: flex;
