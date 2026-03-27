@@ -15,6 +15,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.js'
 import clientsRouter from './routes/clients.js'
+import adminRouter from './routes/admin.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -48,6 +49,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 // All authentication routes (/auth/login, /auth/me) are handled here.
 app.use('/auth', authRouter)
 app.use('/clients', clientsRouter)
+app.use('/admin', adminRouter)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

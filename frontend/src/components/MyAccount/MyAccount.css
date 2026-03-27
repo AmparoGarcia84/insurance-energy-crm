@@ -1,0 +1,97 @@
+.my-account {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 560px;
+}
+
+.my-account-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--corp-black);
+}
+
+/* ── Cards ───────────────────────────────────────────── */
+.my-account-card {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--corp-black);
+    margin: 0;
+  }
+}
+
+/* ── Avatar row ──────────────────────────────────────── */
+.my-account-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.my-account-avatar {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  border-radius: 50%;
+  background: rgba(210, 184, 122, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--corp-muted);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.my-account-avatar-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  margin: 0 0 0.5rem;
+}
+
+.my-account-file-input {
+  display: none;
+}
+
+/* ── Forms ───────────────────────────────────────────── */
+.my-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-account-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Feedback messages ───────────────────────────────── */
+.my-account-msg {
+  font-size: 0.875rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.my-account-msg--ok {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.my-account-msg--error {
+  background: #fde8e8;
+  color: #a03030;
+}

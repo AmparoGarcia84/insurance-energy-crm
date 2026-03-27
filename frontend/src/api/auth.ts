@@ -61,6 +61,36 @@ export async function logout(): Promise<void> {
   })
 }
 
+/** Changes the current user's password. Throws with the server error message on failure. */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/password`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error ?? 'Failed to change password')
+  }
+}
+
+/** Changes the current user's email. Returns the updated user profile. */
+export async function changeEmail(email: string): Promise<AuthUser> {
+  const res = await fetch(`${API_URL}/auth/email`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error ?? 'Failed to change email')
+  }
+  const data = await res.json()
+  return data.user
+}
+
 /**
  * Uploads a profile photo. Sends the file as multipart/form-data and returns
  * the updated user profile (with the new avatarUrl).

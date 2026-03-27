@@ -111,6 +111,48 @@ export function logout(_req: AuthRequest, res: Response): void {
  * Saves the file to disk under uploads/avatars/ and stores the public URL
  * in the User record so it's returned by subsequent /auth/me calls.
  */
+/** PATCH /auth/password — Change the current user's password. */
+export async function changePassword(req: AuthRequest, res: Response): Promise<void> {
+  const { currentPassword, newPassword } = req.body
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ error: 'currentPassword and newPassword are required' })
+    return
+  }
+  if (newPassword.length < 8) {
+    res.status(400).json({ error: 'Password must be at least 8 characters' })
+    return
+  }
+  try {
+    await authService.changePassword(req.user!.userId, currentPassword, newPassword)
+    res.json({ ok: true })
+  } catch (err: any) {
+    if (err.message === 'Invalid current password') {
+      res.status(401).json({ error: 'Invalid current password' })
+      return
+    }
+    res.status(500).json({ error: 'Failed to change password' })
+  }
+}
+
+/** PATCH /auth/email — Change the current user's email address. */
+export async function changeEmail(req: AuthRequest, res: Response): Promise<void> {
+  const { email } = req.body
+  if (!email) {
+    res.status(400).json({ error: 'Email is required' })
+    return
+  }
+  try {
+    const user = await authService.changeEmail(req.user!.userId, email)
+    res.json({ user })
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      res.status(409).json({ error: 'Email already in use' })
+      return
+    }
+    res.status(500).json({ error: 'Failed to change email' })
+  }
+}
+
 export async function uploadAvatar(req: AuthRequest, res: Response): Promise<void> {
   if (!req.file) {
     res.status(400).json({ error: 'No file uploaded' })

@@ -67,6 +67,24 @@ export async function getMe(userId: string) {
   return user
 }
 
+/** Changes a user's password after verifying the current one. */
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash)
+  if (!valid) throw new Error('Invalid current password')
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } })
+}
+
+/** Changes a user's email address and returns the updated safe profile. */
+export async function changeEmail(userId: string, newEmail: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { email: newEmail },
+    select: { id: true, email: true, role: true, displayName: true, avatarUrl: true },
+  })
+}
+
 /** Updates the avatar URL for a user and returns the updated safe profile. */
 export async function updateAvatar(userId: string, avatarUrl: string) {
   const user = await prisma.user.update({

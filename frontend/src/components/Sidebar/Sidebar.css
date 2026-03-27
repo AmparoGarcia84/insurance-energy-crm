@@ -54,6 +54,13 @@
     background: var(--corp-gold);
     color: var(--corp-black);
   }
+
+  li.sidebar-nav-divider {
+    height: 1px;
+    background: var(--corp-beige);
+    margin: 8px 0;
+    pointer-events: none;
+  }
 }
 
 .sidebar-footer {

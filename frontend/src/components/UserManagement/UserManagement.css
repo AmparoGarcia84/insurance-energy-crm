@@ -1,0 +1,139 @@
+.user-management {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.user-management-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-management-header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--corp-black);
+}
+
+/* ── New user form ───────────────────────────────────── */
+.user-management-form {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.user-management-form h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.user-management-form-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.user-management-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ── User list ───────────────────────────────────────── */
+.user-management-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px;
+  background: var(--corp-card);
+  overflow: hidden;
+}
+
+.user-management-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Avatar ─────────────────────────────────────────── */
+.user-management-avatar {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  background: var(--corp-muted-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--corp-muted);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ── Info ────────────────────────────────────────────── */
+.user-management-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.user-management-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--corp-black);
+}
+
+.user-management-email {
+  font-size: 0.8rem;
+  color: var(--corp-muted);
+}
+
+/* ── Role badges ─────────────────────────────────────── */
+.user-management-role--owner {
+  background: rgba(210, 184, 122, 0.25);
+  color: #7a5c00;
+}
+
+.user-management-role--employee {
+  background: var(--corp-muted-bg);
+  color: var(--corp-muted);
+}
+
+/* ── Delete error ────────────────────────────────────── */
+.user-management-delete-error {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: #fde8e8;
+  color: #a03030;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+.user-management-empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--corp-muted);
+  font-size: 0.95rem;
+}

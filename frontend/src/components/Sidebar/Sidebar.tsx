@@ -22,6 +22,7 @@ import {
   AlertCircle,
   Clock,
   LogOut,
+  UserCog,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import logo from '../../assets/logo.jpeg'
@@ -35,7 +36,7 @@ import './Sidebar.css'
  * Icons are lucide-react components passed as references (not JSX) so they
  * can be instantiated with custom props inside the map.
  */
-export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking'
+export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking' | 'userManagement' | 'myAccount'
 
 const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'home',         key: 'nav.home',         icon: LayoutDashboard },
@@ -54,7 +55,8 @@ interface SidebarProps {
 
 export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
   const { t } = useTranslation()
-  const { setUser } = useAuth()
+  const { user, setUser } = useAuth()
+  const isOwner = user?.role === 'OWNER'
 
   return (
     <aside className="sidebar">
@@ -75,6 +77,17 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
               </li>
             )
           })}
+          {isOwner && (
+            <>
+              <li className="sidebar-nav-divider" role="separator" />
+              <li className={activeSection === 'userManagement' ? 'active' : ''}>
+                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('userManagement') }}>
+                  <UserCog size={20} />
+                  <span>{t('nav.userManagement')}</span>
+                </a>
+              </li>
+            </>
+          )}
         </ul>
       </nav>
 

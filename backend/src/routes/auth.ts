@@ -9,7 +9,7 @@
  * the full API surface for a feature is visible at a glance in one place.
  */
 import { Router } from 'express'
-import { login, getMe, logout, uploadAvatar, avatarUpload } from '../controllers/auth.controller.js'
+import { login, getMe, logout, uploadAvatar, avatarUpload, changePassword, changeEmail } from '../controllers/auth.controller.js'
 import { requireAuth } from '../middleware/auth.js'
 
 const router = Router()
@@ -21,5 +21,7 @@ router.post('/login', login)
 router.get('/me', requireAuth, getMe)
 router.post('/logout', requireAuth, logout)
 router.post('/avatar', requireAuth, avatarUpload.single('avatar'), uploadAvatar)
+router.patch('/password', requireAuth, changePassword)
+router.patch('/email', requireAuth, changeEmail)
 
 export default router

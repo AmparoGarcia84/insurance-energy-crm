@@ -90,6 +90,16 @@
   display: flex;
   flex-direction: column;
   text-align: right;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--corp-muted-bg);
+  }
 }
 
 .topbar-user-name {
