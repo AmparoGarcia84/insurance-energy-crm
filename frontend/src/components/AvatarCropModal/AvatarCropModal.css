@@ -1,0 +1,32 @@
+.avatar-crop-modal {
+  max-width: 460px;
+  width: 94%;
+}
+
+/* The cropper needs a fixed-height container with position:relative */
+.avatar-crop-area {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background: #111;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.avatar-crop-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar-crop-zoom-label {
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+}
+
+.avatar-crop-zoom input[type="range"] {
+  flex: 1;
+  accent-color: var(--corp-gold);
+  cursor: pointer;
+}

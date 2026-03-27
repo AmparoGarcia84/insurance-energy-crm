@@ -45,6 +45,7 @@ export async function login(email: string, password: string) {
       email: user.email,
       role: user.role,
       displayName: user.displayName,
+      avatarUrl: user.avatarUrl ?? undefined,
     },
   }
 }
@@ -61,7 +62,17 @@ export async function login(email: string, password: string) {
 export async function getMe(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { id: true, email: true, role: true, displayName: true },
+    select: { id: true, email: true, role: true, displayName: true, avatarUrl: true },
+  })
+  return user
+}
+
+/** Updates the avatar URL for a user and returns the updated safe profile. */
+export async function updateAvatar(userId: string, avatarUrl: string) {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl },
+    select: { id: true, email: true, role: true, displayName: true, avatarUrl: true },
   })
   return user
 }

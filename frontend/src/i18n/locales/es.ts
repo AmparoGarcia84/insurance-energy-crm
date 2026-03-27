@@ -16,6 +16,14 @@ export default {
     mail: 'Correo',
     notifications: 'Notificaciones',
     role: 'Asesora',
+    changeAvatar: 'Cambiar foto de perfil',
+    cropTitle: 'Ajustar foto de perfil',
+    cropZoom: 'Zoom',
+  },
+  common: {
+    cancel: 'Cancelar',
+    save: 'Guardar',
+    saving: 'Guardando...',
   },
   dashboard: {
     home: 'Inicio',

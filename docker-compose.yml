@@ -33,8 +33,6 @@ services:
       FRONTEND_URL: http://localhost:5173
     ports:
       - "3000:3000"
-    command: >
-      sh -c "npx prisma migrate deploy && npm run provision && npm start"
 
 volumes:
   postgres_data:

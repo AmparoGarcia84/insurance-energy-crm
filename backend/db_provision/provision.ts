@@ -440,5 +440,8 @@ async function main() {
 }
 
 main()
-  .catch(console.error)
+  .catch(e => {
+    console.error('Provisioning failed:', e)
+    process.exitCode = 1 // exit 1 after .finally so the shell && chain breaks
+  })
   .finally(() => prisma.$disconnect())

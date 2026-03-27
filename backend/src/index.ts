@@ -8,11 +8,15 @@
  * routers and services in isolation without starting the whole server.
  */
 import 'dotenv/config'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.js'
 import clientsRouter from './routes/clients.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const app = express()
 const PORT = process.env.PORT ?? 3000
@@ -37,6 +41,9 @@ app.use(cookieParser())
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
+
+// Serve uploaded files (e.g. user avatars) as static assets.
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // All authentication routes (/auth/login, /auth/me) are handled here.
 app.use('/auth', authRouter)

@@ -15,6 +15,13 @@ COPY backend/ ./backend/
 
 WORKDIR /app/backend
 
+# Generate the Prisma client (no DB needed at build time)
 RUN npx prisma generate
 
-CMD ["npm", "start"]
+# Create the uploads directory so avatar uploads work at runtime
+RUN mkdir -p uploads/avatars
+
+# Make the entrypoint executable
+RUN chmod +x entrypoint.sh
+
+CMD ["sh", "entrypoint.sh"]

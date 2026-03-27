@@ -8,9 +8,34 @@
  * This layering (route → controller → service) makes each layer independently
  * testable and prevents HTTP concerns from leaking into business logic.
  */
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { Request, Response } from 'express'
+import multer from 'multer'
 import * as authService from '../services/auth.service.js'
 import { AuthRequest } from '../middleware/auth.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '../../uploads/avatars'),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    cb(null, `${(_req as AuthRequest).user!.userId}${ext}`)
+  },
+})
+
+export const avatarUpload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only image files are allowed'))
+    } else {
+      cb(null, true)
+    }
+  },
+})
 
 /**
  * POST /auth/login
@@ -77,4 +102,26 @@ export async function getMe(req: AuthRequest, res: Response): Promise<void> {
 export function logout(_req: AuthRequest, res: Response): void {
   res.cookie('token', '', { httpOnly: true, maxAge: 0 })
   res.json({ ok: true })
+}
+
+/**
+ * POST /auth/avatar (requires requireAuth middleware)
+ *
+ * Accepts a multipart/form-data upload with a single "avatar" field.
+ * Saves the file to disk under uploads/avatars/ and stores the public URL
+ * in the User record so it's returned by subsequent /auth/me calls.
+ */
+export async function uploadAvatar(req: AuthRequest, res: Response): Promise<void> {
+  if (!req.file) {
+    res.status(400).json({ error: 'No file uploaded' })
+    return
+  }
+
+  try {
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`
+    const user = await authService.updateAvatar(req.user!.userId, avatarUrl)
+    res.json({ user })
+  } catch {
+    res.status(500).json({ error: 'Failed to update avatar' })
+  }
 }

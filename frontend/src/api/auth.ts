@@ -14,6 +14,7 @@ export interface AuthUser {
   email: string
   role: 'OWNER' | 'EMPLOYEE'
   displayName: string
+  avatarUrl?: string | null
 }
 
 /**
@@ -58,4 +59,25 @@ export async function logout(): Promise<void> {
     method: 'POST',
     credentials: 'include',
   })
+}
+
+/**
+ * Uploads a profile photo. Sends the file as multipart/form-data and returns
+ * the updated user profile (with the new avatarUrl).
+ */
+export async function uploadAvatar(image: Blob | File): Promise<AuthUser> {
+  const body = new FormData()
+  const filename = image instanceof File ? image.name : 'avatar.jpg'
+  body.append('avatar', image, filename)
+
+  const res = await fetch(`${API_URL}/auth/avatar`, {
+    method: 'POST',
+    credentials: 'include',
+    body,
+  })
+
+  if (!res.ok) throw new Error('Failed to upload avatar')
+
+  const data = await res.json()
+  return data.user
 }
