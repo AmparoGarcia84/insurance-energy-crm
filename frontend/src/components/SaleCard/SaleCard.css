@@ -1,0 +1,93 @@
+.sale-card {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-muted-bg);
+  border-radius: 8px;
+  padding: 0.85rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sale-card:hover {
+  border-color: var(--corp-beige);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sale-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sale-card__client {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  line-height: 1.3;
+}
+
+.sale-card__badge {
+  flex-shrink: 0;
+}
+
+.sale-card__revenue {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.sale-card__revenue-icon {
+  color: var(--corp-muted);
+}
+
+.sale-card__revenue-value {
+  color: var(--corp-gold);
+  font-weight: 600;
+}
+
+.sale-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sale-card__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--corp-muted-bg);
+  color: var(--corp-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sale-card__next-step {
+  font-size: 0.78rem;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* ── Branch / product badges ─────────────────────────── */
+.badge-branch-vida    { background: #f0e6d8; color: #6b3d1e; }
+.badge-branch-hogar   { background: #e4f0e0; color: #2e5a28; }
+.badge-branch-salud   { background: #ddf4ee; color: #1a6a4a; }
+.badge-branch-dental  { background: #ede8f8; color: #4c2e8a; }
+.badge-branch-rc      { background: #f4ece8; color: #6b3c2e; }
+.badge-branch-auto    { background: #e4ecf8; color: #2a3c7a; }
+.badge-branch-energy  { background: #fff8d4; color: #886600; }
+.badge-branch-default { background: var(--corp-muted-bg); color: var(--corp-muted); }

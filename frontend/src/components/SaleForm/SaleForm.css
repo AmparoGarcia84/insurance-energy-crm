@@ -1,0 +1,47 @@
+.sale-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.sale-form-back {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  color: var(--corp-muted);
+}
+
+.sale-form {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sale-form__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--corp-black);
+  margin: 0 0 0.5rem;
+}
+
+.sale-form__type-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sale-form__toggle-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sale-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--corp-muted-bg);
+}

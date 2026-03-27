@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Sidebar, { Section } from '../Sidebar/Sidebar'
 import TopBar from '../TopBar/TopBar'
 import Clients from '../Clients/Clients'
+import Sales from '../Sales/Sales'
 import UserManagement from '../UserManagement/UserManagement'
 import MyAccount from '../MyAccount/MyAccount'
 
@@ -13,6 +14,7 @@ export default function Dashboard() {
   function renderSection() {
     switch (activeSection) {
       case 'clients':        return <Clients />
+      case 'sales':          return <Sales />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
       default:               return <h1>{t(`nav.${activeSection}`)}</h1>
