@@ -19,10 +19,16 @@ CRM para una correduría de seguros y energía. Gestiona clientes, pólizas, con
 ```
 insurance-energy-crm/
 ├── frontend/          # React app
+│   └── Dockerfile     # Multi-stage: dev, test, build, prod
 ├── backend/           # REST API
 │   ├── db_provision/  # Script de datos de demo
 │   └── prisma/        # Schema y migraciones
 ├── shared/            # Tipos TypeScript compartidos
+├── scripts/
+│   └── test.sh        # Corre tests del frontend vía Docker
+├── .github/
+│   └── workflows/
+│       └── ci.yml     # CI: tests + cobertura en push/PR a main
 ├── docker-compose.yml
 └── Dockerfile
 ```
@@ -137,8 +143,12 @@ npm run test:run                 # tests una sola vez
 npm run test:coverage            # informe de cobertura
 npm run build                    # build de producción
 
-# Docker completo (BD + backend con provisión automática)
-docker compose up                # levanta BD + backend compilado
+# Docker completo (BD + backend + frontend)
+docker compose up                # levanta BD + backend + frontend
+docker compose up frontend       # solo el frontend (dev server en :5173)
+
+# CI local
+./scripts/test.sh                # tests + cobertura del frontend vía Docker
 ```
 
 ## Reset completo de la base de datos
