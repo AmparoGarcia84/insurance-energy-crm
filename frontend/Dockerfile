@@ -1,13 +1,17 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Copy workspace manifests (monorepo root + workspaces)
+# Copy workspace manifests
 COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY shared/package.json ./shared/
 
-RUN npm ci --workspace=frontend --include-workspace-root
+# Install all workspaces so npm links @crm/shared correctly
+RUN npm ci
+
+# Copy shared source (symlinked as @crm/shared in node_modules)
+COPY shared/ ./shared/
 
 # ── dev: vite dev server ──────────────────────────────────────────────────────
 FROM deps AS dev
@@ -15,7 +19,7 @@ COPY frontend/ ./frontend/
 WORKDIR /app/frontend
 CMD ["npm", "run", "dev", "--", "--host", "--port", "5173"]
 
-# ── test: vitest single run ───────────────────────────────────────────────────
+# ── test: vitest + coverage ───────────────────────────────────────────────────
 FROM deps AS test
 COPY frontend/ ./frontend/
 WORKDIR /app/frontend
