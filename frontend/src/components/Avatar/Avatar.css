@@ -1,0 +1,17 @@
+.avatar {
+  border-radius: 50%;
+  background: rgba(210, 184, 122, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--corp-muted);
+  font-weight: 600;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

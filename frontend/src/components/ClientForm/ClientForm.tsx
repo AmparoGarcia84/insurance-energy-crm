@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite } from '../../utils/validation'
 import { ACTIVITY_CNAE } from '../../utils/cnae'
@@ -19,11 +19,11 @@ import {
 import {
   createClient,
   updateClient,
-  getClients,
   ApiError,
   type Client,
   type ClientInput,
 } from '../../api/clients'
+import { useClients } from '../../context/DataContext'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
 import CheckboxField from '../FormField/CheckboxField'
@@ -104,11 +104,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
   )
   const [saving, setSaving] = useState(false)
   const [duplicateClient, setDuplicateClient] = useState<DuplicateClient | null>(null)
-  const [clientsList, setClientsList] = useState<Client[]>([])
-
-  useEffect(() => {
-    getClients().then(setClientsList).catch(() => {})
-  }, [])
+  const { clients: clientsList } = useClients()
 
   const [errors, setErrors] = useState({
     nif: '', mobilePhone: '', secondaryPhone: '', email: '', website: '',
@@ -166,7 +162,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         <h1>{isNew ? t('clients.new') : t('clients.edit')}</h1>
       </div>
 
-      <form className="client-form" onSubmit={handleSave}>
+      <form className="client-form form-card" onSubmit={handleSave}>
 
         {/* ── Identificación ── */}
         <section className="form-section">

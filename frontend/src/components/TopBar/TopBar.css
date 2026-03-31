@@ -116,31 +116,16 @@
 }
 
 .topbar-avatar {
-  width: 40px;
-  height: 40px;
-  background: rgba(210, 184, 122, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--corp-black);
   border: none;
   padding: 0;
   cursor: pointer;
-  overflow: hidden;
+  background: transparent;
   flex-shrink: 0;
   transition: opacity 0.15s;
 
   &:hover {
     opacity: 0.8;
   }
-}
-
-.topbar-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
 }
 
 .topbar-avatar-input {

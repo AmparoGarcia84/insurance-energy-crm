@@ -10,7 +10,7 @@
 import 'dotenv/config'
 import bcrypt from 'bcrypt'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../src/generated/prisma/client.js'
+import { EnergySaleStage, InsuranceSaleStage, PrismaClient, SaleType } from '../src/generated/prisma/client.js'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
@@ -145,25 +145,25 @@ async function main() {
   // ─── Sales ────────────────────────────────────────────────────────────────
   await prisma.sale.createMany({
     data: [
-      { clientId: c('Carmen López Martínez').id, title: 'Seguro de hogar multirriesgo',         status: 'WON',    amount: 420 },
-      { clientId: c('Carmen López Martínez').id, title: 'Estudio contrato energía eléctrica',   status: 'OPEN',   amount: null },
-      { clientId: c('Francisco Ruiz Sánchez').id, title: 'Seguro de vida riesgo',               status: 'WON',    amount: 380 },
-      { clientId: c('Francisco Ruiz Sánchez').id, title: 'Ampliación póliza accidentes',        status: 'OPEN',   amount: 150 },
-      { clientId: c('Elena Moreno Fernández').id, title: 'Seguro de salud familiar',            status: 'WON',    amount: 1200 },
-      { clientId: c('Antonio García Pérez').id,   title: 'Seguro de coche turismo',             status: 'WON',    amount: 650 },
-      { clientId: c('Antonio García Pérez').id,   title: 'Cambio de compañía eléctrica',        status: 'WON',    amount: null },
-      { clientId: c('Lucía Hernández Jiménez').id,'title': 'Seguro responsabilidad civil',       status: 'OPEN',   amount: 280 },
-      { clientId: c('Roberto Díaz Torres').id,    title: 'Presupuesto seguro hogar',            status: 'OPEN',   amount: null },
-      { clientId: c('María Sanz Romero').id,      title: 'Consulta seguro de salud',            status: 'OPEN',   amount: null },
-      { clientId: c('Pablo Navarro Gil').id,       title: 'Renovación seguro de vida',          status: 'CANCELLED', amount: 320 },
-      { clientId: c('Sara Muñoz Delgado').id,     title: 'Seguro dental',                       status: 'LOST',   amount: 200 },
-      { clientId: c('Talleres Rápidos S.L.').id,  title: 'Seguro multirriesgo industrial',      status: 'WON',    amount: 2400 },
-      { clientId: c('Talleres Rápidos S.L.').id,  title: 'Contrato suministro gas natural',     status: 'WON',    amount: null },
-      { clientId: c('Restaurante El Patio').id,   title: 'Seguro multirriesgo hostelería',      status: 'WON',    amount: 1800 },
-      { clientId: c('Restaurante El Patio').id,   title: 'Optimización contrato eléctrico',     status: 'OPEN',   amount: null },
-      { clientId: c('Clínica DentalCare').id,     title: 'Seguro responsabilidad civil sanitaria', status: 'WON', amount: 3200 },
-      { clientId: c('Academia Lingua').id,        title: 'Seguro multirriesgo oficinas',        status: 'OPEN',   amount: 900 },
-      { clientId: c('Construcciones Vega').id,    title: 'Seguro obras y construcción',         status: 'CANCELLED', amount: 5500 },
+      { clientId: c('Carmen López Martínez').id, title: 'Seguro de hogar multirriesgo',        insuranceStage: InsuranceSaleStage.DOCUMENTS_PENDING,    amount: 420, type: SaleType.INSURANCE },
+      { clientId: c('Carmen López Martínez').id, title: 'Estudio contrato energía eléctrica',   energyStage: EnergySaleStage.DOCUMENTS_PENDING,   amount: null, type: SaleType.ENERGY },
+      { clientId: c('Francisco Ruiz Sánchez').id, title: 'Seguro de vida riesgo',               insuranceStage: InsuranceSaleStage.INVOICE_PENDING_PAYMENT,    amount: 380, type: SaleType.INSURANCE },
+      { clientId: c('Francisco Ruiz Sánchez').id, title: 'Ampliación póliza accidentes',        insuranceStage: InsuranceSaleStage.RECURRENT_BILLING,   amount: 150, type: SaleType.INSURANCE },
+      { clientId: c('Elena Moreno Fernández').id, title: 'Seguro de salud familiar',            insuranceStage: InsuranceSaleStage.BILLED_AND_PAID,    amount: 1200, type: SaleType.INSURANCE },
+      { clientId: c('Antonio García Pérez').id,   title: 'Seguro de coche turismo',             insuranceStage: InsuranceSaleStage.INVOICE_PENDING_PAYMENT,    amount: 650, type: SaleType.INSURANCE },
+      { clientId: c('Antonio García Pérez').id,   title: 'Cambio de compañía eléctrica',        energyStage: EnergySaleStage.ACTIVATION_PENDING,    amount: null, type: SaleType.ENERGY },
+      { clientId: c('Lucía Hernández Jiménez').id,title: 'Seguro responsabilidad civil',       insuranceStage: InsuranceSaleStage.DOCUMENTS_PENDING,   amount: 280, type: SaleType.INSURANCE },
+      { clientId: c('Roberto Díaz Torres').id,    title: 'Presupuesto seguro hogar',            insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,   amount: null, type: SaleType.INSURANCE },
+      { clientId: c('María Sanz Romero').id,      title: 'Consulta seguro de salud',            insuranceStage: InsuranceSaleStage.BILLED_AND_PAID,   amount: null, type: SaleType.INSURANCE },
+      { clientId: c('Pablo Navarro Gil').id,       title: 'Renovación seguro de vida',          insuranceStage: InsuranceSaleStage.BILLING_NEXT_MONTH, amount: 320, type: SaleType.INSURANCE },
+      { clientId: c('Sara Muñoz Delgado').id,     title: 'Seguro dental',                       insuranceStage: InsuranceSaleStage.BILLING_THIS_MONTH,   amount: 200, type: SaleType.INSURANCE },
+      { clientId: c('Talleres Rápidos S.L.').id,  title: 'Seguro multirriesgo industrial',      insuranceStage: InsuranceSaleStage.CANCELED_UNPAID,    amount: 2400, type: SaleType.INSURANCE },
+      { clientId: c('Talleres Rápidos S.L.').id,  title: 'Contrato suministro gas natural',     energyStage: EnergySaleStage.BILLED_AND_PAID,    amount: null, type: SaleType.ENERGY },
+      { clientId: c('Restaurante El Patio').id,   title: 'Seguro multirriesgo hostelería',      insuranceStage: InsuranceSaleStage.SIGNATURE_PENDING,    amount: 1800, type: SaleType.INSURANCE },
+      { clientId: c('Restaurante El Patio').id,   title: 'Optimización contrato eléctrico',     energyStage: EnergySaleStage.BILLING_THIS_MONTH,   amount: null, type: SaleType.ENERGY },
+      { clientId: c('Clínica DentalCare').id,     title: 'Seguro responsabilidad civil sanitaria', insuranceStage: InsuranceSaleStage.KO_SCORING, amount: 3200, type: SaleType.INSURANCE },
+      { clientId: c('Academia Lingua').id,        title: 'Seguro multirriesgo oficinas',        insuranceStage: InsuranceSaleStage.LOST,   amount: 900, type: SaleType.INSURANCE },
+      { clientId: c('Construcciones Vega').id,    title: 'Seguro obras y construcción',         insuranceStage: InsuranceSaleStage.WRONG_SETTLEMENT, amount: 5500, type: SaleType.INSURANCE },
     ],
   })
 

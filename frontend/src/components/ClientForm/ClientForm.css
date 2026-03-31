@@ -17,13 +17,6 @@
 }
 
 .client-form {
-  background: var(--corp-card);
-  border: 1px solid var(--corp-beige);
-  border-radius: 10px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
   max-width: 780px;
 }
 

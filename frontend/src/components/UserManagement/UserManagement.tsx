@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { UserPlus, Trash2, User } from 'lucide-react'
-import { getUsers, createUser, deleteUser, type NewUserData } from '../../api/users'
-import { type AuthUser } from '../../api/auth'
+import { UserPlus, Trash2 } from 'lucide-react'
+import { createUser, deleteUser, type NewUserData } from '../../api/users'
 import { useAuth } from '../../auth/AuthContext'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
+import Avatar from '../Avatar/Avatar'
+import { useUsers } from '../../context/DataContext'
 import './UserManagement.css'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -15,19 +16,11 @@ const emptyForm: NewUserData = { displayName: '', email: '', role: 'EMPLOYEE', p
 export default function UserManagement() {
   const { t } = useTranslation()
   const { user: currentUser } = useAuth()
-  const [users, setUsers] = useState<AuthUser[]>([])
-  const [loading, setLoading] = useState(true)
+  const { users, loading, upsertUser, removeUser } = useUsers()
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<NewUserData>(emptyForm)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-
-  useEffect(() => {
-    getUsers()
-      .then(setUsers)
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
 
   function handleChange(field: keyof NewUserData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -43,7 +36,7 @@ export default function UserManagement() {
     setSaving(true)
     try {
       const created = await createUser(form)
-      setUsers((prev) => [...prev, created])
+      upsertUser(created)
       handleCancel()
     } finally {
       setSaving(false)
@@ -55,7 +48,7 @@ export default function UserManagement() {
     setDeleteError(null)
     try {
       await deleteUser(u.id)
-      setUsers((prev) => prev.filter((x) => x.id !== u.id))
+      removeUser(u.id)
     } catch {
       setDeleteError(t('userManagement.deleteError'))
     }
@@ -76,7 +69,7 @@ export default function UserManagement() {
       </div>
 
       {showForm && (
-        <form className="user-management-form" onSubmit={handleCreate}>
+        <form className="user-management-form form-card" onSubmit={handleCreate}>
           <h2>{t('userManagement.newUser')}</h2>
           <div className="user-management-form-fields">
             <InputField
@@ -132,12 +125,7 @@ export default function UserManagement() {
           const avatarSrc = u.avatarUrl ? `${API_URL}${u.avatarUrl}` : null
           return (
             <li key={u.id} className="user-management-item">
-              <div className="user-management-avatar">
-                {avatarSrc
-                  ? <img src={avatarSrc} alt={u.displayName} />
-                  : <User size={20} />
-                }
-              </div>
+              <Avatar src={avatarSrc} name={u.displayName} size={38} />
               <div className="user-management-info">
                 <span className="user-management-name">{u.displayName}</span>
                 <span className="user-management-email">{u.email}</span>

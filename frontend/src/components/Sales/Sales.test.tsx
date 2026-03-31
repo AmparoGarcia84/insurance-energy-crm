@@ -2,12 +2,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Sales from './Sales'
-import { SaleType } from '../../api/sales'
+import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../api/sales'
+import type { Sale } from '../../api/sales'
 
-vi.mock('../../api/sales', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../api/sales')>()
-  return { ...actual, getSales: vi.fn().mockRejectedValue(new Error('no backend')) }
-})
+const MOCK_SALES: Sale[] = [
+  { id: '1', clientId: 'c1', clientName: 'Pedro Gómez',  type: SaleType.INSURANCE, title: 'Vida - Pedro Gómez',       insuranceBranch: 'Vida',   expectedRevenue: 2100, insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,  createdAt: '', updatedAt: '' },
+  { id: '2', clientId: 'c2', clientName: 'Ana Martínez', type: SaleType.INSURANCE, title: 'Hogar - Ana Martínez',     insuranceBranch: 'Hogar',  expectedRevenue: 1200, insuranceStage: InsuranceSaleStage.DOCUMENTS_PENDING, createdAt: '', updatedAt: '' },
+  { id: '3', clientId: 'c3', clientName: 'Bar La Terraza', type: SaleType.ENERGY,  title: 'Gas + Luz - Bar La Terraza', companyName: 'Endesa', expectedSavingsPerYear: 1800, energyStage: EnergySaleStage.ACTIVATION_PENDING,   createdAt: '', updatedAt: '' },
+]
+
+vi.mock('../../context/DataContext', () => ({
+  useSales: () => ({
+    sales: MOCK_SALES,
+    loading: false,
+    upsertSale: vi.fn(),
+    removeSale: vi.fn(),
+  }),
+}))
 
 vi.mock('../../auth/AuthContext', () => ({
   useAuth: () => ({ user: { displayName: 'Mila García', role: 'OWNER' } }),

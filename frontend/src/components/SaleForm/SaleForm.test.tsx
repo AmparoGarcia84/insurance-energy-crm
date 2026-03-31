@@ -13,7 +13,7 @@ vi.mock('../../api/sales', async (importOriginal) => {
       id: 'new-1',
       clientId: '',
       type: 'INSURANCE',
-      title: 'Test Sale',
+      title: 'Vida - Test',
       insuranceBranch: 'Vida',
       insuranceStage: 'RESPONSE_PENDING',
       createdAt: '',
@@ -23,7 +23,8 @@ vi.mock('../../api/sales', async (importOriginal) => {
       id: '1',
       clientId: 'c1',
       type: 'INSURANCE',
-      title: 'Updated Sale',
+      title: 'Hogar - Pedro Gómez',
+      clientName: 'Pedro Gómez',
       insuranceBranch: 'Hogar',
       insuranceStage: 'DOCUMENTS_PENDING',
       createdAt: '',
@@ -46,19 +47,32 @@ vi.mock('react-i18next', () => ({
         'sales.backToBoard': 'Volver al tablero',
         'sales.toggleInsurance': 'Seguros',
         'sales.toggleEnergy': 'Energía',
-        'sales.fields.title': 'Cliente / Descripción',
         'sales.fields.type': 'Tipo',
+        'sales.fields.title': 'Nombre de Venta',
+        'sales.fields.clientName': 'Nombre de Cliente',
+        'sales.fields.owner': 'Propietario de Venta',
+        'sales.fields.amount': 'Importe',
         'sales.fields.company': 'Compañía',
         'sales.fields.branch': 'Ramo',
-        'sales.fields.stage': 'Etapa',
-        'sales.fields.expectedRevenue': 'Prima anual (€)',
-        'sales.fields.expectedSavings': 'Ahorro anual (€)',
-        'sales.fields.nextStep': 'Próxima acción',
+        'sales.fields.stage': 'Fase',
+        'sales.fields.expectedRevenue': 'Ingresos esperados',
+        'sales.fields.expectedSavings': 'Ahorro anual estimado (€)',
+        'sales.fields.nextStep': 'Siguiente paso',
         'sales.fields.description': 'Descripción',
         'sales.fields.expectedCloseDate': 'Fecha de cierre',
-        'sales.sections.opportunity': 'Oportunidad',
-        'sales.sections.pipeline': 'Pipeline',
-        'sales.sections.actions': 'Acciones',
+        'sales.fields.issueDate': 'Fecha de emisión / act.',
+        'sales.fields.billingDate': 'Fecha de cobro',
+        'sales.fields.channel': 'Canal',
+        'sales.fields.probabilityPercent': 'Probabilidad (%)',
+        'sales.fields.projectSource': 'Fuente de Proyecto',
+        'sales.fields.contactName': 'Nombre de Contacto',
+        'sales.fields.campaignSource': 'Fuente de Campaña',
+        'sales.fields.forecastCategory': 'Categoría de la previsión',
+        'sales.fields.policyNumber': 'Nº de póliza',
+        'sales.fields.contractId': 'ID Contrato',
+        'sales.fields.socialLeadId': 'Social Lead ID',
+        'sales.sections.saleInfo': 'Información de Venta',
+        'sales.sections.description': 'Información de la descripción',
         'sales.deleteConfirm': '¿Eliminar esta oportunidad?',
         'sales.actions.delete': 'Eliminar',
         'common.cancel': 'Cancelar',
@@ -73,8 +87,9 @@ vi.mock('react-i18next', () => ({
 const EXISTING_SALE: Sale = {
   id: '1',
   clientId: 'c1',
+  clientName: 'Pedro Gómez',
   type: SaleType.INSURANCE,
-  title: 'Pedro Gómez',
+  title: 'Vida - Pedro Gómez',
   insuranceBranch: 'Vida',
   expectedRevenue: 2100,
   insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,
@@ -95,13 +110,14 @@ describe('SaleForm', () => {
   it('renders new sale form with empty title', () => {
     render(<SaleForm sale={null} onSave={onSave} onCancel={onCancel} />)
     expect(screen.getByText('Nueva venta')).toBeInTheDocument()
-    expect(screen.getByLabelText('Cliente / Descripción')).toHaveValue('')
+    expect(screen.getByLabelText('Nombre de Venta')).toHaveValue('')
   })
 
   it('renders edit form with existing values', () => {
     render(<SaleForm sale={EXISTING_SALE} onSave={onSave} onCancel={onCancel} />)
     expect(screen.getByText('Editar venta')).toBeInTheDocument()
-    expect(screen.getByLabelText('Cliente / Descripción')).toHaveValue('Pedro Gómez')
+    expect(screen.getByLabelText('Nombre de Venta')).toHaveValue('Vida - Pedro Gómez')
+    expect(screen.getByLabelText('Nombre de Cliente')).toHaveValue('Pedro Gómez')
   })
 
   it('calls onCancel when back button is clicked', async () => {
@@ -117,7 +133,7 @@ describe('SaleForm', () => {
 
   it('calls onSave after successful create', async () => {
     render(<SaleForm sale={null} onSave={onSave} onCancel={onCancel} />)
-    await userEvent.type(screen.getByLabelText('Cliente / Descripción'), 'Test Sale')
+    await userEvent.type(screen.getByLabelText('Nombre de Venta'), 'Vida - Test')
     await userEvent.click(screen.getByText('Guardar'))
     await waitFor(() => expect(onSave).toHaveBeenCalled())
   })

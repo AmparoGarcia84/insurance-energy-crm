@@ -394,9 +394,69 @@ export interface Client {
 // Sale (Venta / Opportunity)
 // ----------------------------------------------------
 
+/** Determines which stage pipeline (insurance vs energy) applies. */
 export enum SaleType {
   INSURANCE = "INSURANCE",
   ENERGY = "ENERGY",
+}
+
+/** Whether this is a new prospect or an existing client portfolio deal. */
+export enum SaleBusinessType {
+  NEW_BUSINESS = "NEW_BUSINESS",           // Nuevo negocio
+  EXISTING_BUSINESS = "EXISTING_BUSINESS", // Negocios existentes
+}
+
+export const SaleBusinessTypeLabels: Record<SaleBusinessType, string> = {
+  [SaleBusinessType.NEW_BUSINESS]: "Nuevo negocio",
+  [SaleBusinessType.EXISTING_BUSINESS]: "Negocios existentes",
+}
+
+export enum SaleProjectSource {
+  NONE = "NONE",
+  NOTICE = "NOTICE",                         // Aviso
+  COLD_CALL = "COLD_CALL",                   // Llamada no solicitada
+  EMPLOYEE_REFERRAL = "EMPLOYEE_REFERRAL",   // Recomendación de empleado
+  EXTERNAL_REFERRAL = "EXTERNAL_REFERRAL",   // Recomendación externa
+  PARTNER = "PARTNER",                       // Socio
+  ONLINE_STORE = "ONLINE_STORE",             // Tienda en línea
+  PUBLIC_RELATIONS = "PUBLIC_RELATIONS",     // Relaciones públicas
+  TRADE_SHOW = "TRADE_SHOW",                 // Exposición comercial
+  SALES_EMAIL_ALIAS = "SALES_EMAIL_ALIAS",   // Alias del correo electrónico de ventas
+  SEMINAR_PARTNER = "SEMINAR_PARTNER",       // Socio de seminarios
+  INTERNAL_SEMINAR = "INTERNAL_SEMINAR",     // Seminario interno
+  WEB_DOWNLOAD = "WEB_DOWNLOAD",             // Descargar web
+  WEB_RESEARCH = "WEB_RESEARCH",             // Investigación web
+  CHAT = "CHAT",                             // Chat
+}
+
+export const SaleProjectSourceLabels: Record<SaleProjectSource, string> = {
+  [SaleProjectSource.NONE]: "-None-",
+  [SaleProjectSource.NOTICE]: "Aviso",
+  [SaleProjectSource.COLD_CALL]: "Llamada no solicitada",
+  [SaleProjectSource.EMPLOYEE_REFERRAL]: "Recomendación de empleado",
+  [SaleProjectSource.EXTERNAL_REFERRAL]: "Recomendación externa",
+  [SaleProjectSource.PARTNER]: "Socio",
+  [SaleProjectSource.ONLINE_STORE]: "Tienda en línea",
+  [SaleProjectSource.PUBLIC_RELATIONS]: "Relaciones públicas",
+  [SaleProjectSource.TRADE_SHOW]: "Exposición comercial",
+  [SaleProjectSource.SALES_EMAIL_ALIAS]: "Alias del correo electrónico de ventas",
+  [SaleProjectSource.SEMINAR_PARTNER]: "Socio de seminarios",
+  [SaleProjectSource.INTERNAL_SEMINAR]: "Seminario interno",
+  [SaleProjectSource.WEB_DOWNLOAD]: "Descargar web",
+  [SaleProjectSource.WEB_RESEARCH]: "Investigación web",
+  [SaleProjectSource.CHAT]: "Chat",
+}
+
+export enum SaleForecastCategory {
+  CHANNEL = "CHANNEL",       // Canal
+  BEST_CASE = "BEST_CASE",   // El mejor caso
+  CONFIRMED = "CONFIRMED",   // Confirmado
+}
+
+export const SaleForecastCategoryLabels: Record<SaleForecastCategory, string> = {
+  [SaleForecastCategory.CHANNEL]: "Canal",
+  [SaleForecastCategory.BEST_CASE]: "El mejor caso",
+  [SaleForecastCategory.CONFIRMED]: "Confirmado",
 }
 
 export enum InsuranceSaleStage {
@@ -427,54 +487,56 @@ export enum EnergySaleStage {
 }
 
 export interface Sale extends BaseEntity {
+  // --- Core classification ---
+  type: SaleType           // INSURANCE | ENERGY — determines which stage pipeline applies
+  businessType?: SaleBusinessType  // New business vs existing portfolio
+
+  // --- Client (denormalized: store name alongside ID to avoid extra fetches in lists/kanban) ---
   clientId: UUID
+  clientName?: string      // snapshot of client.name — update when client name changes
 
-  type: SaleType
+  // --- Sale identity ---
+  title: string            // e.g. "Hogar - Ana Martínez"
+  companyName?: string     // Insurer (insurance) or retailer (energy)
+  insuranceBranch?: string // Branch / line of business (Hogar, Auto, Vida…)
 
-  /** Name shown in pipeline and detail views. */
-  title: string // e.g. "Home Insurance - Ana Martínez"
-
-  /** Company/insurer for insurance; retailer for energy. */
-  companyName?: string
-
-  /** Branch / line of business (Home, Auto, Life, etc.). */
-  insuranceBranch?: string
-
-  /** Free text like 'New policy', 'Renewal', 'Cross-sell'. */
-  saleKind?: string
-
-  /** Monetary value or yearly premium (for insurance). */
-  expectedRevenue?: number
-
-  /** Expected savings per year (for energy). */
-  expectedSavingsPerYear?: number
-
-  /** Probability (0–100) used in dashboard and deal detail. */
-  probabilityPercent?: number
-
-  /** Current stage in the pipeline. */
+  // --- Pipeline stage ---
   insuranceStage?: InsuranceSaleStage
   energyStage?: EnergySaleStage
 
-  /** Important dates. */
-  expectedCloseDate?: ISODate
-  issueDate?: ISODate
-  billingDate?: ISODate
+  // --- Financials ---
+  amount?: number                  // Importe — actual contracted/deal amount (editable)
+  /** Calculated/read-only in UI — set by backend based on policy premium or energy contract. */
+  expectedRevenue?: number
+  /** Expected savings per year (energy only). */
+  expectedSavingsPerYear?: number
+  /** Probability 0–100 used in dashboard and forecasting. */
+  probabilityPercent?: number
+  forecastCategory?: SaleForecastCategory
 
-  /** Links to related entities. */
+  // --- Key dates ---
+  expectedCloseDate?: ISODate  // Fecha de cierre
+  issueDate?: ISODate           // Fecha de emisión / actualización
+  billingDate?: ISODate         // Fecha de cobro
+
+  // --- Origin & marketing ---
+  projectSource?: SaleProjectSource  // Fuente de proyecto
+  channel?: string                   // e.g. "Standard"
+  campaignSource?: string            // Fuente de campaña
+  socialLeadId?: string
+
+  // --- People (denormalized display names) ---
+  ownerUserId?: UUID
+  ownerUserName?: string   // snapshot of user.displayName
+  contactName?: string     // free-text contact name (no separate entity yet)
+
+  // --- Related entities ---
   policyNumber?: string
   contractId?: string
 
-  /** Owner / advisor responsible for this sale. */
-  ownerUserId?: UUID
-
-  /** Next action shown in sale detail. */
+  // --- Follow-up & notes ---
   nextStep?: string
-
-  /** Reason the sale was lost (from Deal). */
   lostReason?: string
-
-  /** Long description used in forms and detail view. */
   description?: string
 }
 

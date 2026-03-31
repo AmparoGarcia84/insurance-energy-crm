@@ -16,6 +16,7 @@ import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.js'
 import clientsRouter from './routes/clients.js'
 import adminRouter from './routes/admin.js'
+import salesRouter from './routes/sales.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -50,6 +51,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/auth', authRouter)
 app.use('/clients', clientsRouter)
 app.use('/admin', adminRouter)
+app.use('/sales', salesRouter)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

@@ -20,8 +20,9 @@ vi.mock('react-i18next', () => ({
 const INSURANCE_SALE: Sale = {
   id: '1',
   clientId: 'c1',
+  clientName: 'Pedro Gómez',
   type: SaleType.INSURANCE,
-  title: 'Pedro Gómez',
+  title: 'Vida - Pedro Gómez',
   insuranceBranch: 'Vida',
   expectedRevenue: 2100,
   insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,
@@ -31,9 +32,20 @@ const INSURANCE_SALE: Sale = {
 }
 
 describe('SaleCard', () => {
-  it('renders client title', () => {
+  it('renders client name as primary identifier', () => {
     render(<SaleCard sale={INSURANCE_SALE} onClick={vi.fn()} />)
     expect(screen.getByText('Pedro Gómez')).toBeInTheDocument()
+  })
+
+  it('renders sale title as subtitle when clientName is set', () => {
+    render(<SaleCard sale={INSURANCE_SALE} onClick={vi.fn()} />)
+    expect(screen.getByText('Vida - Pedro Gómez')).toBeInTheDocument()
+  })
+
+  it('renders title as fallback when clientName is absent', () => {
+    const sale: Sale = { ...INSURANCE_SALE, clientName: undefined }
+    render(<SaleCard sale={sale} onClick={vi.fn()} />)
+    expect(screen.getByText('Vida - Pedro Gómez')).toBeInTheDocument()
   })
 
   it('renders insurance branch badge', () => {
@@ -53,7 +65,13 @@ describe('SaleCard', () => {
     expect(screen.getByText('Seguimiento llamada')).toBeInTheDocument()
   })
 
-  it('renders owner initials', () => {
+  it('renders owner initials from ownerUserName on sale', () => {
+    const sale: Sale = { ...INSURANCE_SALE, ownerUserName: 'Mila García' }
+    render(<SaleCard sale={sale} onClick={vi.fn()} />)
+    expect(screen.getByTitle('Mila García')).toHaveTextContent('MG')
+  })
+
+  it('falls back to ownerName prop when ownerUserName not set', () => {
     render(<SaleCard sale={INSURANCE_SALE} ownerName="Mila García" onClick={vi.fn()} />)
     expect(screen.getByTitle('Mila García')).toHaveTextContent('MG')
   })
@@ -69,7 +87,9 @@ describe('SaleCard', () => {
     const energySale: Sale = {
       ...INSURANCE_SALE,
       id: '2',
+      clientName: 'Bar La Terraza',
       type: SaleType.ENERGY,
+      title: 'Luz - Bar La Terraza',
       insuranceBranch: undefined,
       companyName: 'Iberdrola',
       expectedRevenue: undefined,

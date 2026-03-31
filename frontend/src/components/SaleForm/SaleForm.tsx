@@ -7,7 +7,19 @@ import TextareaField from '../FormField/TextareaField'
 import { usePermissions } from '../../hooks/usePermissions'
 import ConfirmModal from '../ConfirmModal/ConfirmModal'
 import type { Sale, SaleInput } from '../../api/sales'
-import { SaleType, InsuranceSaleStage, EnergySaleStage, createSale, updateSale, deleteSale } from '../../api/sales'
+import {
+  SaleType,
+  SaleBusinessType,
+  SaleProjectSource,
+  SaleForecastCategory,
+  InsuranceSaleStage,
+  EnergySaleStage,
+  INSURANCE_STAGES,
+  ENERGY_STAGES,
+  createSale,
+  updateSale,
+  deleteSale,
+} from '../../api/sales'
 import './SaleForm.css'
 
 interface Props {
@@ -17,96 +29,143 @@ interface Props {
   onDelete?: (id: string) => void
 }
 
-const INSURANCE_STAGES: InsuranceSaleStage[] = [
-  InsuranceSaleStage.RESPONSE_PENDING,
-  InsuranceSaleStage.DOCUMENTS_PENDING,
-  InsuranceSaleStage.SIGNATURE_PENDING,
-  InsuranceSaleStage.ISSUANCE_PENDING,
-  InsuranceSaleStage.BILLING_THIS_MONTH,
-  InsuranceSaleStage.BILLING_NEXT_MONTH,
-  InsuranceSaleStage.RECURRENT_BILLING,
-  InsuranceSaleStage.INVOICE_PENDING_PAYMENT,
-  InsuranceSaleStage.WRONG_SETTLEMENT,
-  InsuranceSaleStage.BILLED_AND_PAID,
-  InsuranceSaleStage.CANCELED_UNPAID,
-  InsuranceSaleStage.NOT_INSURABLE,
-  InsuranceSaleStage.KO_SCORING,
-  InsuranceSaleStage.LOST,
+
+const BUSINESS_TYPES: SaleBusinessType[] = [
+  SaleBusinessType.NEW_BUSINESS,
+  SaleBusinessType.EXISTING_BUSINESS,
 ]
 
-const ENERGY_STAGES: EnergySaleStage[] = [
-  EnergySaleStage.RESPONSE_PENDING,
-  EnergySaleStage.DOCUMENTS_PENDING,
-  EnergySaleStage.SIGNATURE_PENDING,
-  EnergySaleStage.ACTIVATION_PENDING,
-  EnergySaleStage.BILLING_THIS_MONTH,
-  EnergySaleStage.BILLED_AND_PAID,
-  EnergySaleStage.LOST,
-]
+const PROJECT_SOURCES: SaleProjectSource[] = Object.values(SaleProjectSource)
+
+const FORECAST_CATEGORIES: SaleForecastCategory[] = Object.values(SaleForecastCategory)
 
 type FormState = {
-  title: string
   type: SaleType
-  insuranceBranch: string
+  title: string
+  clientId: string
+  clientName: string
+  ownerUserName: string
+  ownerUserId: string
   companyName: string
-  saleKind: string
-  insuranceStage: InsuranceSaleStage
-  energyStage: EnergySaleStage
+  insuranceBranch: string
+  businessType: SaleBusinessType | ''
+  amount: string
   expectedRevenue: string
   expectedSavingsPerYear: string
+  insuranceStage: InsuranceSaleStage
+  energyStage: EnergySaleStage
+  expectedCloseDate: string
+  issueDate: string
+  billingDate: string
+  channel: string
+  probabilityPercent: string
+  projectSource: SaleProjectSource | ''
+  contactName: string
+  campaignSource: string
+  forecastCategory: SaleForecastCategory | ''
+  policyNumber: string
+  contractId: string
+  socialLeadId: string
   nextStep: string
   description: string
-  expectedCloseDate: string
 }
 
 const EMPTY: FormState = {
-  title: '',
   type: SaleType.INSURANCE,
-  insuranceBranch: '',
+  title: '',
+  clientId: '',
+  clientName: '',
+  ownerUserName: '',
+  ownerUserId: '',
   companyName: '',
-  saleKind: '',
-  insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,
-  energyStage: EnergySaleStage.RESPONSE_PENDING,
+  insuranceBranch: '',
+  businessType: '',
+  amount: '',
   expectedRevenue: '',
   expectedSavingsPerYear: '',
+  insuranceStage: InsuranceSaleStage.RESPONSE_PENDING,
+  energyStage: EnergySaleStage.RESPONSE_PENDING,
+  expectedCloseDate: '',
+  issueDate: '',
+  billingDate: '',
+  channel: '',
+  probabilityPercent: '10',
+  projectSource: '',
+  contactName: '',
+  campaignSource: '',
+  forecastCategory: '',
+  policyNumber: '',
+  contractId: '',
+  socialLeadId: '',
   nextStep: '',
   description: '',
-  expectedCloseDate: '',
 }
 
 function toFormState(sale: Sale): FormState {
   return {
-    title: sale.title,
     type: sale.type,
-    insuranceBranch: sale.insuranceBranch ?? '',
+    title: sale.title,
+    clientId: sale.clientId,
+    clientName: sale.clientName ?? '',
+    ownerUserName: sale.ownerUserName ?? '',
+    ownerUserId: sale.ownerUserId ?? '',
     companyName: sale.companyName ?? '',
-    saleKind: sale.saleKind ?? '',
-    insuranceStage: sale.insuranceStage ?? InsuranceSaleStage.RESPONSE_PENDING,
-    energyStage: sale.energyStage ?? EnergySaleStage.RESPONSE_PENDING,
+    insuranceBranch: sale.insuranceBranch ?? '',
+    businessType: sale.businessType ?? '',
+    amount: sale.amount != null ? String(sale.amount) : '',
     expectedRevenue: sale.expectedRevenue != null ? String(sale.expectedRevenue) : '',
     expectedSavingsPerYear: sale.expectedSavingsPerYear != null ? String(sale.expectedSavingsPerYear) : '',
+    insuranceStage: sale.insuranceStage ?? InsuranceSaleStage.RESPONSE_PENDING,
+    energyStage: sale.energyStage ?? EnergySaleStage.RESPONSE_PENDING,
+    expectedCloseDate: sale.expectedCloseDate ?? '',
+    issueDate: sale.issueDate ?? '',
+    billingDate: sale.billingDate ?? '',
+    channel: sale.channel ?? '',
+    probabilityPercent: sale.probabilityPercent != null ? String(sale.probabilityPercent) : '10',
+    projectSource: sale.projectSource ?? '',
+    contactName: sale.contactName ?? '',
+    campaignSource: sale.campaignSource ?? '',
+    forecastCategory: sale.forecastCategory ?? '',
+    policyNumber: sale.policyNumber ?? '',
+    contractId: sale.contractId ?? '',
+    socialLeadId: sale.socialLeadId ?? '',
     nextStep: sale.nextStep ?? '',
     description: sale.description ?? '',
-    expectedCloseDate: sale.expectedCloseDate ?? '',
   }
 }
 
-function toInput(form: FormState, clientId: string): SaleInput {
+function toInput(form: FormState): SaleInput {
   const isInsurance = form.type === SaleType.INSURANCE
   return {
-    clientId,
     type: form.type,
     title: form.title,
-    insuranceBranch: isInsurance ? form.insuranceBranch || undefined : undefined,
+    clientId: form.clientId,
+    clientName: form.clientName || undefined,
+    ownerUserId: form.ownerUserId || undefined,
+    ownerUserName: form.ownerUserName || undefined,
     companyName: form.companyName || undefined,
-    saleKind: form.saleKind || undefined,
+    insuranceBranch: isInsurance ? form.insuranceBranch || undefined : undefined,
+    businessType: form.businessType || undefined,
+    amount: form.amount ? Number(form.amount) : undefined,
+    expectedRevenue: form.expectedRevenue ? Number(form.expectedRevenue) : undefined,
+    expectedSavingsPerYear: !isInsurance && form.expectedSavingsPerYear ? Number(form.expectedSavingsPerYear) : undefined,
     insuranceStage: isInsurance ? form.insuranceStage : undefined,
     energyStage: !isInsurance ? form.energyStage : undefined,
-    expectedRevenue: isInsurance && form.expectedRevenue ? Number(form.expectedRevenue) : undefined,
-    expectedSavingsPerYear: !isInsurance && form.expectedSavingsPerYear ? Number(form.expectedSavingsPerYear) : undefined,
-    nextStep: form.nextStep || undefined,
-    description: form.description || undefined,
     expectedCloseDate: form.expectedCloseDate || undefined,
+    issueDate: form.issueDate || undefined,
+    billingDate: form.billingDate || undefined,
+    channel: form.channel || undefined,
+    probabilityPercent: form.probabilityPercent ? Number(form.probabilityPercent) : undefined,
+    projectSource: form.projectSource || undefined,
+    contactName: form.contactName || undefined,
+    campaignSource: form.campaignSource || undefined,
+    forecastCategory: form.forecastCategory || undefined,
+    policyNumber: form.policyNumber || undefined,
+    contractId: form.contractId || undefined,
+    socialLeadId: form.socialLeadId || undefined,
+    nextStep: form.nextStep || undefined,
+    lostReason: undefined,
+    description: form.description || undefined,
   }
 }
 
@@ -128,7 +187,7 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
     if (!form.title.trim()) return
     setSaving(true)
     try {
-      const input = toInput(form, sale?.clientId ?? '')
+      const input = toInput(form)
       const saved = isNew
         ? await createSale(input)
         : await updateSale(sale.id, input)
@@ -163,106 +222,53 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
       <form className="sale-form" onSubmit={handleSave}>
         <h2 className="sale-form__title">{isNew ? t('sales.new') : t('sales.edit')}</h2>
 
+        <div className="form-field sale-form__type-toggle">
+          <label>{t('sales.fields.type')}</label>
+          <div className="sale-form__toggle-group">
+            <button
+              type="button"
+              className={form.type === SaleType.INSURANCE ? 'btn-primary' : 'btn-secondary'}
+              onClick={() => set('type', SaleType.INSURANCE)}
+            >
+              {t('sales.toggleInsurance')}
+            </button>
+            <button
+              type="button"
+              className={form.type === SaleType.ENERGY ? 'btn-primary' : 'btn-secondary'}
+              onClick={() => set('type', SaleType.ENERGY)}
+            >
+              {t('sales.toggleEnergy')}
+            </button>
+          </div>
+        </div>
+
         <section className="form-section">
-          <h3 className="form-section-title">{t('sales.sections.opportunity')}</h3>
+          <h3 className="form-section-title">{t('sales.sections.saleInfo')}</h3>
           <div className="form-grid">
+
+            <InputField
+              id="sale-owner"
+              label={t('sales.fields.owner')}
+              value={form.ownerUserName}
+              onChange={(e) => set('ownerUserName', e.target.value)}
+            />
+            <InputField
+              id="sale-amount"
+              label={t('sales.fields.amount')}
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.amount}
+              onChange={(e) => set('amount', e.target.value)}
+            />
+
             <InputField
               id="sale-title"
               label={t('sales.fields.title')}
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
               required
-              className="col-span-2"
             />
-
-            <div className="form-field sale-form__type-toggle">
-              <label>{t('sales.fields.type')}</label>
-              <div className="sale-form__toggle-group">
-                <button
-                  type="button"
-                  className={form.type === SaleType.INSURANCE ? 'btn-primary' : 'btn-secondary'}
-                  onClick={() => set('type', SaleType.INSURANCE)}
-                >
-                  {t('sales.toggleInsurance')}
-                </button>
-                <button
-                  type="button"
-                  className={form.type === SaleType.ENERGY ? 'btn-primary' : 'btn-secondary'}
-                  onClick={() => set('type', SaleType.ENERGY)}
-                >
-                  {t('sales.toggleEnergy')}
-                </button>
-              </div>
-            </div>
-
-            <InputField
-              id="sale-company"
-              label={t('sales.fields.company')}
-              value={form.companyName}
-              onChange={(e) => set('companyName', e.target.value)}
-            />
-          </div>
-        </section>
-
-        <section className="form-section">
-          <h3 className="form-section-title">{t('sales.sections.pipeline')}</h3>
-          <div className="form-grid">
-            {isInsurance ? (
-              <>
-                <InputField
-                  id="sale-branch"
-                  label={t('sales.fields.branch')}
-                  value={form.insuranceBranch}
-                  onChange={(e) => set('insuranceBranch', e.target.value)}
-                  placeholder="Vida, Hogar, RC, Auto..."
-                />
-                <SelectField
-                  id="sale-insurance-stage"
-                  label={t('sales.fields.stage')}
-                  value={form.insuranceStage}
-                  onChange={(e) => set('insuranceStage', e.target.value as InsuranceSaleStage)}
-                >
-                  {INSURANCE_STAGES.map((s) => (
-                    <option key={s} value={s}>
-                      {t(`sales.stages.insurance.${s}`)}
-                    </option>
-                  ))}
-                </SelectField>
-                <InputField
-                  id="sale-revenue"
-                  label={t('sales.fields.expectedRevenue')}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.expectedRevenue}
-                  onChange={(e) => set('expectedRevenue', e.target.value)}
-                />
-              </>
-            ) : (
-              <>
-                <SelectField
-                  id="sale-energy-stage"
-                  label={t('sales.fields.stage')}
-                  value={form.energyStage}
-                  onChange={(e) => set('energyStage', e.target.value as EnergySaleStage)}
-                >
-                  {ENERGY_STAGES.map((s) => (
-                    <option key={s} value={s}>
-                      {t(`sales.stages.energy.${s}`)}
-                    </option>
-                  ))}
-                </SelectField>
-                <InputField
-                  id="sale-savings"
-                  label={t('sales.fields.expectedSavings')}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.expectedSavingsPerYear}
-                  onChange={(e) => set('expectedSavingsPerYear', e.target.value)}
-                />
-              </>
-            )}
             <InputField
               id="sale-close-date"
               label={t('sales.fields.expectedCloseDate')}
@@ -270,19 +276,180 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
               value={form.expectedCloseDate}
               onChange={(e) => set('expectedCloseDate', e.target.value)}
             />
-          </div>
-        </section>
 
-        <section className="form-section">
-          <h3 className="form-section-title">{t('sales.sections.actions')}</h3>
-          <div className="form-grid">
+            <InputField
+              id="sale-client-name"
+              label={t('sales.fields.clientName')}
+              value={form.clientName}
+              onChange={(e) => set('clientName', e.target.value)}
+            />
+            <InputField
+              id="sale-issue-date"
+              label={t('sales.fields.issueDate')}
+              type="date"
+              value={form.issueDate}
+              onChange={(e) => set('issueDate', e.target.value)}
+            />
+
+            <InputField
+              id="sale-company"
+              label={t('sales.fields.company')}
+              value={form.companyName}
+              onChange={(e) => set('companyName', e.target.value)}
+            />
+            <SelectField
+              id="sale-stage"
+              label={t('sales.fields.stage')}
+              value={isInsurance ? form.insuranceStage : form.energyStage}
+              onChange={(e) =>
+                isInsurance
+                  ? set('insuranceStage', e.target.value as InsuranceSaleStage)
+                  : set('energyStage', e.target.value as EnergySaleStage)
+              }
+            >
+              {isInsurance
+                ? INSURANCE_STAGES.map((s) => (
+                    <option key={s} value={s}>{t(`sales.stages.insurance.${s}`)}</option>
+                  ))
+                : ENERGY_STAGES.map((s) => (
+                    <option key={s} value={s}>{t(`sales.stages.energy.${s}`)}</option>
+                  ))
+              }
+            </SelectField>
+
+            {isInsurance && (
+              <InputField
+                id="sale-branch"
+                label={t('sales.fields.branch')}
+                value={form.insuranceBranch}
+                onChange={(e) => set('insuranceBranch', e.target.value)}
+                placeholder="Vida, Hogar, RC, Auto..."
+              />
+            )}
+            <InputField
+              id="sale-billing-date"
+              label={t('sales.fields.billingDate')}
+              type="date"
+              value={form.billingDate}
+              onChange={(e) => set('billingDate', e.target.value)}
+            />
+
+            <SelectField
+              id="sale-business-type"
+              label={t('sales.fields.businessType')}
+              value={form.businessType}
+              onChange={(e) => set('businessType', e.target.value as SaleBusinessType | '')}
+            >
+              <option value="">-None-</option>
+              {BUSINESS_TYPES.map((bt) => (
+                <option key={bt} value={bt}>{t(`sales.businessType.${bt}`)}</option>
+              ))}
+            </SelectField>
+            <InputField
+              id="sale-channel"
+              label={t('sales.fields.channel')}
+              value={form.channel}
+              onChange={(e) => set('channel', e.target.value)}
+            />
+
+            <InputField
+              id="sale-expected-revenue"
+              label={t('sales.fields.expectedRevenue')}
+              type="number"
+              value={form.expectedRevenue}
+              onChange={() => {}}
+              readOnly
+            />
+            <InputField
+              id="sale-probability"
+              label={t('sales.fields.probabilityPercent')}
+              type="number"
+              min="0"
+              max="100"
+              value={form.probabilityPercent}
+              onChange={(e) => set('probabilityPercent', e.target.value)}
+            />
+
+            <SelectField
+              id="sale-project-source"
+              label={t('sales.fields.projectSource')}
+              value={form.projectSource}
+              onChange={(e) => set('projectSource', e.target.value as SaleProjectSource | '')}
+            >
+              <option value="">-None-</option>
+              {PROJECT_SOURCES.filter((s) => s !== SaleProjectSource.NONE).map((s) => (
+                <option key={s} value={s}>{t(`sales.projectSource.${s}`)}</option>
+              ))}
+            </SelectField>
             <InputField
               id="sale-next-step"
               label={t('sales.fields.nextStep')}
               value={form.nextStep}
               onChange={(e) => set('nextStep', e.target.value)}
-              className="col-span-2"
             />
+
+            <InputField
+              id="sale-contact-name"
+              label={t('sales.fields.contactName')}
+              value={form.contactName}
+              onChange={(e) => set('contactName', e.target.value)}
+            />
+            <InputField
+              id="sale-campaign-source"
+              label={t('sales.fields.campaignSource')}
+              value={form.campaignSource}
+              onChange={(e) => set('campaignSource', e.target.value)}
+            />
+
+            <InputField
+              id="sale-policy-number"
+              label={t('sales.fields.policyNumber')}
+              value={form.policyNumber}
+              onChange={(e) => set('policyNumber', e.target.value)}
+            />
+            <SelectField
+              id="sale-forecast-category"
+              label={t('sales.fields.forecastCategory')}
+              value={form.forecastCategory}
+              onChange={(e) => set('forecastCategory', e.target.value as SaleForecastCategory | '')}
+            >
+              <option value="">-None-</option>
+              {FORECAST_CATEGORIES.map((fc) => (
+                <option key={fc} value={fc}>{t(`sales.forecastCategory.${fc}`)}</option>
+              ))}
+            </SelectField>
+
+            <InputField
+              id="sale-contract-id"
+              label={t('sales.fields.contractId')}
+              value={form.contractId}
+              onChange={(e) => set('contractId', e.target.value)}
+            />
+            <InputField
+              id="sale-social-lead-id"
+              label={t('sales.fields.socialLeadId')}
+              value={form.socialLeadId}
+              onChange={(e) => set('socialLeadId', e.target.value)}
+            />
+
+            {!isInsurance && (
+              <InputField
+                id="sale-savings"
+                label={t('sales.fields.expectedSavings')}
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.expectedSavingsPerYear}
+                onChange={(e) => set('expectedSavingsPerYear', e.target.value)}
+              />
+            )}
+
+          </div>
+        </section>
+
+        <section className="form-section">
+          <h3 className="form-section-title">{t('sales.sections.description')}</h3>
+          <div className="form-grid">
             <TextareaField
               id="sale-description"
               label={t('sales.fields.description')}

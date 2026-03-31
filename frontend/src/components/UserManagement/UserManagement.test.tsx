@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AuthProvider } from '../../auth/AuthContext'
+import { DataProvider } from '../../context/DataContext'
 import UserManagement from './UserManagement'
 
 const ownerUser = { id: '1', displayName: 'Mila', email: 'mila@example.com', role: 'OWNER' as const, avatarUrl: null }
@@ -22,7 +23,9 @@ import { getUsers, createUser, deleteUser } from '../../api/users'
 function renderComponent() {
   return render(
     <AuthProvider>
-      <UserManagement />
+      <DataProvider>
+        <UserManagement />
+      </DataProvider>
     </AuthProvider>
   )
 }

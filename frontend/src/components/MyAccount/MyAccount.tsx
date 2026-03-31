@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { User } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import { uploadAvatar, changePassword, changeEmail } from '../../api/auth'
 import AvatarCropModal from '../AvatarCropModal/AvatarCropModal'
+import Avatar from '../Avatar/Avatar'
 import InputField from '../FormField/InputField'
 import './MyAccount.css'
 
@@ -96,15 +96,10 @@ export default function MyAccount() {
       <h1 className="my-account-title">{t('myAccount.title')}</h1>
 
       {/* ── Foto de perfil ── */}
-      <section className="my-account-card">
+      <section className="my-account-card form-card">
         <h2>{t('myAccount.photo.title')}</h2>
         <div className="my-account-avatar-row">
-          <div className="my-account-avatar">
-            {avatarSrc
-              ? <img src={avatarSrc} alt={user?.displayName} />
-              : <User size={36} />
-            }
-          </div>
+          <Avatar src={avatarSrc} name={user?.displayName} size={72} />
           <div>
             <p className="my-account-avatar-name">{user?.displayName}</p>
             <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>
@@ -122,7 +117,7 @@ export default function MyAccount() {
       </section>
 
       {/* ── Correo electrónico ── */}
-      <section className="my-account-card">
+      <section className="my-account-card form-card">
         <h2>{t('myAccount.email.title')}</h2>
         <form onSubmit={handleEmailSave} className="my-account-form">
           <InputField
@@ -147,7 +142,7 @@ export default function MyAccount() {
       </section>
 
       {/* ── Contraseña ── */}
-      <section className="my-account-card">
+      <section className="my-account-card form-card">
         <h2>{t('myAccount.password.title')}</h2>
         <form onSubmit={handlePasswordSave} className="my-account-form">
           <InputField

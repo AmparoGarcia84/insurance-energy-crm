@@ -8,6 +8,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 
+vi.mock('../../context/DataContext', () => ({
+  useClients: () => ({ clients: [], loading: false }),
+}))
+
 vi.mock('../../api/clients', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../api/clients')>()
   return {

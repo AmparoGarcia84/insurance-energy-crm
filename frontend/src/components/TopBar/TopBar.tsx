@@ -8,10 +8,11 @@
  * Clicking the user name or avatar navigates to the My Account section
  * where the user can change their photo, email and password.
  */
-import { Search, Mail, Bell, User } from 'lucide-react'
+import { Search, Mail, Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../auth/AuthContext'
 import { type Section } from '../Sidebar/Sidebar'
+import Avatar from '../Avatar/Avatar'
 import './TopBar.css'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -58,10 +59,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             aria-label={t('topbar.myAccount')}
             onClick={() => onNavigate('myAccount')}
           >
-            {avatarSrc
-              ? <img src={avatarSrc} alt={user?.displayName} className="topbar-avatar-img" />
-              : <User size={20} />
-            }
+            <Avatar src={avatarSrc} name={user?.displayName} size={40} />
           </button>
         </div>
       </div>

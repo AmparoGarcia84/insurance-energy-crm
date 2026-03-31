@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Sale } from '../../api/sales'
 import { SaleType } from '../../api/sales'
+import Avatar from '../Avatar/Avatar'
 import './SaleCard.css'
 
 interface Props {
@@ -20,23 +21,20 @@ function branchBadgeClass(branch: string): string {
   return 'badge-branch-default'
 }
 
-function nameInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 export default function SaleCard({ sale, ownerName, onClick }: Props) {
   const { t } = useTranslation()
   const isEnergy = sale.type === SaleType.ENERGY
   const revenue = isEnergy ? sale.expectedSavingsPerYear : sale.expectedRevenue
+  const displayOwner = sale.ownerUserName ?? ownerName
 
   return (
     <div className="sale-card" role="button" tabIndex={0} onClick={() => onClick(sale)} onKeyDown={(e) => e.key === 'Enter' && onClick(sale)}>
       <div className="sale-card__header">
-        <span className="sale-card__client">{sale.title}</span>
+        <div className="sale-card__identity">
+          <span className="sale-card__client">{sale.clientName || sale.title}</span>
+          {sale.clientName && <span className="sale-card__title">{sale.title}</span>}
+        </div>
         {!isEnergy && sale.insuranceBranch && (
           <span className={`badge sale-card__badge ${branchBadgeClass(sale.insuranceBranch)}`}>
             {sale.insuranceBranch}
@@ -58,10 +56,8 @@ export default function SaleCard({ sale, ownerName, onClick }: Props) {
       )}
 
       <div className="sale-card__footer">
-        {ownerName && (
-          <span className="sale-card__avatar" title={ownerName}>
-            {nameInitials(ownerName)}
-          </span>
+        {displayOwner && (
+          <Avatar name={displayOwner} size={26} className="sale-card__avatar" title={displayOwner} />
         )}
         {sale.nextStep && (
           <span className="sale-card__next-step" title={sale.nextStep}>

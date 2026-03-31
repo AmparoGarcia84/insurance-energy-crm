@@ -10,6 +10,7 @@ import './App.css'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import Login from './components/Login/Login'
 import Dashboard from './components/Dashboard/Dashboard'
+import { DataProvider } from './context/DataContext'
 
 /**
  * AppContent reads the current auth state and renders either the protected
@@ -23,7 +24,12 @@ function AppContent() {
   // so the login screen never flashes for users with an active session.
   if (loading) return null
 
-  return user ? <Dashboard /> : <Login />
+  if (!user) return <Login />
+  return (
+    <DataProvider>
+      <Dashboard />
+    </DataProvider>
+  )
 }
 
 /**

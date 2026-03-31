@@ -18,15 +18,7 @@
 }
 
 /* ── New user form ───────────────────────────────────── */
-.user-management-form {
-  background: var(--corp-card);
-  border: 1px solid var(--corp-beige);
-  border-radius: 10px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+.user-management-form {}
 
 .user-management-form h2 {
   font-size: 1rem;
@@ -70,25 +62,6 @@
   }
 }
 
-/* ── Avatar ─────────────────────────────────────────── */
-.user-management-avatar {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  border-radius: 50%;
-  background: var(--corp-muted-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--corp-muted);
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
 
 /* ── Info ────────────────────────────────────────────── */
 .user-management-info {

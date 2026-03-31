@@ -165,23 +165,110 @@ model ClientBankAccount {
 
 // ── Sale ──────────────────────────────────────────────────────────────────────
 
-enum SaleStatus {
-  OPEN
-  WON
+enum SaleType {
+  INSURANCE
+  ENERGY
+}
+
+enum SaleBusinessType {
+  NEW_BUSINESS
+  EXISTING_BUSINESS
+}
+
+enum SaleProjectSource {
+  NONE
+  NOTICE
+  COLD_CALL
+  EMPLOYEE_REFERRAL
+  EXTERNAL_REFERRAL
+  PARTNER
+  ONLINE_STORE
+  PUBLIC_RELATIONS
+  TRADE_SHOW
+  SALES_EMAIL_ALIAS
+  SEMINAR_PARTNER
+  INTERNAL_SEMINAR
+  WEB_DOWNLOAD
+  WEB_RESEARCH
+  CHAT
+}
+
+enum SaleForecastCategory {
+  CHANNEL
+  BEST_CASE
+  CONFIRMED
+}
+
+enum InsuranceSaleStage {
+  RESPONSE_PENDING
+  DOCUMENTS_PENDING
+  SIGNATURE_PENDING
+  ISSUANCE_PENDING
+  BILLING_THIS_MONTH
+  BILLING_NEXT_MONTH
+  RECURRENT_BILLING
+  INVOICE_PENDING_PAYMENT
+  WRONG_SETTLEMENT
+  BILLED_AND_PAID
+  CANCELED_UNPAID
+  NOT_INSURABLE
+  KO_SCORING
   LOST
-  CANCELLED
+}
+
+enum EnergySaleStage {
+  RESPONSE_PENDING
+  DOCUMENTS_PENDING
+  SIGNATURE_PENDING
+  ACTIVATION_PENDING
+  BILLING_THIS_MONTH
+  BILLED_AND_PAID
+  LOST
 }
 
 model Sale {
-  id       String     @id @default(uuid())
-  clientId String
-  client   Client     @relation(fields: [clientId], references: [id])
-  title    String
-  status   SaleStatus @default(OPEN)
-  amount   Float?
-  notes    String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  clientId     String
+  client       Client    @relation(fields: [clientId], references: [id])
+  clientName   String?
+
+  type         SaleType
+  businessType SaleBusinessType?
+  title        String
+  companyName  String?
+  insuranceBranch String?
+
+  insuranceStage  InsuranceSaleStage?
+  energyStage     EnergySaleStage?
+
+  amount               Float?
+  expectedRevenue      Float?
+  expectedSavingsPerYear Float?
+  probabilityPercent   Float?
+  forecastCategory     SaleForecastCategory?
+
+  expectedCloseDate DateTime? @db.Date
+  issueDate         DateTime? @db.Date
+  billingDate       DateTime? @db.Date
+
+  projectSource  SaleProjectSource?
+  channel        String?
+  campaignSource String?
+  socialLeadId   String?
+
+  ownerUserId   String?
+  ownerUserName String?
+  contactName   String?
+
+  policyNumber String?
+  contractId   String?
+
+  nextStep    String?
+  lostReason  String?
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ── Policy ────────────────────────────────────────────────────────────────────

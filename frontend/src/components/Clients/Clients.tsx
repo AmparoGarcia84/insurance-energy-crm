@@ -1,22 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getClients, getClient, deleteClient, importClients, type Client, type ImportResult } from '../../api/clients'
+import { getClient, deleteClient, importClients, type Client, type ImportResult } from '../../api/clients'
 import ClientsList from '../ClientsList/ClientsList'
 import ClientDetail from '../ClientDetail/ClientDetail'
 import ClientForm from '../ClientForm/ClientForm'
+import { useClients } from '../../context/DataContext'
 
 export default function Clients() {
   const { t } = useTranslation()
 
-  const [clients, setClients] = useState<Client[]>([])
-  const [loading, setLoading] = useState(true)
+  const { clients, loading, upsertClient, removeClient, refreshClients } = useClients()
   const [viewing, setViewing] = useState<Client | null>(null)
   // 'new' is a sentinel value that means "open form for a new client"
   const [editing, setEditing] = useState<Client | null | 'new'>(null)
-
-  useEffect(() => {
-    getClients().then(setClients).finally(() => setLoading(false))
-  }, [])
 
   async function handleEditExisting(id: string) {
     const existing = await getClient(id)
@@ -25,27 +21,20 @@ export default function Clients() {
 
   // Insert or update the saved client in the list, keeping alphabetical order
   function handleSaved(saved: Client) {
-    setClients((prev) => {
-      const exists = prev.some((c) => c.id === saved.id)
-      const updated = exists
-        ? prev.map((c) => (c.id === saved.id ? saved : c))
-        : [...prev, saved]
-      return updated.sort((a, b) => a.name.localeCompare(b.name))
-    })
+    upsertClient(saved)
     setEditing(null)
   }
 
   async function handleImport(csvText: string): Promise<ImportResult> {
     const result = await importClients(csvText)
-    const fresh = await getClients()
-    setClients(fresh)
+    await refreshClients()
     return result
   }
 
   async function handleDelete(client: Client) {
     if (!confirm(t('clients.deleteConfirm', { name: client.name }))) return
     await deleteClient(client.id)
-    setClients((prev) => prev.filter((c) => c.id !== client.id))
+    removeClient(client.id)
   }
 
   // Detail view: shown when a row is clicked and no form is open

@@ -22,11 +22,26 @@
   gap: 0.5rem;
 }
 
+.sale-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .sale-card__client {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--corp-black);
   line-height: 1.3;
+}
+
+.sale-card__title {
+  font-size: 0.7rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sale-card__badge {
@@ -57,17 +72,7 @@
 }
 
 .sale-card__avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border-radius: 50%;
   background: var(--corp-muted-bg);
-  color: var(--corp-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
 }
 
 .sale-card__next-step {
