@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import SaleCard from '../SaleCard/SaleCard'
 import SaleForm from '../SaleForm/SaleForm'
+import SaleTypeToggle from '../SaleTypeToggle/SaleTypeToggle'
 import type { Sale } from '../../api/sales'
 import {
   SaleType,
@@ -87,18 +88,12 @@ export default function Sales() {
       </div>
 
       <div className="sales__toggle">
-        <button
-          className={saleType === SaleType.INSURANCE ? 'sales__toggle-btn sales__toggle-btn--active' : 'sales__toggle-btn'}
-          onClick={() => setSaleType(SaleType.INSURANCE)}
-        >
-          {t('sales.toggleInsurance')}
-        </button>
-        <button
-          className={saleType === SaleType.ENERGY ? 'sales__toggle-btn sales__toggle-btn--active' : 'sales__toggle-btn'}
-          onClick={() => setSaleType(SaleType.ENERGY)}
-        >
-          {t('sales.toggleEnergy')}
-        </button>
+        <SaleTypeToggle
+          value={saleType}
+          onChange={setSaleType}
+          insuranceLabel={t('sales.toggleInsurance')}
+          energyLabel={t('sales.toggleEnergy')}
+        />
       </div>
 
       <div className="sales-board">

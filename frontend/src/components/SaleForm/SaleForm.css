@@ -33,15 +33,61 @@
   gap: 0.4rem;
 }
 
-.sale-form__toggle-group {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .sale-form__actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--corp-muted-bg);
+}
+
+.sale-form__client-field {
+  position: relative;
+}
+
+.sale-form__client-options {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  background: var(--corp-card);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sale-form__client-option {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--corp-muted-bg);
+  background: transparent;
+  font-size: 0.86rem;
+  color: var(--corp-black);
+  cursor: pointer;
+}
+
+.sale-form__client-option:last-child {
+  border-bottom: 0;
+}
+
+.sale-form__client-option:hover {
+  background: var(--corp-muted-bg);
+}
+
+.sale-form__client-option--status {
+  color: var(--corp-muted);
+  cursor: default;
+}
+
+.sale-form__client-highlight {
+  background: var(--corp-gold);
+  color: var(--corp-black);
+  padding: 0 0.08rem;
+  border-radius: 2px;
 }

@@ -209,6 +209,9 @@ export default {
     backToBoard: 'Back to board',
     toggleInsurance: 'Insurance',
     toggleEnergy: 'Energy',
+    clientSearchPlaceholder: 'Search by name, client number or NIF/CIF',
+    clientNoMatches: 'No clients match your search',
+    clientLoading: 'Loading clients...',
     opportunitiesCount: '{{count}} opportunities',
     deleteConfirm: 'Delete this opportunity? This action cannot be undone.',
     card: {

@@ -28,38 +28,7 @@
 
 /* ── Type toggle ────────────────────────────────────────── */
 .sales__toggle {
-  display: flex;
-  gap: 0.4rem;
   align-self: flex-start;
-}
-
-.sales__toggle-btn {
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--corp-beige);
-  background: transparent;
-  color: var(--corp-muted);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.sales__toggle-btn:hover {
-  background: var(--corp-muted-bg);
-  color: var(--corp-black);
-}
-
-.sales__toggle-btn--active {
-  background: var(--corp-black);
-  color: #fff;
-  border-color: var(--corp-black);
-}
-
-.sales__toggle-btn--active:hover {
-  background: var(--corp-black);
-  opacity: 0.85;
-  color: #fff;
 }
 
 /* ── Kanban board ───────────────────────────────────────── */

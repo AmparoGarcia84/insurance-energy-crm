@@ -1,0 +1,45 @@
+.sale-type-toggle {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.sale-type-toggle__legend {
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--corp-muted);
+}
+
+.sale-type-toggle__group {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.sale-type-toggle__btn {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--corp-beige);
+  background: transparent;
+  color: var(--corp-muted);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sale-type-toggle__btn:hover {
+  background: var(--corp-muted-bg);
+  color: var(--corp-black);
+}
+
+.sale-type-toggle__btn--active {
+  background: var(--corp-black);
+  color: #fff;
+  border-color: var(--corp-black);
+}
+
+.sale-type-toggle__btn--active:hover {
+  background: var(--corp-black);
+  opacity: 0.85;
+  color: #fff;
+}

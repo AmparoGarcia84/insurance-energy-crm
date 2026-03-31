@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Trash2 } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
 import TextareaField from '../FormField/TextareaField'
-import { usePermissions } from '../../hooks/usePermissions'
 import ConfirmModal from '../ConfirmModal/ConfirmModal'
+import SaleTypeToggle from '../SaleTypeToggle/SaleTypeToggle'
+import { useClients } from '../../context/DataContext'
 import type { Sale, SaleInput } from '../../api/sales'
 import {
   SaleType,
@@ -171,20 +173,81 @@ function toInput(form: FormState): SaleInput {
 
 export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
   const { t } = useTranslation()
-  const { canDelete } = usePermissions()
   const isNew = sale === null
+  const { clients, loading: clientsLoading } = useClients()
 
   const [form, setForm] = useState<FormState>(() => sale ? toFormState(sale) : EMPTY)
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [clientQuery, setClientQuery] = useState(() => sale?.clientName ?? '')
+  const [showClientOptions, setShowClientOptions] = useState(false)
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
+  const filteredClients = useMemo(() => {
+    const query = clientQuery.trim().toLowerCase()
+    if (!query) return clients.slice(0, 20)
+    return clients
+      .filter((client) => {
+        const searchable = [
+          client.name,
+          client.clientNumber ?? '',
+          client.nif ?? '',
+        ].join(' ').toLowerCase()
+        return searchable.includes(query)
+      })
+      .slice(0, 20)
+  }, [clients, clientQuery])
+
+  function formatClientOption(client: { name: string; clientNumber?: string; nif?: string }): string {
+    const suffix = [client.clientNumber ? `#${client.clientNumber}` : '', client.nif ?? '']
+      .filter(Boolean)
+      .join(' · ')
+    return suffix ? `${client.name} (${suffix})` : client.name
+  }
+
+  function renderHighlighted(text: string, query: string): ReactNode {
+    const trimmed = query.trim()
+    if (!trimmed) return text
+
+    const lowerText = text.toLowerCase()
+    const lowerQuery = trimmed.toLowerCase()
+    const idx = lowerText.indexOf(lowerQuery)
+    if (idx === -1) return text
+
+    const before = text.slice(0, idx)
+    const match = text.slice(idx, idx + trimmed.length)
+    const after = text.slice(idx + trimmed.length)
+    return (
+      <>
+        {before}
+        <mark className="sale-form__client-highlight">{match}</mark>
+        {after}
+      </>
+    )
+  }
+
+  function selectClient(clientId: string) {
+    const selected = clients.find((c) => c.id === clientId)
+    if (!selected) return
+    set('clientId', selected.id)
+    set('clientName', selected.name)
+    setClientQuery(selected.name)
+    setShowClientOptions(false)
+  }
+
+  useEffect(() => {
+    if (!form.clientId) return
+    const selected = clients.find((c) => c.id === form.clientId)
+    if (!selected) return
+    setClientQuery((current) => current || selected.name)
+  }, [clients, form.clientId])
+
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!form.title.trim()) return
+    if (!form.title.trim() || !form.clientId) return
     setSaving(true)
     try {
       const input = toInput(form)
@@ -212,35 +275,20 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
           <ChevronLeft size={18} />
           {t('sales.backToBoard')}
         </button>
-        {!isNew && canDelete && (
-          <button type="button" className="icon-btn icon-btn-danger" onClick={() => setConfirmDelete(true)}>
-            <Trash2 size={16} />
-          </button>
-        )}
       </div>
 
       <form className="sale-form" onSubmit={handleSave}>
         <h2 className="sale-form__title">{isNew ? t('sales.new') : t('sales.edit')}</h2>
 
-        <div className="form-field sale-form__type-toggle">
-          <label>{t('sales.fields.type')}</label>
-          <div className="sale-form__toggle-group">
-            <button
-              type="button"
-              className={form.type === SaleType.INSURANCE ? 'btn-primary' : 'btn-secondary'}
-              onClick={() => set('type', SaleType.INSURANCE)}
-            >
-              {t('sales.toggleInsurance')}
-            </button>
-            <button
-              type="button"
-              className={form.type === SaleType.ENERGY ? 'btn-primary' : 'btn-secondary'}
-              onClick={() => set('type', SaleType.ENERGY)}
-            >
-              {t('sales.toggleEnergy')}
-            </button>
-          </div>
-        </div>
+        {isNew && (
+          <SaleTypeToggle
+            className="sales__toggle"
+            value={form.type}
+            onChange={(nextType) => set('type', nextType)}
+            insuranceLabel={t('sales.toggleInsurance')}
+            energyLabel={t('sales.toggleEnergy')}
+          />
+        )}
 
         <section className="form-section">
           <h3 className="form-section-title">{t('sales.sections.saleInfo')}</h3>
@@ -277,12 +325,52 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
               onChange={(e) => set('expectedCloseDate', e.target.value)}
             />
 
-            <InputField
-              id="sale-client-name"
-              label={t('sales.fields.clientName')}
-              value={form.clientName}
-              onChange={(e) => set('clientName', e.target.value)}
-            />
+            <div className="form-field sale-form__client-field">
+              <label htmlFor="sale-client-name">{t('sales.fields.clientName')}</label>
+              <input
+                id="sale-client-name"
+                type="text"
+                autoComplete="off"
+                value={clientQuery}
+                placeholder={t('sales.clientSearchPlaceholder')}
+                onFocus={() => setShowClientOptions(true)}
+                onBlur={() => setTimeout(() => setShowClientOptions(false), 120)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setClientQuery(value)
+                  set('clientId', '')
+                  set('clientName', value)
+                  setShowClientOptions(true)
+                }}
+              />
+              {showClientOptions && (
+                <div className="sale-form__client-options">
+                  {clientsLoading && (
+                    <div className="sale-form__client-option sale-form__client-option--status">
+                      {t('sales.clientLoading')}
+                    </div>
+                  )}
+                  {!clientsLoading && filteredClients.length === 0 && (
+                    <div className="sale-form__client-option sale-form__client-option--status">
+                      {t('sales.clientNoMatches')}
+                    </div>
+                  )}
+                  {!clientsLoading && filteredClients.map((client) => (
+                    <button
+                      key={client.id}
+                      type="button"
+                      className="sale-form__client-option"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        selectClient(client.id)
+                      }}
+                    >
+                      {renderHighlighted(formatClientOption(client), clientQuery)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <InputField
               id="sale-issue-date"
               label={t('sales.fields.issueDate')}
@@ -465,7 +553,7 @@ export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
           <button type="button" className="btn-secondary" onClick={onCancel}>
             {t('common.cancel')}
           </button>
-          <button type="submit" className="btn-primary" disabled={saving || !form.title.trim()}>
+          <button type="submit" className="btn-primary" disabled={saving || !form.title.trim() || !form.clientId}>
             {saving ? t('common.saving') : t('common.save')}
           </button>
         </div>

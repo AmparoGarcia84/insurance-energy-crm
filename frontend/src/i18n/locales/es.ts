@@ -209,6 +209,9 @@ export default {
     backToBoard: 'Volver al tablero',
     toggleInsurance: 'Seguros',
     toggleEnergy: 'Energía',
+    clientSearchPlaceholder: 'Buscar por nombre, número de cliente o NIF/CIF',
+    clientNoMatches: 'No hay clientes que coincidan con la búsqueda',
+    clientLoading: 'Cargando clientes...',
     opportunitiesCount: '{{count}} oportunidades',
     deleteConfirm: '¿Eliminar esta oportunidad? Esta acción no se puede deshacer.',
     card: {

@@ -38,6 +38,16 @@ vi.mock('../../hooks/usePermissions', () => ({
   usePermissions: () => ({ canDelete: true, canEdit: true, canCreate: true }),
 }))
 
+vi.mock('../../context/DataContext', () => ({
+  useClients: () => ({
+    clients: [
+      { id: 'c1', name: 'Pedro Gómez', clientNumber: '000001', nif: '12345678A' },
+      { id: 'c2', name: 'Ana Martínez', clientNumber: '000002', nif: 'B12345678' },
+    ],
+    loading: false,
+  }),
+}))
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -47,6 +57,9 @@ vi.mock('react-i18next', () => ({
         'sales.backToBoard': 'Volver al tablero',
         'sales.toggleInsurance': 'Seguros',
         'sales.toggleEnergy': 'Energía',
+        'sales.clientSearchPlaceholder': 'Buscar por nombre, número de cliente o NIF/CIF',
+        'sales.clientNoMatches': 'No hay clientes que coincidan con la búsqueda',
+        'sales.clientLoading': 'Cargando clientes...',
         'sales.fields.type': 'Tipo',
         'sales.fields.title': 'Nombre de Venta',
         'sales.fields.clientName': 'Nombre de Cliente',
@@ -120,6 +133,12 @@ describe('SaleForm', () => {
     expect(screen.getByLabelText('Nombre de Cliente')).toHaveValue('Pedro Gómez')
   })
 
+  it('hides sale type toggle when editing', () => {
+    render(<SaleForm sale={EXISTING_SALE} onSave={onSave} onCancel={onCancel} />)
+    expect(screen.queryByRole('button', { name: 'Seguros' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Energía' })).not.toBeInTheDocument()
+  })
+
   it('calls onCancel when back button is clicked', async () => {
     render(<SaleForm sale={null} onSave={onSave} onCancel={onCancel} />)
     await userEvent.click(screen.getByText('Volver al tablero'))
@@ -134,6 +153,8 @@ describe('SaleForm', () => {
   it('calls onSave after successful create', async () => {
     render(<SaleForm sale={null} onSave={onSave} onCancel={onCancel} />)
     await userEvent.type(screen.getByLabelText('Nombre de Venta'), 'Vida - Test')
+    await userEvent.type(screen.getByLabelText('Nombre de Cliente'), 'Pedro')
+    await userEvent.click(screen.getByRole('button', { name: /Pedro Gómez/i }))
     await userEvent.click(screen.getByText('Guardar'))
     await waitFor(() => expect(onSave).toHaveBeenCalled())
   })
