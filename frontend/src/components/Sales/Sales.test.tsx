@@ -18,6 +18,13 @@ vi.mock('../../context/DataContext', () => ({
     upsertSale: vi.fn(),
     removeSale: vi.fn(),
   }),
+  useClients: () => ({
+    clients: [
+      { id: 'c1', name: 'Pedro Gómez', clientNumber: '000001', nif: '12345678A' },
+      { id: 'c2', name: 'Ana Martínez', clientNumber: '000002', nif: 'B12345678' },
+    ],
+    loading: false,
+  }),
 }))
 
 vi.mock('../../auth/AuthContext', () => ({
