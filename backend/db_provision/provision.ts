@@ -817,6 +817,19 @@ async function main() {
   }
 
   console.log(`  ✓ Workdays (${createdWorkdays.length}) + 1 adjustment request`)
+
+  // ─── Collaborators ────────────────────────────────────────────────────────
+  await prisma.collaborator.createMany({
+    data: [
+      { name: 'Gestoría López & Asociados',        phone: '952 100 200' },
+      { name: 'Taller Mecánico Hermanos Ruiz',      phone: '654 321 098' },
+      { name: 'Clínica Veterinaria Pata y Cola',    phone: '671 889 900' },
+      { name: 'Inmobiliaria Costa Sur S.L.',        phone: '952 445 566' },
+      { name: 'Farmacia Dr. Medina',                phone: '612 778 899' },
+    ],
+  })
+  console.log('  ✓ Collaborators (5)')
+
   console.log('Database provisioning complete.')
 }
 

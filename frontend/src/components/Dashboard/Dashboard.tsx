@@ -6,6 +6,7 @@ import Clients from '../Clients/Clients'
 import Sales from '../Sales/Sales'
 import UserManagement from '../UserManagement/UserManagement'
 import MyAccount from '../MyAccount/MyAccount'
+import Collaborators from '../Collaborators/Collaborators'
 
 export default function Dashboard() {
   const { t } = useTranslation()
@@ -15,6 +16,7 @@ export default function Dashboard() {
     switch (activeSection) {
       case 'clients':        return <Clients />
       case 'sales':          return <Sales />
+      case 'collaborators':  return <Collaborators />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
       default:               return <h1>{t(`nav.${activeSection}`)}</h1>

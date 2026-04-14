@@ -31,6 +31,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Energía')).toBeInTheDocument()
     expect(screen.getByText('Casos')).toBeInTheDocument()
     expect(screen.getByText('Jornada')).toBeInTheDocument()
+    expect(screen.getByText('Colaboradores')).toBeInTheDocument()
   })
 
   it('renders logout button', () => {

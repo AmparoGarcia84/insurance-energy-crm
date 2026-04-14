@@ -29,6 +29,7 @@ import {
 import { getClients, type Client } from '../api/clients'
 import { getSales, type Sale } from '../api/sales'
 import { getUsers } from '../api/users'
+import { getCollaborators, type Collaborator } from '../api/collaborators'
 import type { AuthUser } from '../api/auth'
 
 // ── Context shape ────────────────────────────────────────────────────────────
@@ -55,6 +56,13 @@ interface DataContextValue {
   ensureUsers: () => void
   upsertUser: (user: AuthUser) => void
   removeUser: (id: string) => void
+
+  // Collaborators
+  collaborators: Collaborator[]
+  collaboratorsLoading: boolean
+  ensureCollaborators: () => void
+  upsertCollaborator: (collaborator: Collaborator) => void
+  removeCollaborator: (id: string) => void
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
@@ -158,11 +166,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setUsers((prev) => prev.filter((u) => u.id !== id))
   }, [])
 
+  // ── Collaborators ──
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([])
+  const [collaboratorsLoading, setCollaboratorsLoading] = useState(false)
+  const collaboratorsFetched = useRef(false)
+
+  const ensureCollaborators = useCallback(() => {
+    if (collaboratorsFetched.current) return
+    collaboratorsFetched.current = true
+    setCollaboratorsLoading(true)
+    getCollaborators()
+      .then(setCollaborators)
+      .catch(() => { collaboratorsFetched.current = false })
+      .finally(() => setCollaboratorsLoading(false))
+  }, [])
+
+  const upsertCollaborator = useCallback((collaborator: Collaborator) => {
+    setCollaborators((prev) => {
+      const exists = prev.some((c) => c.id === collaborator.id)
+      const updated = exists
+        ? prev.map((c) => (c.id === collaborator.id ? collaborator : c))
+        : [...prev, collaborator]
+      return updated.sort((a, b) => a.name.localeCompare(b.name))
+    })
+  }, [])
+
+  const removeCollaborator = useCallback((id: string) => {
+    setCollaborators((prev) => prev.filter((c) => c.id !== id))
+  }, [])
+
   return (
     <DataContext.Provider value={{
       clients, clientsLoading, ensureClients, upsertClient, removeClient, refreshClients,
       sales, salesLoading, ensureSales, upsertSale, removeSale,
       users, usersLoading, ensureUsers, upsertUser, removeUser,
+      collaborators, collaboratorsLoading, ensureCollaborators, upsertCollaborator, removeCollaborator,
     }}>
       {children}
     </DataContext.Provider>
@@ -210,5 +248,16 @@ export function useUsers() {
     loading: ctx.usersLoading,
     upsertUser: ctx.upsertUser,
     removeUser: ctx.removeUser,
+  }
+}
+
+export function useCollaborators() {
+  const ctx = useDataContext()
+  useEffect(() => { ctx.ensureCollaborators() }, [ctx.ensureCollaborators])
+  return {
+    collaborators: ctx.collaborators,
+    loading: ctx.collaboratorsLoading,
+    upsertCollaborator: ctx.upsertCollaborator,
+    removeCollaborator: ctx.removeCollaborator,
   }
 }

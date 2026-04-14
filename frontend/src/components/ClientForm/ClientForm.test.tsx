@@ -10,6 +10,8 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../context/DataContext', () => ({
   useClients: () => ({ clients: [], loading: false }),
+  useUsers: () => ({ users: [], loading: false }),
+  useCollaborators: () => ({ collaborators: [], loading: false }),
 }))
 
 vi.mock('../../api/clients', async (importOriginal) => {

@@ -104,10 +104,10 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
                   {client.email}
                 </span>
               )}
-              {client.accountOwnerUserId && (
+              {client.accountOwnerName && (
                 <span className="cd-meta-item">
                   <User size={13} />
-                  {client.accountOwnerUserId}
+                  {client.accountOwnerName}
                 </span>
               )}
             </div>
@@ -235,8 +235,8 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
             <section className="cd-section">
               <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
               <div className="cd-grid">
-                <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerUserId} />
-                <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentUserId} />
+                <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerName} />
+                <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentName} />
               </div>
             </section>
 

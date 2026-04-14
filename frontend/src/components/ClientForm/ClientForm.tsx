@@ -23,7 +23,7 @@ import {
   type Client,
   type ClientInput,
 } from '../../api/clients'
-import { useClients } from '../../context/DataContext'
+import { useClients, useUsers, useCollaborators } from '../../context/DataContext'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
 import CheckboxField from '../FormField/CheckboxField'
@@ -48,7 +48,8 @@ const EMPTY_FORM: ClientInput = {
   birthDate: '', drivingLicenseIssueDate: '', dniExpiryDate: '',
   mobilePhone: '', secondaryPhone: '', email: '', website: '',
   employees: undefined, annualRevenue: undefined, sicCode: '',
-  accountOwnerUserId: '', commercialAgentUserId: '',
+  accountOwnerUserId: '', accountOwnerName: '',
+  commercialAgentUserId: '', commercialAgentName: '',
   isMainClient: false, mainClientId: '',
   description: '',
   addresses: [], bankAccounts: [],
@@ -73,7 +74,8 @@ function toFormValues(client: Client): ClientInput {
     mobilePhone: client.mobilePhone ?? '', secondaryPhone: client.secondaryPhone ?? '',
     email: client.email ?? '', website: client.website ?? '',
     employees: client.employees, annualRevenue: client.annualRevenue, sicCode: client.sicCode ?? '',
-    accountOwnerUserId: client.accountOwnerUserId ?? '', commercialAgentUserId: client.commercialAgentUserId ?? '',
+    accountOwnerUserId: client.accountOwnerUserId ?? '', accountOwnerName: client.accountOwnerName ?? '',
+    commercialAgentUserId: client.commercialAgentUserId ?? '', commercialAgentName: client.commercialAgentName ?? '',
     isMainClient: client.isMainClient ?? false, mainClientId: client.mainClientId ?? '',
     description: client.description ?? '',
     addresses:    client.addresses?.map(({ type, street, postalCode, city, province, country }) => ({ type, street, postalCode, city, province, country })) ?? [],
@@ -105,6 +107,23 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
   const [saving, setSaving] = useState(false)
   const [duplicateClient, setDuplicateClient] = useState<DuplicateClient | null>(null)
   const { clients: clientsList } = useClients()
+  const { users } = useUsers()
+  const { collaborators } = useCollaborators()
+
+  // Combined person options: platform users first, then collaborators
+  const personOptions = [
+    ...users.map((u) => ({ id: u.id, name: u.displayName, group: 'users' as const })),
+    ...collaborators.map((c) => ({ id: c.id, name: c.name, group: 'collaborators' as const })),
+  ]
+
+  function selectPerson(field: 'accountOwner' | 'commercialAgent', selectedId: string) {
+    const person = personOptions.find((p) => p.id === selectedId)
+    if (field === 'accountOwner') {
+      setForm((f) => ({ ...f, accountOwnerUserId: selectedId, accountOwnerName: person?.name ?? '' }))
+    } else {
+      setForm((f) => ({ ...f, commercialAgentUserId: selectedId, commercialAgentName: person?.name ?? '' }))
+    }
+  }
 
   const [errors, setErrors] = useState({
     nif: '', mobilePhone: '', secondaryPhone: '', email: '', website: '',
@@ -309,12 +328,36 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         <section className="form-section">
           <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
           <div className="form-grid">
-            <InputField id="client-accountOwnerUserId" label={t('clients.fields.accountOwnerUserId')}
-              name="accountOwnerUserId" type="text" autoComplete="off"
-              value={form.accountOwnerUserId ?? ''} onChange={(e) => set('accountOwnerUserId', e.target.value)} />
-            <InputField id="client-commercialAgentUserId" label={t('clients.fields.commercialAgentUserId')}
-              name="commercialAgentUserId" type="text" autoComplete="off"
-              value={form.commercialAgentUserId ?? ''} onChange={(e) => set('commercialAgentUserId', e.target.value)} />
+            <SelectField id="client-accountOwnerUserId" label={t('clients.fields.accountOwnerUserId')}
+              name="accountOwnerUserId" value={form.accountOwnerUserId ?? ''}
+              onChange={(e) => selectPerson('accountOwner', e.target.value)}>
+              <option value="">{t('clients.fields.none')}</option>
+              {users.length > 0 && (
+                <optgroup label={t('clients.fields.personGroupUsers')}>
+                  {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
+                </optgroup>
+              )}
+              {collaborators.length > 0 && (
+                <optgroup label={t('clients.fields.personGroupCollaborators')}>
+                  {collaborators.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </optgroup>
+              )}
+            </SelectField>
+            <SelectField id="client-commercialAgentUserId" label={t('clients.fields.commercialAgentUserId')}
+              name="commercialAgentUserId" value={form.commercialAgentUserId ?? ''}
+              onChange={(e) => selectPerson('commercialAgent', e.target.value)}>
+              <option value="">{t('clients.fields.none')}</option>
+              {users.length > 0 && (
+                <optgroup label={t('clients.fields.personGroupUsers')}>
+                  {users.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
+                </optgroup>
+              )}
+              {collaborators.length > 0 && (
+                <optgroup label={t('clients.fields.personGroupCollaborators')}>
+                  {collaborators.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </optgroup>
+              )}
+            </SelectField>
           </div>
         </section>
 

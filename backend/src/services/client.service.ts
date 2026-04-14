@@ -84,7 +84,9 @@ export interface ClientInput {
 
   // Gestión comercial
   accountOwnerUserId?: string
+  accountOwnerName?: string
   commercialAgentUserId?: string
+  commercialAgentName?: string
 
   // Jerarquía
   isMainClient?: boolean

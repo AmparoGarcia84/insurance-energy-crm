@@ -379,7 +379,9 @@ export interface Client {
 
   // Gestión comercial
   accountOwnerUserId?: string
+  accountOwnerName?: string
   commercialAgentUserId?: string
+  commercialAgentName?: string
   collectionManager?: CollectionManager
 
   // Jerarquía

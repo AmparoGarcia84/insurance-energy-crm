@@ -7,6 +7,7 @@ export default {
     energy: 'Energía',
     cases: 'Casos',
     timeTracking: 'Jornada',
+    collaborators: 'Colaboradores',
     userManagement: 'Administración de usuarios',
   },
   sidebar: {
@@ -79,6 +80,8 @@ export default {
       drivingLicenseIssueDate: 'Fecha carnet de conducir',
       accountOwnerUserId: 'Propietario de cliente',
       commercialAgentUserId: 'Agente comercial',
+      personGroupUsers: 'Usuarios',
+      personGroupCollaborators: 'Colaboradores',
       mainClientId: 'Cliente principal',
       isMainClient: 'Marcar como cliente principal (grupo)',
       description: 'Descripción',
@@ -301,6 +304,25 @@ export default {
       CONFIRMED:  'Confirmado',
     },
     actions: {
+      delete: 'Eliminar',
+    },
+  },
+  collaborators: {
+    title: 'Colaboradores',
+    new: 'Nuevo colaborador',
+    edit: 'Editar colaborador',
+    search: 'Buscar por nombre o teléfono...',
+    empty: 'No hay colaboradores',
+    emptySearch: 'Sin resultados para tu búsqueda',
+    deleteConfirm: '¿Eliminar a {{name}}? Esta acción no se puede deshacer.',
+    fields: {
+      name: 'Nombre / Razón social',
+      phone: 'Teléfono',
+    },
+    actions: {
+      save: 'Guardar',
+      saving: 'Guardando...',
+      cancel: 'Cancelar',
       delete: 'Eliminar',
     },
   },

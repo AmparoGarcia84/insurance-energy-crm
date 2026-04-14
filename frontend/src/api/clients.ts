@@ -49,7 +49,9 @@ export interface Client {
   sicCode?: string
 
   accountOwnerUserId?: string
+  accountOwnerName?: string
   commercialAgentUserId?: string
+  commercialAgentName?: string
 
   isMainClient?: boolean
   mainClientId?: string

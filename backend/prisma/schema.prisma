@@ -119,7 +119,9 @@ model Client {
 
   // Gestión comercial
   accountOwnerUserId    String?
+  accountOwnerName      String?
   commercialAgentUserId String?
+  commercialAgentName   String?
 
   // Relaciones
   addresses    ClientAddress[]
@@ -337,6 +339,16 @@ model Case {
   status      CaseStatus @default(OPEN)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// ── Collaborator ──────────────────────────────────────────────────────────────
+
+model Collaborator {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ── Workday ───────────────────────────────────────────────────────────────────

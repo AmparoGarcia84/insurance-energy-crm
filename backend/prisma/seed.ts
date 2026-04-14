@@ -76,6 +76,21 @@ async function main() {
     })
   }
 
+  // ── Demo collaborators ────────────────────────────────────────────────────
+  // Only seeded when the table is empty to avoid duplicates on re-runs.
+  const collaboratorsCount = await prisma.collaborator.count()
+  if (collaboratorsCount === 0) {
+    await prisma.collaborator.createMany({
+      data: [
+        { name: 'Gestoría López & Asociados', phone: '952100200' },
+        { name: 'Taller Mecánico Hermanos Ruiz', phone: '654321098' },
+        { name: 'Clínica Veterinaria Pata y Cola', phone: '671889900' },
+        { name: 'Inmobiliaria Costa Sur S.L.', phone: '952445566' },
+        { name: 'Farmacia Dr. Medina', phone: '612778899' },
+      ],
+    })
+  }
+
   console.log('Seed completed')
 }
 

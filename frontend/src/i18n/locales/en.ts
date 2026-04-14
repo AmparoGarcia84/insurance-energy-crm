@@ -7,6 +7,7 @@ export default {
     energy: 'Energy',
     cases: 'Cases',
     timeTracking: 'Time Tracking',
+    collaborators: 'Collaborators',
     userManagement: 'User Management',
   },
   sidebar: {
@@ -79,6 +80,8 @@ export default {
       drivingLicenseIssueDate: 'Driving license issue date',
       accountOwnerUserId: 'Account owner',
       commercialAgentUserId: 'Commercial agent',
+      personGroupUsers: 'Users',
+      personGroupCollaborators: 'Collaborators',
       mainClientId: 'Main client',
       isMainClient: 'Mark as main client (group)',
       description: 'Description',
@@ -301,6 +304,25 @@ export default {
       CONFIRMED:  'Confirmed',
     },
     actions: {
+      delete: 'Delete',
+    },
+  },
+  collaborators: {
+    title: 'Collaborators',
+    new: 'New collaborator',
+    edit: 'Edit collaborator',
+    search: 'Search by name or phone...',
+    empty: 'No collaborators yet',
+    emptySearch: 'No results for your search',
+    deleteConfirm: 'Delete {{name}}? This action cannot be undone.',
+    fields: {
+      name: 'Name / Company name',
+      phone: 'Phone',
+    },
+    actions: {
+      save: 'Save',
+      saving: 'Saving...',
+      cancel: 'Cancel',
       delete: 'Delete',
     },
   },

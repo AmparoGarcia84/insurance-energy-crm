@@ -149,7 +149,7 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
                       </span>
                     )}
                   </td>
-                  <td>{c.accountOwnerUserId ?? '—'}</td>
+                  <td>{c.accountOwnerName ?? '—'}</td>
                   <td>{c.mobilePhone ?? '—'}</td>
                   <td>{c.email ?? '—'}</td>
                   <td onClick={(e) => e.stopPropagation()}>

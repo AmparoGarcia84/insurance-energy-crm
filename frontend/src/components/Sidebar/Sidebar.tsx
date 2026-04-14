@@ -23,6 +23,7 @@ import {
   Clock,
   LogOut,
   UserCog,
+  Handshake,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import logo from '../../assets/logo.jpeg'
@@ -36,16 +37,17 @@ import './Sidebar.css'
  * Icons are lucide-react components passed as references (not JSX) so they
  * can be instantiated with custom props inside the map.
  */
-export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking' | 'userManagement' | 'myAccount'
+export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking' | 'collaborators' | 'userManagement' | 'myAccount'
 
 const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
-  { section: 'home',         key: 'nav.home',         icon: LayoutDashboard },
-  { section: 'clients',      key: 'nav.clients',      icon: Users },
-  { section: 'sales',        key: 'nav.sales',        icon: TrendingUp },
-  { section: 'policies',     key: 'nav.policies',     icon: Shield },
-  { section: 'energy',       key: 'nav.energy',       icon: Zap },
-  { section: 'cases',        key: 'nav.cases',        icon: AlertCircle },
-  { section: 'timeTracking', key: 'nav.timeTracking', icon: Clock },
+  { section: 'home',          key: 'nav.home',          icon: LayoutDashboard },
+  { section: 'clients',       key: 'nav.clients',       icon: Users },
+  { section: 'sales',         key: 'nav.sales',         icon: TrendingUp },
+  { section: 'policies',      key: 'nav.policies',      icon: Shield },
+  { section: 'energy',        key: 'nav.energy',        icon: Zap },
+  { section: 'cases',         key: 'nav.cases',         icon: AlertCircle },
+  { section: 'timeTracking',  key: 'nav.timeTracking',  icon: Clock },
+  { section: 'collaborators', key: 'nav.collaborators', icon: Handshake },
 ]
 
 interface SidebarProps {
