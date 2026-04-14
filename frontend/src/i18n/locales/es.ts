@@ -215,7 +215,6 @@ export default {
     opportunitiesCount: '{{count}} oportunidades',
     deleteConfirm: '¿Eliminar esta oportunidad? Esta acción no se puede deshacer.',
     card: {
-      perYear: '/año',
       savingsPerYear: '/año ahorro',
     },
     stages: {

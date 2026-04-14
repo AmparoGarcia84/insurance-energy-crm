@@ -40,7 +40,6 @@ vi.mock('react-i18next', () => ({
         'sales.new': 'Nueva venta',
         'sales.toggleInsurance': 'Seguros',
         'sales.toggleEnergy': 'Energía',
-        'sales.card.perYear': '/año',
         'sales.card.savingsPerYear': '/año ahorro',
         'sales.stages.insurance.RESPONSE_PENDING': 'Pte. respuesta',
         'sales.stages.insurance.DOCUMENTS_PENDING': 'Pte. documentación',

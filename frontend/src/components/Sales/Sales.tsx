@@ -115,7 +115,7 @@ export default function Sales() {
                 </span>
                 {total > 0 && (
                   <span className="sales-column__total">
-                    {total.toLocaleString('es-ES')} €/año
+                    {total.toLocaleString('es-ES')} €
                   </span>
                 )}
               </div>

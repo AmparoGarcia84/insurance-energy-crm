@@ -50,7 +50,7 @@ export default function SaleCard({ sale, ownerName, onClick }: Props) {
           <span className="sale-card__revenue-icon">€</span>
           <span className="sale-card__revenue-value">
             {revenue.toLocaleString('es-ES')}
-            {isEnergy ? t('sales.card.savingsPerYear') : t('sales.card.perYear')}
+            {isEnergy ? t('sales.card.savingsPerYear') : '€'}
           </span>
         </div>
       )}

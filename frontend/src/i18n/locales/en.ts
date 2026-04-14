@@ -215,7 +215,6 @@ export default {
     opportunitiesCount: '{{count}} opportunities',
     deleteConfirm: 'Delete this opportunity? This action cannot be undone.',
     card: {
-      perYear: '/year',
       savingsPerYear: '/year savings',
     },
     stages: {

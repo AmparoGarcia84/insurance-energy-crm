@@ -9,7 +9,6 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'sales.card.perYear': '/año',
         'sales.card.savingsPerYear': '/año ahorro',
       }
       return map[key] ?? key
@@ -57,7 +56,6 @@ describe('SaleCard', () => {
     render(<SaleCard sale={INSURANCE_SALE} onClick={vi.fn()} />)
     const revenueSpan = document.querySelector('.sale-card__revenue-value')
     expect(revenueSpan?.textContent).toMatch(/2[.,]?100/)
-    expect(revenueSpan?.textContent).toContain('/año')
   })
 
   it('renders next step', () => {
