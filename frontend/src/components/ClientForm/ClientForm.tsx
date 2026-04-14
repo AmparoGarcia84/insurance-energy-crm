@@ -26,6 +26,7 @@ import {
 import { useClients, useUsers, useCollaborators } from '../../context/DataContext'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
+import SearchableSelectField from '../FormField/SearchableSelectField'
 import CheckboxField from '../FormField/CheckboxField'
 import TextareaField from '../FormField/TextareaField'
 import AddressList from '../AddressList/AddressList'
@@ -37,7 +38,9 @@ const CLIENT_TYPES          = Object.values(ClientType)
 const CLIENT_STATUSES       = Object.values(ClientStatus)
 const CLIENT_QUALIFICATIONS = Object.values(ClientQualification)
 const COLLECTION_MANAGERS   = Object.values(CollectionManager)
-const ACTIVITIES            = Object.entries(ClientActivityLabels) as [ClientActivity, string][]
+const ACTIVITY_OPTIONS = Object.entries(ClientActivityLabels)
+  .map(([value, label]) => ({ value, label }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'es'))
 const SECTORS               = Object.entries(ClientSectorLabels)   as [ClientSector, string][]
 
 // Default values for a blank new-client form
@@ -266,16 +269,20 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
             <InputField id="client-annualRevenue" label={t('clients.fields.annualRevenue')}
               name="annualRevenue" type="number" min={0} step={0.01} autoComplete="off"
               value={form.annualRevenue ?? ''} onChange={(e) => set('annualRevenue', e.target.value ? Number(e.target.value) : undefined)} />
-            <SelectField id="client-activity" label={t('clients.fields.activity')}
-              name="activity" value={form.activity ?? ''}
-              onChange={(e) => {
-                const activity = e.target.value
+            <SearchableSelectField
+              id="client-activity"
+              label={t('clients.fields.activity')}
+              name="activity"
+              value={form.activity ?? ''}
+              options={ACTIVITY_OPTIONS}
+              emptyLabel={t('clients.fields.none')}
+              searchPlaceholder={t('common.searchOptions')}
+              noResultsLabel={t('common.noResults')}
+              onChange={(activity) => {
                 const cnae = activity ? ACTIVITY_CNAE[activity as ClientActivity] : undefined
                 setForm((f) => ({ ...f, activity: activity || '', ...(cnae ? { sicCode: cnae } : {}) }))
-              }}>
-              <option value="">{t('clients.fields.none')}</option>
-              {ACTIVITIES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-            </SelectField>
+              }}
+            />
             <InputField id="client-sicCode" label={t('clients.fields.sicCode')}
               name="sicCode" type="text" autoComplete="off"
               value={form.sicCode ?? ''} onChange={(e) => set('sicCode', e.target.value)} />

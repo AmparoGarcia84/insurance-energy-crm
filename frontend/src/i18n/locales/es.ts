@@ -26,6 +26,8 @@ export default {
     cancel: 'Cancelar',
     save: 'Guardar',
     saving: 'Guardando...',
+    searchOptions: 'Buscar...',
+    noResults: 'Sin resultados',
   },
   dashboard: {
     home: 'Inicio',

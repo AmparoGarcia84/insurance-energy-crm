@@ -74,6 +74,109 @@
   color: #c0392b;
 }
 
+/* ── SearchableSelectField ── */
+.searchable-select {
+  position: relative;
+}
+
+.searchable-select__control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--corp-beige);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  background: var(--corp-cream);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.searchable-select__control:focus,
+.searchable-select__control.open {
+  border-color: var(--corp-gold);
+  outline: none;
+}
+
+.searchable-select__placeholder {
+  color: var(--corp-muted);
+}
+
+.searchable-select__chevron {
+  flex-shrink: 0;
+  color: var(--corp-muted);
+  transition: transform 0.15s;
+}
+
+.searchable-select__chevron.open {
+  transform: rotate(180deg);
+}
+
+.searchable-select__dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.searchable-select__search {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: none;
+  border-bottom: 1px solid var(--corp-beige);
+  font-size: 0.88rem;
+  background: var(--corp-cream);
+  color: var(--corp-black);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchable-select__search::placeholder {
+  color: var(--corp-muted);
+}
+
+.searchable-select__options {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.searchable-select__option {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.searchable-select__option:hover {
+  background: var(--corp-muted-bg);
+}
+
+.searchable-select__option.selected {
+  background: var(--corp-muted-bg);
+  color: var(--corp-gold);
+  font-weight: 500;
+}
+
+.searchable-select__no-results {
+  padding: 0.6rem 0.7rem;
+  font-size: 0.88rem;
+  color: var(--corp-muted);
+}
+
+/* ── /SearchableSelectField ── */
+
 .form-field-label {
   font-size: 0.82rem;
   font-weight: 500;
