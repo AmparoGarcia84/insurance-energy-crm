@@ -22,6 +22,12 @@
   gap: 1rem;
 }
 
+.cd-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .cd-back {
   color: var(--corp-muted);
   flex-shrink: 0;
@@ -98,6 +104,20 @@
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
   margin-bottom: -1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Reserve bold width so switching tabs doesn't shift layout */
+.cd-tab::after {
+  content: attr(data-label);
+  font-weight: 600;
+  font-size: 0.875rem;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .cd-tab:hover {

@@ -1,0 +1,125 @@
+.cim-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.cim-modal {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.cim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--corp-beige);
+  position: sticky;
+  top: 0;
+  background: var(--corp-card);
+  border-radius: 10px 10px 0 0;
+  z-index: 1;
+}
+
+.cim-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+/* ── Body ── */
+.cim-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Section ── */
+.cim-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Grid ── */
+.cim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem 1.5rem;
+}
+
+/* ── Field ── */
+.cim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cim-field-label {
+  font-size: 0.75rem;
+  color: var(--corp-muted);
+  font-weight: 500;
+}
+
+.cim-field-value {
+  font-size: 0.9rem;
+  color: var(--corp-black);
+}
+
+/* ── Cards (addresses / bank accounts) ── */
+.cim-card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cim-card {
+  background: var(--corp-muted-bg);
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--corp-black);
+  min-width: 200px;
+}
+
+.cim-card-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  margin-bottom: 0.25rem;
+}
+
+.cim-iban {
+  font-family: monospace;
+  font-size: 0.875rem;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+/* ── Description ── */
+.cim-description {
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}

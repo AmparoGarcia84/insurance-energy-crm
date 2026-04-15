@@ -1,19 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Pencil, Phone, Mail, User } from 'lucide-react'
+import { ArrowLeft, Pencil, Eye, Phone, Mail, User } from 'lucide-react'
 import {
-  ClientActivity,
-  ClientSector,
   ClientTypeLabels,
   ClientStatusLabels,
-  ClientQualificationLabels,
-  CollectionManagerLabels,
-  ClientActivityLabels,
-  ClientSectorLabels,
-  AddressTypeLabels,
-  AccountTypeLabels,
 } from '@crm/shared'
 import type { Client } from '../../api/clients'
+import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
 import './ClientDetail.css'
 
 interface Props {
@@ -22,7 +15,7 @@ interface Props {
   onEdit: (client: Client) => void
 }
 
-type Tab = 'info' | 'sales' | 'policies' | 'energy' | 'cases'
+type Tab = 'summary' | 'activity' | 'sales' | 'mail' | 'documents'
 
 function initials(name: string): string {
   return name
@@ -33,33 +26,17 @@ function initials(name: string): string {
     .join('')
 }
 
-function formatDate(iso?: string, locale = 'es'): string {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-function Field({ label, value }: { label: string; value?: string | number | null }) {
-  return (
-    <div className="cd-field">
-      <span className="cd-field-label">{label}</span>
-      <span className="cd-field-value">{value ?? '—'}</span>
-    </div>
-  )
-}
-
 export default function ClientDetail({ client, onBack, onEdit }: Props) {
-  const { t, i18n } = useTranslation()
-  const fmt = (iso?: string) => formatDate(iso, i18n.language)
-  const [tab, setTab] = useState<Tab>('info')
+  const { t } = useTranslation()
+  const [tab, setTab] = useState<Tab>('summary')
+  const [showInfo, setShowInfo] = useState(false)
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'info',     label: t('clients.tabs.info') },
-    { id: 'sales',    label: t('clients.tabs.sales') },
-    { id: 'policies', label: t('clients.tabs.policies') },
-    { id: 'energy',   label: t('clients.tabs.energy') },
-    { id: 'cases',    label: t('clients.tabs.cases') },
+    { id: 'summary',   label: t('clients.tabs.summary') },
+    { id: 'activity',  label: t('clients.tabs.activity') },
+    { id: 'sales',     label: t('clients.tabs.sales') },
+    { id: 'mail',      label: t('clients.tabs.mail') },
+    { id: 'documents', label: t('clients.tabs.documents') },
   ]
 
   return (
@@ -114,10 +91,16 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
           </div>
         </div>
 
-        <button className="btn-primary" onClick={() => onEdit(client)}>
-          <Pencil size={15} />
-          {t('clients.detail.edit')}
-        </button>
+        <div className="cd-header-actions">
+          <button className="btn-secondary" onClick={() => setShowInfo(true)}>
+            <Eye size={15} />
+            {t('clients.detail.view')}
+          </button>
+          <button className="btn-primary" onClick={() => onEdit(client)}>
+            <Pencil size={15} />
+            {t('clients.detail.edit')}
+          </button>
+        </div>
       </div>
 
       {/* ── Tabs ── */}
@@ -125,6 +108,7 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
         {tabs.map((t) => (
           <button
             key={t.id}
+            data-label={t.label}
             className={`cd-tab${tab === t.id ? ' cd-tab-active' : ''}`}
             onClick={() => setTab(t.id)}
           >
@@ -135,149 +119,15 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
       {/* ── Tab content ── */}
       <div className="cd-content">
-
-        {tab === 'info' && (
-          <div className="cd-sections">
-
-            {/* Identificación */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.identification')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.name')}         value={client.name} />
-                <Field label={t('clients.fields.nif')}          value={client.nif} />
-                <Field label={t('clients.fields.clientNumber')} value={client.clientNumber} />
-              </div>
-            </section>
-
-            {/* Documentación */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.personal')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.birthDate')}               value={fmt(client.birthDate)} />
-                <Field label={t('clients.fields.dniExpiryDate')}           value={fmt(client.dniExpiryDate)} />
-                <Field label={t('clients.fields.drivingLicenseIssueDate')} value={fmt(client.drivingLicenseIssueDate)} />
-              </div>
-            </section>
-
-            {/* Contacto */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.contact')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.mobilePhone')}    value={client.mobilePhone} />
-                <Field label={t('clients.fields.secondaryPhone')} value={client.secondaryPhone} />
-                <Field label={t('clients.fields.email')}          value={client.email} />
-                <Field label={t('clients.fields.website')}        value={client.website} />
-              </div>
-            </section>
-
-            {/* Direcciones */}
-            {client.addresses && client.addresses.length > 0 && (
-              <section className="cd-section">
-                <h2 className="form-section-title">{t('clients.sections.addresses')}</h2>
-                <div className="cd-address-list">
-                  {client.addresses.map((addr) => (
-                    <div key={addr.id} className="cd-address-card">
-                      {addr.type && (
-                        <span className="cd-address-type">{AddressTypeLabels[addr.type]}</span>
-                      )}
-                      <p>{[addr.street, addr.postalCode, addr.city, addr.province, addr.country].filter(Boolean).join(', ') || '—'}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Empresa y facturación */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.business')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.employees')}    value={client.employees} />
-                <Field label={t('clients.fields.annualRevenue')} value={client.annualRevenue != null ? `${client.annualRevenue.toLocaleString(i18n.language)} €` : undefined} />
-                <Field label={t('clients.fields.sicCode')}      value={client.sicCode} />
-                <Field label={t('clients.fields.activity')}
-                  value={client.activity ? ClientActivityLabels[client.activity as ClientActivity] : undefined} />
-              </div>
-            </section>
-
-            {/* Cuentas bancarias */}
-            {client.bankAccounts && client.bankAccounts.length > 0 && (
-              <section className="cd-section">
-                <h2 className="form-section-title">{t('clients.sections.bankAccounts')}</h2>
-                <div className="cd-address-list">
-                  {client.bankAccounts.map((acc) => (
-                    <div key={acc.id} className="cd-address-card">
-                      <span className="cd-address-type">{AccountTypeLabels[acc.type]}</span>
-                      <p className="cd-iban">{acc.iban}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Clasificación */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.classification')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.type')}
-                  value={client.type ? ClientTypeLabels[client.type] : undefined} />
-                <Field label={t('clients.fields.status')}
-                  value={client.status ? ClientStatusLabels[client.status] : undefined} />
-                <Field label={t('clients.fields.qualification')}
-                  value={client.qualification ? ClientQualificationLabels[client.qualification] : undefined} />
-                <Field label={t('clients.fields.collectionManager')}
-                  value={client.collectionManager ? CollectionManagerLabels[client.collectionManager] : undefined} />
-                <Field label={t('clients.fields.sector')}
-                  value={client.sector ? ClientSectorLabels[client.sector as ClientSector] : undefined} />
-              </div>
-            </section>
-
-            {/* Gestión comercial */}
-            <section className="cd-section">
-              <h2 className="form-section-title">{t('clients.sections.commercial')}</h2>
-              <div className="cd-grid">
-                <Field label={t('clients.fields.accountOwnerUserId')}    value={client.accountOwnerName} />
-                <Field label={t('clients.fields.commercialAgentUserId')} value={client.commercialAgentName} />
-              </div>
-            </section>
-
-            {/* Jerarquía */}
-            {(client.isMainClient || client.mainClientId) && (
-              <section className="cd-section">
-                <h2 className="form-section-title">{t('clients.sections.hierarchy')}</h2>
-                <div className="cd-grid">
-                  {client.isMainClient && (
-                    <Field label={t('clients.fields.isMainClient')} value={t('clients.fields.isMainClient')} />
-                  )}
-                  {client.mainClientId && (
-                    <Field
-                      label={t('clients.fields.mainClientId')}
-                      value={client.mainClient
-                        ? [client.mainClient.clientNumber, client.mainClient.name].filter(Boolean).join(' · ')
-                        : client.mainClientId}
-                    />
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Observaciones */}
-            {client.description && (
-              <section className="cd-section">
-                <h2 className="form-section-title">{t('clients.sections.notes')}</h2>
-                <p className="cd-description">{client.description}</p>
-              </section>
-            )}
-
-          </div>
-        )}
-
-        {tab !== 'info' && (
-          <div className="cd-placeholder">
-            <p>{t('clients.detail.comingSoon')}</p>
-          </div>
-        )}
-
+        <div className="cd-placeholder">
+          <p>{t('clients.detail.comingSoon')}</p>
+        </div>
       </div>
+
+      {/* ── Info modal ── */}
+      {showInfo && (
+        <ClientInfoModal client={client} onClose={() => setShowInfo(false)} />
+      )}
     </div>
   )
 }

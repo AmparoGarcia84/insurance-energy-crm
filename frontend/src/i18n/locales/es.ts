@@ -24,6 +24,7 @@ export default {
   },
   common: {
     cancel: 'Cancelar',
+    close: 'Cerrar',
     save: 'Guardar',
     saving: 'Guardando...',
     searchOptions: 'Buscar...',
@@ -130,15 +131,16 @@ export default {
       UNPAID: 'Impagados',
     },
     tabs: {
-      info: 'Información',
-      sales: 'Ventas',
-      policies: 'Pólizas',
-      energy: 'Energía',
-      cases: 'Casos',
+      summary:   'Resumen',
+      activity:  'Actividad',
+      sales:     'Ventas',
+      mail:      'Correo',
+      documents: 'Documentos',
     },
     detail: {
       back: 'Volver al listado',
       edit: 'Editar',
+      view: 'Ver',
       comingSoon: 'Próximamente',
     },
     actions: {

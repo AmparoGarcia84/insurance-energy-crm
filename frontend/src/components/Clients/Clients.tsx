@@ -19,10 +19,12 @@ export default function Clients() {
     setEditing(existing)
   }
 
-  // Insert or update the saved client in the list, keeping alphabetical order
+  // Insert or update the saved client in the list, keeping alphabetical order.
+  // If the edit was opened from the detail view, return there with updated data.
   function handleSaved(saved: Client) {
     upsertClient(saved)
     setEditing(null)
+    if (viewing) setViewing(saved)
   }
 
   async function handleImport(csvText: string): Promise<ImportResult> {
@@ -43,7 +45,7 @@ export default function Clients() {
       <ClientDetail
         client={viewing}
         onBack={() => setViewing(null)}
-        onEdit={(client) => { setViewing(null); setEditing(client) }}
+        onEdit={(client) => { setEditing(client) }}
       />
     )
   }

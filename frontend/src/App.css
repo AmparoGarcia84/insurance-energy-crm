@@ -31,6 +31,9 @@
 .btn-primary:disabled              { opacity: 0.45; cursor: not-allowed; }
 
 .btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.5rem 1.1rem;
   background: transparent;
   color: var(--corp-muted);

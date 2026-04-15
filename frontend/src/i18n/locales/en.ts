@@ -24,6 +24,7 @@ export default {
   },
   common: {
     cancel: 'Cancel',
+    close: 'Close',
     save: 'Save',
     saving: 'Saving...',
     searchOptions: 'Search...',
@@ -130,15 +131,16 @@ export default {
       UNPAID: 'Unpaid',
     },
     tabs: {
-      info: 'Information',
-      sales: 'Sales',
-      policies: 'Policies',
-      energy: 'Energy',
-      cases: 'Cases',
+      summary:   'Summary',
+      activity:  'Activity',
+      sales:     'Sales',
+      mail:      'Mail',
+      documents: 'Documents',
     },
     detail: {
       back: 'Back to list',
       edit: 'Edit',
+      view: 'View',
       comingSoon: 'Coming soon',
     },
     actions: {
