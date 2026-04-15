@@ -24,7 +24,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  workdays Workday[]
+  workdays      Workday[]
+  assignedTasks Task[]
 }
 
 // ── Client ────────────────────────────────────────────────────────────────────
@@ -143,6 +144,7 @@ model Client {
   energyContracts EnergyContract[]
   cases           Case[]
   sales           Sale[]
+  tasks           Task[]
 }
 
 model ClientAddress {
@@ -383,4 +385,90 @@ model WorkAdjustmentRequest {
   status            AdjustmentStatus @default(PENDING)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+}
+
+// ── Task ──────────────────────────────────────────────────────────────────────
+
+enum TaskStatus {
+  NOT_STARTED
+  DEFERRED
+  IN_PROGRESS
+  COMPLETED
+  WAITING_FOR_INPUT
+  UNLOGGED
+}
+
+enum TaskPriority {
+  LOWEST
+  LOW
+  NORMAL
+  HIGH
+  HIGHEST
+}
+
+enum TaskContextType {
+  PROJECT
+  CONTACT
+}
+
+enum RelatedEntityType {
+  CLIENT
+  SALE
+  QUOTE
+  PROJECT
+  SALES_ORDER
+  PURCHASE_ORDER
+  INVOICE
+  CAMPAIGN
+  SUPPLIER
+  CASE
+  CONTRACT
+  PERSONAL_DATA
+}
+
+enum ReminderChannel {
+  EMAIL
+  IN_APP
+}
+
+enum ReminderRecurrence {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Task {
+  id      String @id @default(uuid())
+
+  subject     String
+  description String?
+
+  status      TaskStatus      @default(NOT_STARTED)
+  priority    TaskPriority?
+  contextType TaskContextType?
+
+  // Polymorphic relation at application level
+  relatedEntityType RelatedEntityType?
+  relatedEntityId   String?
+
+  dueDate DateTime? @db.Date
+
+  // Assignment
+  assignedToUserId String?
+  assignedTo       User?   @relation(fields: [assignedToUserId], references: [id])
+
+  // Optional client link
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  // Reminder (stored inline — no separate table needed at this stage)
+  hasReminder        Boolean            @default(false)
+  reminderAt         DateTime?
+  reminderChannel    ReminderChannel?
+  reminderRecurrence ReminderRecurrence?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

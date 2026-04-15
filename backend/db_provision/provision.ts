@@ -10,7 +10,12 @@
 import 'dotenv/config'
 import bcrypt from 'bcrypt'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { EnergySaleStage, InsuranceSaleStage, PrismaClient, SaleBusinessType, SaleForecastCategory, SaleProjectSource, SaleType } from '../src/generated/prisma/client.js'
+import {
+  EnergySaleStage, InsuranceSaleStage, PrismaClient,
+  SaleBusinessType, SaleForecastCategory, SaleProjectSource, SaleType,
+  TaskStatus, TaskPriority, TaskContextType, RelatedEntityType,
+  ReminderChannel, ReminderRecurrence,
+} from '../src/generated/prisma/client.js'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
@@ -31,7 +36,7 @@ async function main() {
   const asesor = await prisma.user.upsert({
     where:  { email: 'asesor@crm.com' },
     update: {},
-    create: { email: 'asesor@crm.com', passwordHash: employeeHash, role: 'EMPLOYEE', displayName: 'Asesor' },
+    create: { email: 'asesor@crm.com', passwordHash: employeeHash, role: 'EMPLOYEE', displayName: 'Nuria' },
   })
 
   console.log('  ✓ Users')
@@ -747,6 +752,359 @@ async function main() {
   })
 
   console.log('  ✓ Cases')
+
+  // ─── Tasks ────────────────────────────────────────────────────────────────
+  await prisma.task.createMany({
+    data: [
+      // ── Mila (OWNER) ──────────────────────────────────────────────────────
+
+      // 1 — siniestro agua Carmen López (IN_PROGRESS, HIGH, vence pronto)
+      {
+        subject:           'Gestionar expediente siniestro agua — Carmen López',
+        description:       'Coordinar con Mapfre la visita del perito y recopilar fotos de los daños del cliente.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CASE,
+        clientId:          c('Carmen López Martínez').id,
+        dueDate:           new Date('2026-04-17'),
+        assignedToUserId:  mila.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-17T09:00:00'),
+        reminderChannel:   ReminderChannel.IN_APP,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 2 — enviar documentación seguro hogar Carmen López
+      {
+        subject:           'Solicitar documentación seguro hogar — Carmen López',
+        description:       'Pedir DNI, escrituras y último recibo de contribución para completar la solicitud de Mapfre.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Carmen López Martínez').id,
+        dueDate:           new Date('2026-04-22'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 3 — comparativa hogar Roberto Díaz
+      {
+        subject:           'Enviar comparativa seguros de hogar — Roberto Díaz',
+        description:       'Preparar comparativa Mutua Madrileña vs Mapfre vs Generali y enviar por email.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Roberto Díaz Torres').id,
+        dueDate:           new Date('2026-04-24'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 4 — liquidación Caser urgente
+      {
+        subject:           'Revisar liquidación errónea con Caser — Construcciones Vega',
+        description:       'Detectado error en liquidación de póliza de construcción. Contactar con el área técnica de Caser para corrección.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.HIGHEST,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Construcciones Vega').id,
+        dueDate:           new Date('2026-04-16'),
+        assignedToUserId:  mila.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-16T08:30:00'),
+        reminderChannel:   ReminderChannel.EMAIL,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 5 — renovar póliza vida Francisco Ruiz
+      {
+        subject:           'Gestionar renovación póliza de vida — Francisco Ruiz',
+        description:       'La póliza VID-2022-00832 vence en marzo 2032 pero el cliente quiere revisar condiciones y capital asegurado.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Francisco Ruiz Sánchez').id,
+        dueDate:           new Date('2026-05-01'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 6 — confirmar cobro recibo Antonio García
+      {
+        subject:           'Verificar cobro recibo domiciliado — Antonio García',
+        description:       'Confirmar con el cliente que el recibo de la póliza AUT-2026-04567 ha sido cargado correctamente.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Antonio García Pérez').id,
+        dueDate:           new Date('2026-04-18'),
+        assignedToUserId:  mila.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-18T10:00:00'),
+        reminderChannel:   ReminderChannel.IN_APP,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 7 — firma digital Restaurante El Patio
+      {
+        subject:           'Enviar propuesta para firma digital — Restaurante El Patio',
+        description:       'Preparar documento de seguro multirriesgo hostelería en formato digital y enviar enlace de firma.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Restaurante El Patio').id,
+        dueDate:           new Date('2026-04-25'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 8 — informe médico Elena Moreno
+      {
+        subject:           'Solicitar informe médico para recurso Sanitas — Elena Moreno',
+        description:       'Recopilar historial clínico y solicitar informe al médico tratante para presentar recurso a Sanitas.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CASE,
+        clientId:          c('Elena Moreno Fernández').id,
+        dueDate:           new Date('2026-04-30'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 9 — aseguradora alternativa Clínica DentalCare (aplazada)
+      {
+        subject:           'Buscar aseguradora alternativa RC sanitaria — Clínica DentalCare',
+        description:       'KO en scoring con Asisa por siniestralidad. Consultar condiciones con Zurich y AXA.',
+        status:            TaskStatus.DEFERRED,
+        priority:          TaskPriority.LOW,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CLIENT,
+        clientId:          c('Clínica DentalCare').id,
+        dueDate:           new Date('2026-05-15'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 10 — activación suministro eléctrico Antonio García
+      {
+        subject:           'Seguimiento activación contrato eléctrico — Antonio García',
+        description:       'Confirmar con Endesa el estado de la solicitud de cambio de comercializadora.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Antonio García Pérez').id,
+        dueDate:           new Date('2026-04-20'),
+        assignedToUserId:  mila.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-20T09:30:00'),
+        reminderChannel:   ReminderChannel.IN_APP,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 11 — actualizar valor continente Restaurante El Patio
+      {
+        subject:           'Revisar valor asegurado continente tras reforma — Restaurante El Patio',
+        description:       'El cliente ha reformado el local. Pendiente de recibir presupuesto de obra para actualizar el valor continente en póliza.',
+        status:            TaskStatus.WAITING_FOR_INPUT,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Restaurante El Patio').id,
+        dueDate:           new Date('2026-04-28'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 12 — nueva dentista Clínica DentalCare
+      {
+        subject:           'Comunicar a Asisa datos de nueva dentista — Clínica DentalCare',
+        description:       'Recopilar datos profesionales (nombre, número de colegiada, fecha de incorporación) y enviarlos a Asisa.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Clínica DentalCare').id,
+        dueDate:           new Date('2026-04-23'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 13 — emitir recibo Sara Muñoz (vencida — anterior a hoy)
+      {
+        subject:           'Emitir recibo primer mes seguro dental — Sara Muñoz',
+        description:       'Gestionar emisión del primer recibo de Asisa para la póliza dental de Sara Muñoz.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.HIGHEST,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Sara Muñoz Delgado').id,
+        dueDate:           new Date('2026-04-10'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 14 — estudio energético Pedro Gómez
+      {
+        subject:           'Enviar estudio energético — Pedro Gómez',
+        description:       'Preparar análisis de consumo con las últimas facturas y enviar propuesta de ahorro con Iberdrola.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Carmen López Martínez').id,
+        dueDate:           new Date('2026-04-21'),
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+      // 15 — incidencia factura Talleres Rápidos (completada)
+      {
+        subject:           'Revisar factura eléctrica con consumo anormal — Talleres Rápidos',
+        description:       'Revisión completada con Repsol. Error de lectura del contador. Emitida factura rectificativa.',
+        status:            TaskStatus.COMPLETED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CASE,
+        clientId:          c('Talleres Rápidos S.L.').id,
+        assignedToUserId:  mila.id,
+        hasReminder:       false,
+      },
+
+      // ── Asesor (EMPLOYEE) ─────────────────────────────────────────────────
+
+      // 16 — documentación RC Lucía Hernández
+      {
+        subject:           'Recoger documentación póliza RC — Lucía Hernández',
+        description:       'Solicitar al cliente el certificado de actividad profesional y el justificante de formación requerido por Zurich.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Lucía Hernández Jiménez').id,
+        dueDate:           new Date('2026-04-18'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-18T08:00:00'),
+        reminderChannel:   ReminderChannel.EMAIL,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 17 — llamar María Sanz estudio necesidades
+      {
+        subject:           'Llamar para estudio de necesidades — María Sanz',
+        description:       'Primera llamada de captación. Identificar necesidades de salud y dependientes a cargo.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CLIENT,
+        clientId:          c('María Sanz Romero').id,
+        dueDate:           new Date('2026-04-22'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 18 — datos bancarios Pablo Navarro
+      {
+        subject:           'Confirmar datos bancarios actualizados — Pablo Navarro',
+        description:       'El cliente indicó que cambió de banco. Recoger nuevo IBAN para domiciliar próximo recibo de vida.',
+        status:            TaskStatus.WAITING_FOR_INPUT,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CLIENT,
+        clientId:          c('Pablo Navarro Gil').id,
+        dueDate:           new Date('2026-04-17'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 19 — nueva propuesta Academia Lingua (aplazada)
+      {
+        subject:           'Preparar nueva propuesta de seguro — Academia Lingua',
+        description:       'La oferta anterior fue perdida. Estudiar si hay margen con otra aseguradora antes de descartar al cliente.',
+        status:            TaskStatus.DEFERRED,
+        priority:          TaskPriority.LOW,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CLIENT,
+        clientId:          c('Academia Lingua').id,
+        dueDate:           new Date('2026-05-20'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 20 — gestionar cambio suministro Academia Lingua
+      {
+        subject:           'Seguimiento cambio comercializadora eléctrica — Academia Lingua',
+        description:       'El proceso de cambio a EDP lleva semanas pendiente. Contactar con distribuidora para resolver bloqueo.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Academia Lingua').id,
+        dueDate:           new Date('2026-04-29'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 21 — revisión contrato eléctrico Carmen López
+      {
+        subject:           'Revisar contrato eléctrico Endesa — Carmen López',
+        description:       'El contrato CUPS ES0031000098765432CD lleva meses en estado pendiente. Verificar activación con Endesa.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Carmen López Martínez').id,
+        dueDate:           new Date('2026-04-25'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       true,
+        reminderAt:        new Date('2026-04-25T09:00:00'),
+        reminderChannel:   ReminderChannel.IN_APP,
+        reminderRecurrence: ReminderRecurrence.NONE,
+      },
+      // 22 — peritación robo Talleres Rápidos
+      {
+        subject:           'Seguimiento visita perito — siniestro robo Talleres Rápidos',
+        description:       'Confirmar que el perito de Mapfre realizó la visita y recoger número de expediente asignado.',
+        status:            TaskStatus.IN_PROGRESS,
+        priority:          TaskPriority.HIGH,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CASE,
+        clientId:          c('Talleres Rápidos S.L.').id,
+        dueDate:           new Date('2026-04-16'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 23 — actualizar beneficiarios Francisco Ruiz (completada)
+      {
+        subject:           'Actualizar beneficiarios póliza de vida — Francisco Ruiz',
+        description:       'Beneficiarios actualizados en Allianz según instrucciones del cliente. Confirmación recibida por email.',
+        status:            TaskStatus.COMPLETED,
+        priority:          TaskPriority.LOW,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CONTRACT,
+        clientId:          c('Francisco Ruiz Sánchez').id,
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 24 — cerrar expediente impago Pablo Navarro (completada)
+      {
+        subject:           'Cerrar expediente baja por impago — Pablo Navarro',
+        description:       'Comunicación de baja enviada al cliente y expediente cerrado. Póliza cancelada en sistema.',
+        status:            TaskStatus.COMPLETED,
+        priority:          TaskPriority.LOW,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.CASE,
+        clientId:          c('Pablo Navarro Gil').id,
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+      // 25 — contactar Construcciones Vega seguimiento póliza
+      {
+        subject:           'Contactar para seguimiento póliza obras — Construcciones Vega',
+        description:       'La póliza de construcción tiene liquidación errónea. Asesor debe coordinar con cliente la documentación pendiente.',
+        status:            TaskStatus.NOT_STARTED,
+        priority:          TaskPriority.NORMAL,
+        contextType:       TaskContextType.CONTACT,
+        relatedEntityType: RelatedEntityType.SALE,
+        clientId:          c('Construcciones Vega').id,
+        dueDate:           new Date('2026-04-28'),
+        assignedToUserId:  asesor.id,
+        hasReminder:       false,
+      },
+    ],
+  })
+
+  console.log('  ✓ Tasks (25)')
 
   // ─── Workdays ─────────────────────────────────────────────────────────────
   // Last 10 working days for Mila, last 8 for Asesor

@@ -703,20 +703,71 @@ export interface Case extends BaseEntity {
 // ----------------------------------------------------
 
 export enum TaskStatus {
-  TODO = "TODO",
-  DOING = "DOING",
-  DONE = "DONE",
-  CANCELED = "CANCELED",
+  NOT_STARTED       = "NOT_STARTED",
+  DEFERRED          = "DEFERRED",
+  IN_PROGRESS       = "IN_PROGRESS",
+  COMPLETED         = "COMPLETED",
+  WAITING_FOR_INPUT = "WAITING_FOR_INPUT",
+  UNLOGGED          = "UNLOGGED",
+}
+
+export enum TaskPriority {
+  LOWEST  = "LOWEST",
+  LOW     = "LOW",
+  NORMAL  = "NORMAL",
+  HIGH    = "HIGH",
+  HIGHEST = "HIGHEST",
+}
+
+export enum TaskContextType {
+  PROJECT = "PROJECT",
+  CONTACT = "CONTACT",
+}
+
+export enum RelatedEntityType {
+  CLIENT        = "CLIENT",
+  SALE          = "SALE",
+  QUOTE         = "QUOTE",
+  PROJECT       = "PROJECT",
+  SALES_ORDER   = "SALES_ORDER",
+  PURCHASE_ORDER = "PURCHASE_ORDER",
+  INVOICE       = "INVOICE",
+  CAMPAIGN      = "CAMPAIGN",
+  SUPPLIER      = "SUPPLIER",
+  CASE          = "CASE",
+  CONTRACT      = "CONTRACT",
+  PERSONAL_DATA = "PERSONAL_DATA",
+}
+
+export enum ReminderChannel {
+  EMAIL  = "EMAIL",
+  IN_APP = "IN_APP",
+}
+
+export enum ReminderRecurrence {
+  NONE    = "NONE",
+  DAILY   = "DAILY",
+  WEEKLY  = "WEEKLY",
+  MONTHLY = "MONTHLY",
+  YEARLY  = "YEARLY",
 }
 
 export interface Task extends BaseEntity {
-  title: string
-  status: TaskStatus
-  priority?: "LOW" | "MEDIUM" | "HIGH"
-  dueAt?: ISODateTime
-  clientId?: UUID
-  dealId?: UUID
-  assignedToUserId?: UUID
+  subject:             string
+  description?:        string
+  status:              TaskStatus
+  priority?:           TaskPriority
+  contextType?:        TaskContextType
+  relatedEntityType?:  RelatedEntityType
+  relatedEntityId?:    UUID
+  dueDate?:            ISODate
+  assignedToUserId?:   UUID
+  clientId?:           UUID
+  // Reminder
+  hasReminder:         boolean
+  reminderAt?:         ISODateTime
+  reminderChannel?:    ReminderChannel
+  reminderRecurrence?: ReminderRecurrence
 }
 
 // ----------------------------------------------------

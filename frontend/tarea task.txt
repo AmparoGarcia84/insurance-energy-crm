@@ -1,0 +1,328 @@
+Necesito que implementes en el backend el módulo de **Task / Tareas** 
+
+Antes de empezar:
+
+* **Revisa si ya existe `Task` en `domain-types` dentro del proyecto**
+* Si **ya existe**, **modifícalo y amplíalo**
+* Si **no existe**, créalo siguiendo la misma convención del proyecto
+* Mantén el naming y la estructura ya existente en el repositorio
+
+## Objetivo
+
+Crear todo lo necesario para gestionar tareas:
+
+* modelo de base de datos
+* migración Prisma
+* enums
+* validaciones
+* endpoints CRUD
+* filtros básicos de listado
+* integración con los types del proyecto
+
+## Requisitos funcionales
+
+Quiero poder:
+
+* crear tarea
+* editar tarea
+* eliminar tarea
+* obtener tarea por id
+* listar tareas con filtros
+
+## Campos de la tarea
+
+### Relación con usuario asignado
+
+* La tarea debe poder asignarse a un usuario existente
+* Naming preferido:
+
+  * `assignedToUserId` para la FK
+  * relación Prisma: `assignedTo`
+
+### Asunto
+
+* texto corto
+* nombre: `subject`
+
+### Descripción
+
+* texto libre largo
+* nombre: `description`
+
+### Selector entre proyecto o contacto
+
+Este campo define el contexto principal de la tarea.
+
+Nombre del campo:
+
+* `contextType`
+
+Valores:
+
+* `PROJECT`
+* `CONTACT`
+
+### Prioridad
+
+Nombre del campo:
+
+* `priority`
+
+Valores:
+
+* `LOWEST`
+* `LOW`
+* `NORMAL`
+* `HIGH`
+* `HIGHEST`
+
+### Recordatorio
+
+Quiero una solución limpia para PostgreSQL + Prisma.
+
+Campos propuestos:
+
+* `hasReminder` Boolean
+* `reminderAt` DateTime?
+* `reminderChannel` enum?
+* `reminderRecurrence` enum?
+
+Canales:
+
+* `EMAIL`
+* `IN_APP`
+
+Recurrencia:
+
+* `NONE`
+* `DAILY`
+* `WEEKLY`
+* `MONTHLY`
+* `YEARLY`
+
+Implementación inicial:
+
+* el recordatorio puede ir dentro de `Task`
+* salvo que veas una razón técnica fuerte para normalizarlo en tabla aparte desde ya
+
+### Cliente opcional
+
+* relación opcional con cliente
+* nombres:
+
+  * `clientId`
+  * relación Prisma: `client`
+
+### Selector del tipo de entidad relacionada
+
+Quiero un campo para indicar con qué tipo de registro está relacionada la tarea.
+
+Nombre:
+
+* `relatedEntityType`
+
+Valores:
+
+* `CLIENT`
+* `SALE`
+* `QUOTE`
+* `PROJECT`
+* `SALES_ORDER`
+* `PURCHASE_ORDER`
+* `INVOICE`
+* `CAMPAIGN`
+* `SUPPLIER`
+* `CASE`
+* `CONTRACT`
+* `PERSONAL_DATA`
+
+Además:
+
+* `relatedEntityId` como id del registro relacionado
+* usa el mismo tipo de id que ya utilice el proyecto
+
+La idea es una relación polimórfica a nivel aplicación:
+
+* `relatedEntityType`
+* `relatedEntityId`
+
+### Fecha de vencimiento
+
+* `dueDate`
+
+### Estado
+
+Nombre del campo:
+
+* `status`
+
+Valores:
+
+* `NOT_STARTED`
+* `DEFERRED`
+* `IN_PROGRESS`
+* `COMPLETED`
+* `WAITING_FOR_INPUT`
+* `UNLOGGED`
+
+## Requisitos técnicos
+
+### Prisma
+
+Quiero que generes:
+
+* modelo `Task`
+* enums necesarios
+* relaciones con `User` y `Client` si existen
+* `createdAt`
+* `updatedAt`
+
+Si el proyecto ya sigue patrón de soft delete, respétalo.
+Si no existe ese patrón, haz borrado normal por ahora.
+
+## Endpoints REST
+
+Crear:
+
+* `POST /tasks`
+* `GET /tasks`
+* `GET /tasks/:id`
+* `PATCH /tasks/:id`
+* `DELETE /tasks/:id`
+
+## Filtros del listado
+
+Quiero filtros básicos por:
+
+* `assignedToUserId`
+* `status`
+* `priority`
+* `contextType`
+* `relatedEntityType`
+* `clientId`
+* `dueDate`
+* tareas vencidas
+* tareas con recordatorio
+
+## Validaciones mínimas
+
+* `subject` obligatorio
+* `assignedToUserId` válido si se envía
+* `clientId` válido si se envía
+* `reminderAt` obligatorio si `hasReminder = true`
+* `reminderChannel` obligatorio si `hasReminder = true`
+* `reminderRecurrence` solo permitido si hay recordatorio
+* `relatedEntityId` no puede existir sin `relatedEntityType`
+* `relatedEntityType` no puede existir sin `relatedEntityId`
+
+## Estructura del código
+
+Quiero que sigas la estructura ya existente del backend.
+Si ya hay patrón tipo:
+
+* routes
+* controller
+* service
+* repository
+* validator / schema
+  úsalo igual.
+
+Si en este proyecto ya existe una forma concreta de organizar módulos, replica esa misma estructura.
+
+## Entrega esperada
+
+Devuélveme:
+
+1. Modelo Prisma completo
+2. Enums
+3. Migración
+4. Types / domain-types actualizados
+5. Schemas o validaciones
+6. Controllers / services / routes
+7. Ejemplos de payload para create y update
+8. Notas breves de decisiones técnicas relevantes
+
+## Importante de diseño
+
+Quiero que distingas bien estos dos conceptos:
+
+* `contextType`: define el marco principal de la tarea (`PROJECT` o `CONTACT`)
+* `relatedEntityType`: define el tipo de registro concreto vinculado a la tarea
+
+Aunque puedan parecer parecidos, no quiero que se mezclen conceptualmente.
+
+## Preferencias finales de naming
+
+Usa estos nombres salvo que detectes una razón fuerte y justificada para no hacerlo:
+
+* `contextType`
+* `relatedEntityType`
+* `priority`
+* `hasReminder`
+* `reminderAt`
+* `reminderChannel`
+* `reminderRecurrence`
+* `dueDate`
+* `status`
+* `assignedToUserId`
+* `clientId`
+
+## Preferencias finales de enums
+
+### Priority
+
+* `LOWEST`
+* `LOW`
+* `NORMAL`
+* `HIGH`
+* `HIGHEST`
+
+### ReminderChannel
+
+* `EMAIL`
+* `IN_APP`
+
+### ReminderRecurrence
+
+* `NONE`
+* `DAILY`
+* `WEEKLY`
+* `MONTHLY`
+* `YEARLY`
+
+### TaskStatus
+
+* `NOT_STARTED`
+* `DEFERRED`
+* `IN_PROGRESS`
+* `COMPLETED`
+* `WAITING_FOR_INPUT`
+* `UNLOGGED`
+
+### TaskContextType
+
+* `PROJECT`
+* `CONTACT`
+
+### RelatedEntityType
+
+* `CLIENT`
+* `SALE`
+* `QUOTE`
+* `PROJECT`
+* `SALES_ORDER`
+* `PURCHASE_ORDER`
+* `INVOICE`
+* `CAMPAIGN`
+* `SUPPLIER`
+* `CASE`
+* `CONTRACT`
+* `PERSONAL_DATA`
+
+## Muy importante
+
+Antes de crear nada nuevo:
+
+* revisa si ya existe `Task` o tipos relacionados en `domain-types`
+* si existe, actualízalo en vez de duplicarlo
+* revisa también si ya existe algún patrón similar en otras entidades del proyecto para reutilizar naming, validaciones, DTOs, filtros y estructura

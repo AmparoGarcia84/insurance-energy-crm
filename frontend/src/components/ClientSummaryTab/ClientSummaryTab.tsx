@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Phone, Mail, MessageCircle, Users, ArrowRightLeft,
-  FileText, Download, Plus, Pencil, type LucideIcon,
+  FileText, Download, Plus, Pencil, AlertCircle, type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import { useSales } from '../../context/DataContext'
@@ -10,6 +10,9 @@ import SaleCard from '../SaleCard/SaleCard'
 import SaleForm from '../SaleForm/SaleForm'
 import type { Sale } from '../../api/sales'
 import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../api/sales'
+import { getTasks } from '../../api/tasks'
+import type { TaskWithRelations } from '../../api/tasks'
+import { TaskStatus, TaskPriority } from '../../api/tasks'
 import type { ActivityLog } from '@crm/shared'
 import { ActivityType } from '@crm/shared'
 import './ClientSummaryTab.css'
@@ -77,12 +80,40 @@ interface Props {
   clientId: string
 }
 
+const PRIORITY_CLASS: Record<TaskPriority, string> = {
+  [TaskPriority.LOWEST]:  'task-priority--lowest',
+  [TaskPriority.LOW]:     'task-priority--low',
+  [TaskPriority.NORMAL]:  'task-priority--normal',
+  [TaskPriority.HIGH]:    'task-priority--high',
+  [TaskPriority.HIGHEST]: 'task-priority--highest',
+}
+
+const PENDING_STATUSES = new Set<TaskStatus>([
+  TaskStatus.NOT_STARTED,
+  TaskStatus.IN_PROGRESS,
+  TaskStatus.DEFERRED,
+  TaskStatus.WAITING_FOR_INPUT,
+  TaskStatus.UNLOGGED,
+])
+
+function isOverdue(dueDate?: string | null): boolean {
+  if (!dueDate) return false
+  return new Date(dueDate) < new Date(new Date().toDateString())
+}
+
 export default function ClientSummaryTab({ clientId }: Props) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const ownerName = user?.displayName ?? ''
   const { sales, loading, upsertSale, removeSale } = useSales()
   const [editingSale, setEditingSale] = useState<Sale | null>(null)
+  const [tasks, setTasks] = useState<TaskWithRelations[]>([])
+
+  useEffect(() => {
+    getTasks({ clientId }).then((all) => {
+      setTasks(all.filter((t) => PENDING_STATUSES.has(t.status as TaskStatus)))
+    }).catch(() => {/* non-critical */})
+  }, [clientId])
 
   if (editingSale) {
     return (
@@ -139,9 +170,42 @@ export default function ClientSummaryTab({ clientId }: Props) {
       <div className="section-card cd-summary__card">
         <div className="cd-summary__card-header">
           <h3 className="cd-summary__card-title">{t('clients.summary.pendingTasks')}</h3>
+          {tasks.length > 0 && (
+            <span className="cd-summary__card-count">
+              {t('clients.summary.tasksCount', { count: tasks.length })}
+            </span>
+          )}
         </div>
         <div className="cd-summary__card-body">
-          <p className="cd-summary__empty">{t('clients.summary.noTasks')}</p>
+          {tasks.length === 0 ? (
+            <p className="cd-summary__empty">{t('clients.summary.noTasks')}</p>
+          ) : (
+            <ul className="cd-summary__task-list">
+              {tasks.map((task) => {
+                const overdue = isOverdue(task.dueDate)
+                return (
+                  <li key={task.id} className="cd-summary__task-item">
+                    <span
+                      className={`cd-summary__task-priority ${task.priority ? PRIORITY_CLASS[task.priority as TaskPriority] : 'task-priority--normal'}`}
+                      title={task.priority ?? ''}
+                    />
+                    <span className="cd-summary__task-body">
+                      <span className="cd-summary__task-subject">{task.subject}</span>
+                      {task.assignedTo && (
+                        <span className="cd-summary__task-meta">{task.assignedTo.displayName}</span>
+                      )}
+                    </span>
+                    {task.dueDate && (
+                      <span className={`cd-summary__task-due${overdue ? ' cd-summary__task-due--overdue' : ''}`}>
+                        {overdue && <AlertCircle size={11} />}
+                        {new Date(task.dueDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                      </span>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
         </div>
       </div>
 

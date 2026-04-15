@@ -151,6 +151,7 @@ export default {
       noSales:           'Sin oportunidades abiertas',
       pendingTasks:      'Tareas pendientes',
       noTasks:           'Sin tareas pendientes',
+      tasksCount:        '{{count}} tareas',
       recentActivity:    'Actividad reciente',
       noActivity:        'Sin actividad registrada',
     },
