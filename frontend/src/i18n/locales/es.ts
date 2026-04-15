@@ -143,6 +143,17 @@ export default {
       view: 'Ver',
       comingSoon: 'Próximamente',
     },
+    salesTab: {
+      noSales: 'Sin ventas aún',
+    },
+    summary: {
+      openOpportunities: 'Oportunidades abiertas',
+      noSales:           'Sin oportunidades abiertas',
+      pendingTasks:      'Tareas pendientes',
+      noTasks:           'Sin tareas pendientes',
+      recentActivity:    'Actividad reciente',
+      noActivity:        'Sin actividad registrada',
+    },
     actions: {
       save: 'Guardar',
       saving: 'Guardando...',

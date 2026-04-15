@@ -51,7 +51,7 @@ export default function BankAccountList({ value, onChange }: BankAccountListProp
   return (
     <div className="item-list">
       {value.map((entry, index) => (
-        <div key={index} className="item-list-item">
+        <div key={index} className="section-card item-list-item">
           <div className="item-list-item-header">
             <SelectField
               id={`account-type-${index}`}

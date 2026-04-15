@@ -7,6 +7,8 @@ import {
 } from '@crm/shared'
 import type { Client } from '../../api/clients'
 import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
+import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
+import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
 import './ClientDetail.css'
 
 interface Props {
@@ -119,9 +121,15 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
 
       {/* ── Tab content ── */}
       <div className="cd-content">
-        <div className="cd-placeholder">
-          <p>{t('clients.detail.comingSoon')}</p>
-        </div>
+        {tab === 'summary' ? (
+          <ClientSummaryTab clientId={client.id} />
+        ) : tab === 'sales' ? (
+          <ClientSalesTab clientId={client.id} clientName={client.name} />
+        ) : (
+          <div className="cd-placeholder">
+            <p>{t('clients.detail.comingSoon')}</p>
+          </div>
+        )}
       </div>
 
       {/* ── Info modal ── */}

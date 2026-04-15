@@ -26,6 +26,9 @@ import './SaleForm.css'
 
 interface Props {
   sale: Sale | null
+  /** Pre-fill client when creating a new sale from a client context. */
+  defaultClientId?: string
+  defaultClientName?: string
   onSave: (saved: Sale) => void
   onCancel: () => void
   onDelete?: (id: string) => void
@@ -171,15 +174,18 @@ function toInput(form: FormState): SaleInput {
   }
 }
 
-export default function SaleForm({ sale, onSave, onCancel, onDelete }: Props) {
+export default function SaleForm({ sale, defaultClientId, defaultClientName, onSave, onCancel, onDelete }: Props) {
   const { t } = useTranslation()
   const isNew = sale === null
   const { clients, loading: clientsLoading } = useClients()
 
-  const [form, setForm] = useState<FormState>(() => sale ? toFormState(sale) : EMPTY)
+  const [form, setForm] = useState<FormState>(() => {
+    if (sale) return toFormState(sale)
+    return { ...EMPTY, clientId: defaultClientId ?? '', clientName: defaultClientName ?? '' }
+  })
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [clientQuery, setClientQuery] = useState(() => sale?.clientName ?? '')
+  const [clientQuery, setClientQuery] = useState(() => sale?.clientName ?? defaultClientName ?? '')
   const [showClientOptions, setShowClientOptions] = useState(false)
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {

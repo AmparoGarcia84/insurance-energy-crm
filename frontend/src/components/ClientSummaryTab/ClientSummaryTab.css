@@ -1,0 +1,106 @@
+.cd-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.cd-summary__card {
+  min-height: 200px;
+}
+
+.cd-summary__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.cd-summary__card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.cd-summary__card-count {
+  font-size: 0.72rem;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.cd-summary__card-body {
+  padding: 0.75rem;
+  flex: 1;
+}
+
+.cd-summary__sales-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cd-summary__empty {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+  text-align: center;
+  padding: 2rem 0;
+  margin: 0;
+}
+
+.cd-summary__card--placeholder {
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-summary__placeholder {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+  margin: 0;
+}
+
+/* ── Activity list ───────────────────────────────────── */
+.cd-summary__activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cd-summary__activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--corp-muted-bg);
+}
+
+.cd-summary__activity-item:last-child {
+  border-bottom: none;
+}
+
+.cd-summary__activity-icon {
+  color: var(--corp-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cd-summary__activity-text {
+  flex: 1;
+  font-size: 0.845rem;
+  color: var(--corp-black);
+  line-height: 1.4;
+}
+
+.cd-summary__activity-date {
+  font-size: 0.75rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
