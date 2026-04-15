@@ -37,7 +37,7 @@ export async function createUser(req: AuthRequest, res: Response) {
 
 export async function deleteUser(req: AuthRequest, res: Response) {
   if (!requireOwner(req, res)) return
-  const { id } = req.params
+  const id = req.params.id as string
   if (id === req.user!.userId) {
     res.status(400).json({ error: 'Cannot delete your own account' })
     return

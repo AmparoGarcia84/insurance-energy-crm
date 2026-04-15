@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ClientDetail from './ClientDetail'
 import type { Client } from '../../api/clients'
@@ -10,6 +10,19 @@ vi.mock('react-i18next', () => ({
     i18n: { language: 'es' },
   }),
 }))
+
+vi.mock('../../auth/AuthContext', () => ({
+  useAuth: () => ({ user: { userId: 'u1', role: 'OWNER', displayName: 'Test' } }),
+}))
+
+vi.mock('../../context/DataContext', () => ({
+  useSales: () => ({ sales: [], loading: false, upsertSale: vi.fn(), removeSale: vi.fn() }),
+}))
+
+vi.mock('../../api/tasks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../api/tasks')>()
+  return { ...actual, getTasks: () => Promise.resolve([]) }
+})
 
 const baseClient: Client = {
   id: '1',
@@ -59,45 +72,58 @@ describe('ClientDetail', () => {
     expect(onEdit).toHaveBeenCalledWith(baseClient)
   })
 
-  it('shows info tab content by default', () => {
+  it('shows summary tab content by default', () => {
     render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
-    expect(screen.getByText('clients.sections.identification')).toBeInTheDocument()
+    expect(screen.getByText('clients.summary.openOpportunities')).toBeInTheDocument()
+    expect(screen.getByText('clients.summary.pendingTasks')).toBeInTheDocument()
   })
 
-  it('shows coming soon placeholder for non-info tabs', () => {
+  it('shows coming soon placeholder for unimplemented tabs', () => {
     render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
-    fireEvent.click(screen.getByText('clients.tabs.sales'))
+    fireEvent.click(screen.getByText('clients.tabs.activity'))
     expect(screen.getByText('clients.detail.comingSoon')).toBeInTheDocument()
   })
 
-  it('renders addresses when present', () => {
+  it('renders addresses when present — visible in info modal', async () => {
     const client: Client = {
       ...baseClient,
       addresses: [{ id: 'a1', type: AddressType.FISCAL, street: 'Calle Mayor 1', city: 'Madrid', postalCode: '28001' }],
     }
     render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
-    expect(screen.getByText('clients.sections.addresses')).toBeInTheDocument()
-    expect(screen.getByText(/Calle Mayor 1/)).toBeInTheDocument()
+    fireEvent.click(screen.getByText('clients.detail.view'))
+    await waitFor(() => {
+      expect(screen.getByText('clients.sections.addresses')).toBeInTheDocument()
+      expect(screen.getByText(/Calle Mayor 1/)).toBeInTheDocument()
+    })
   })
 
-  it('renders bank accounts when present', () => {
+  it('renders bank accounts when present — visible in info modal', async () => {
     const client: Client = {
       ...baseClient,
       bankAccounts: [{ id: 'b1', type: AccountType.PERSONAL, iban: 'ES12 3456 7890 1234 5678 90' }],
     }
     render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
-    expect(screen.getByText('clients.sections.bankAccounts')).toBeInTheDocument()
-    expect(screen.getByText('ES12 3456 7890 1234 5678 90')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('clients.detail.view'))
+    await waitFor(() => {
+      expect(screen.getByText('clients.sections.bankAccounts')).toBeInTheDocument()
+      expect(screen.getByText('ES12 3456 7890 1234 5678 90')).toBeInTheDocument()
+    })
   })
 
-  it('does not render addresses section when empty', () => {
+  it('does not render addresses section when empty', async () => {
     render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
-    expect(screen.queryByText('clients.sections.addresses')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText('clients.detail.view'))
+    await waitFor(() => {
+      expect(screen.queryByText('clients.sections.addresses')).not.toBeInTheDocument()
+    })
   })
 
-  it('renders description when present', () => {
+  it('renders description when present — visible in info modal', async () => {
     const client: Client = { ...baseClient, description: 'Cliente muy importante' }
     render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
-    expect(screen.getByText('Cliente muy importante')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('clients.detail.view'))
+    await waitFor(() => {
+      expect(screen.getByText('Cliente muy importante')).toBeInTheDocument()
+    })
   })
 })
