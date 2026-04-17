@@ -20,7 +20,7 @@ export {
   type ClientBankAccountInput,
 }
 
-const BASE = 'http://localhost:3000/clients'
+const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/clients`
 
 export interface Client {
   id: string

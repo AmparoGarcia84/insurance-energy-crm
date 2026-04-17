@@ -84,7 +84,7 @@ export const ENERGY_STAGE_COLORS: Record<EnergySaleStage, string> = {
   [EnergySaleStage.LOST]:               '#909090',
 }
 
-const BASE = 'http://localhost:3000/sales'
+const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/sales`
 
 export class ApiError extends Error {
   constructor(public status: number) {

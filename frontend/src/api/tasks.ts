@@ -17,7 +17,7 @@ export interface TaskFilters {
   hasReminder?: boolean
 }
 
-const BASE = 'http://localhost:3000/tasks'
+const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/tasks`
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: 'include', ...options })

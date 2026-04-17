@@ -1,0 +1,322 @@
+/**
+ * mocks/handlers.ts — MSW request handlers for demo mode
+ *
+ * Intercepts all API calls made by the frontend and returns seed data or
+ * performs in-memory mutations. The store resets to the original seed data
+ * on every page load, which is the expected demo behaviour.
+ *
+ * Endpoints covered:
+ *  Auth    POST /auth/login  GET /auth/me  POST /auth/logout
+ *  Clients GET/POST/PUT/DELETE /clients
+ *  Sales   GET/POST/PUT/DELETE /sales
+ *  Users   GET/POST/DELETE /admin/users
+ *  Collab. GET/POST/PUT/DELETE /collaborators
+ *  Tasks   GET /tasks  (read-only; mutations not yet in the UI)
+ *  Docs    GET/POST/PATCH/DELETE /documents
+ */
+
+import { http, HttpResponse } from 'msw'
+import type { AuthUser } from '../api/auth'
+import type { Client, ClientInput } from '../api/clients'
+import type { Sale, SaleInput } from '../api/sales'
+import type { Collaborator, CollaboratorInput } from '../api/collaborators'
+import type { TaskWithRelations } from '../api/tasks'
+import { TaskStatus } from '../api/tasks'
+import type { DocumentRecord } from '../api/documents'
+import {
+  DEMO_USERS, DEMO_CREDENTIALS,
+  DEMO_CLIENTS, DEMO_SALES, DEMO_COLLABORATORS,
+  DEMO_TASKS, DEMO_DOCUMENTS,
+} from './seedData'
+
+// ── In-memory store (reset on every page load) ────────────────────────────────
+
+const store = {
+  currentUser: null as AuthUser | null,
+  clients:     structuredClone(DEMO_CLIENTS)     as Client[],
+  sales:       structuredClone(DEMO_SALES)       as Sale[],
+  users:       structuredClone(DEMO_USERS)       as AuthUser[],
+  collaborators: structuredClone(DEMO_COLLABORATORS) as Collaborator[],
+  tasks:       structuredClone(DEMO_TASKS)       as TaskWithRelations[],
+  documents:   structuredClone(DEMO_DOCUMENTS)   as DocumentRecord[],
+}
+
+const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+const authHandlers = [
+  http.post(`${API}/auth/login`, async ({ request }) => {
+    const body = await request.json() as { email: string; password: string }
+    const user = store.users.find(u => u.email === body.email)
+    if (!user || DEMO_CREDENTIALS[body.email] !== body.password) {
+      return HttpResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+    store.currentUser = user
+    return HttpResponse.json({ user })
+  }),
+
+  http.get(`${API}/auth/me`, () => {
+    if (!store.currentUser) return new HttpResponse(null, { status: 401 })
+    return HttpResponse.json(store.currentUser)
+  }),
+
+  http.post(`${API}/auth/logout`, () => {
+    store.currentUser = null
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  // Password/email/avatar changes — accept silently in demo
+  http.patch(`${API}/auth/password`, () => new HttpResponse(null, { status: 204 })),
+  http.patch(`${API}/auth/email`, () => {
+    if (!store.currentUser) return new HttpResponse(null, { status: 401 })
+    return HttpResponse.json({ user: store.currentUser })
+  }),
+  http.post(`${API}/auth/avatar`, () => {
+    if (!store.currentUser) return new HttpResponse(null, { status: 401 })
+    return HttpResponse.json({ user: store.currentUser })
+  }),
+]
+
+// ── Clients ───────────────────────────────────────────────────────────────────
+
+const clientHandlers = [
+  http.get('http://localhost:3000/clients', () =>
+    HttpResponse.json(store.clients),
+  ),
+
+  http.get('http://localhost:3000/clients/:id', ({ params }) => {
+    const client = store.clients.find(c => c.id === params.id)
+    if (!client) return new HttpResponse(null, { status: 404 })
+    return HttpResponse.json(client)
+  }),
+
+  http.post('http://localhost:3000/clients', async ({ request }) => {
+    const data = await request.json() as ClientInput
+    const now = new Date().toISOString()
+    const next = String(store.clients.length + 1).padStart(6, '0')
+    const newClient: Client = {
+      ...data, id: `c-new-${Date.now()}`,
+      clientNumber: next, createdAt: now, updatedAt: now,
+    }
+    store.clients.push(newClient)
+    store.clients.sort((a, b) => a.name.localeCompare(b.name))
+    return HttpResponse.json(newClient, { status: 201 })
+  }),
+
+  http.put('http://localhost:3000/clients/:id', async ({ params, request }) => {
+    const idx = store.clients.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const data = await request.json() as Partial<ClientInput>
+    const updated: Client = { ...store.clients[idx], ...data, updatedAt: new Date().toISOString() }
+    store.clients[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete('http://localhost:3000/clients/:id', ({ params }) => {
+    const idx = store.clients.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.clients.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  // CSV import — return mock result
+  http.post('http://localhost:3000/clients/import', () =>
+    HttpResponse.json({ created: 0, skipped: 0, errors: ['Import not available in demo mode'] }),
+  ),
+]
+
+// ── Sales ─────────────────────────────────────────────────────────────────────
+
+const salesHandlers = [
+  http.get('http://localhost:3000/sales', () =>
+    HttpResponse.json(store.sales),
+  ),
+
+  http.post('http://localhost:3000/sales', async ({ request }) => {
+    const data = await request.json() as SaleInput
+    const now = new Date().toISOString()
+    const newSale: Sale = { ...data, id: `s-new-${Date.now()}`, createdAt: now, updatedAt: now }
+    store.sales.push(newSale)
+    return HttpResponse.json(newSale, { status: 201 })
+  }),
+
+  http.put('http://localhost:3000/sales/:id', async ({ params, request }) => {
+    const idx = store.sales.findIndex(s => s.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const data = await request.json() as Partial<SaleInput>
+    const updated: Sale = { ...store.sales[idx], ...data, updatedAt: new Date().toISOString() }
+    store.sales[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete('http://localhost:3000/sales/:id', ({ params }) => {
+    const idx = store.sales.findIndex(s => s.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.sales.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+const usersHandlers = [
+  http.get(`${API}/admin/users`, () =>
+    HttpResponse.json(store.users),
+  ),
+
+  http.post(`${API}/admin/users`, async ({ request }) => {
+    const data = await request.json() as { displayName: string; email: string; role: 'OWNER' | 'EMPLOYEE'; password: string }
+    const newUser: AuthUser = {
+      id: `u-new-${Date.now()}`, email: data.email,
+      role: data.role, displayName: data.displayName, avatarUrl: null,
+    }
+    store.users.push(newUser)
+    return HttpResponse.json({ user: newUser }, { status: 201 })
+  }),
+
+  http.delete(`${API}/admin/users/:id`, ({ params }) => {
+    const idx = store.users.findIndex(u => u.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.users.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
+// ── Collaborators ─────────────────────────────────────────────────────────────
+
+const BASE_COLLAB = `${API}/collaborators`
+
+const collaboratorHandlers = [
+  http.get(BASE_COLLAB, () =>
+    HttpResponse.json(store.collaborators),
+  ),
+
+  http.post(BASE_COLLAB, async ({ request }) => {
+    const data = await request.json() as CollaboratorInput
+    const now = new Date().toISOString()
+    const newCol: Collaborator = { ...data, id: `col-new-${Date.now()}`, createdAt: now, updatedAt: now }
+    store.collaborators.push(newCol)
+    return HttpResponse.json(newCol, { status: 201 })
+  }),
+
+  http.put(`${BASE_COLLAB}/:id`, async ({ params, request }) => {
+    const idx = store.collaborators.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const data = await request.json() as Partial<CollaboratorInput>
+    const updated: Collaborator = { ...store.collaborators[idx], ...data, updatedAt: new Date().toISOString() }
+    store.collaborators[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete(`${BASE_COLLAB}/:id`, ({ params }) => {
+    const idx = store.collaborators.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.collaborators.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+
+const PENDING_STATUSES = new Set<string>([
+  TaskStatus.NOT_STARTED, TaskStatus.IN_PROGRESS,
+  TaskStatus.DEFERRED, TaskStatus.WAITING_FOR_INPUT, TaskStatus.UNLOGGED,
+])
+
+const tasksHandlers = [
+  http.get('http://localhost:3000/tasks', ({ request }) => {
+    const url = new URL(request.url)
+    let tasks: TaskWithRelations[] = store.tasks
+
+    const clientId  = url.searchParams.get('clientId')
+    const status    = url.searchParams.get('status')
+    const assignedTo = url.searchParams.get('assignedToUserId')
+    const overdue   = url.searchParams.get('overdue')
+
+    if (clientId)   tasks = tasks.filter(t => t.clientId === clientId)
+    if (status)     tasks = tasks.filter(t => t.status === status)
+    if (assignedTo) tasks = tasks.filter(t => t.assignedToUserId === assignedTo)
+    if (overdue === 'true') {
+      const today = new Date().toDateString()
+      tasks = tasks.filter(t =>
+        t.dueDate && new Date(t.dueDate) < new Date(today) && PENDING_STATUSES.has(t.status),
+      )
+    }
+
+    return HttpResponse.json(tasks)
+  }),
+]
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+
+const documentsHandlers = [
+  http.get('http://localhost:3000/documents', ({ request }) => {
+    const url = new URL(request.url)
+    let docs: DocumentRecord[] = store.documents
+
+    const clientId = url.searchParams.get('clientId')
+    const saleId   = url.searchParams.get('saleId')
+
+    if (clientId) docs = docs.filter(d => d.clientId === clientId)
+    if (saleId)   docs = docs.filter(d => d.saleId   === saleId)
+
+    return HttpResponse.json(docs)
+  }),
+
+  http.post('http://localhost:3000/documents', async ({ request }) => {
+    const formData = await request.formData()
+    const now = new Date().toISOString()
+    const newDoc: DocumentRecord = {
+      id:               `d-new-${Date.now()}`,
+      name:             String(formData.get('name') ?? ''),
+      group:            formData.get('group') as DocumentRecord['group'],
+      documentType:     formData.get('documentType') as DocumentRecord['documentType'],
+      status:           formData.get('status') as DocumentRecord['status'],
+      includedAt:       String(formData.get('includedAt') ?? now),
+      expiryDate:       formData.get('expiryDate') ? String(formData.get('expiryDate')) : null,
+      fileUrl:          null,
+      clientId:         String(formData.get('clientId') ?? ''),
+      saleId:           formData.get('saleId') ? String(formData.get('saleId')) : null,
+      uploadedByUserId: store.currentUser?.id ?? null,
+      createdAt:        now,
+      updatedAt:        now,
+    }
+    store.documents.push(newDoc)
+    return HttpResponse.json(newDoc, { status: 201 })
+  }),
+
+  http.patch('http://localhost:3000/documents/:id', async ({ params, request }) => {
+    const idx = store.documents.findIndex(d => d.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const formData = await request.formData()
+    const updated: DocumentRecord = {
+      ...store.documents[idx],
+      updatedAt: new Date().toISOString(),
+    }
+    if (formData.get('name'))         updated.name         = String(formData.get('name'))
+    if (formData.get('status'))       updated.status       = formData.get('status') as DocumentRecord['status']
+    if (formData.get('expiryDate'))   updated.expiryDate   = String(formData.get('expiryDate'))
+    store.documents[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete('http://localhost:3000/documents/:id', ({ params }) => {
+    const idx = store.documents.findIndex(d => d.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.documents.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+export const handlers = [
+  ...authHandlers,
+  ...clientHandlers,
+  ...salesHandlers,
+  ...usersHandlers,
+  ...collaboratorHandlers,
+  ...tasksHandlers,
+  ...documentsHandlers,
+]

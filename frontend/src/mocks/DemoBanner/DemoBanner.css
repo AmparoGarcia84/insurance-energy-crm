@@ -1,0 +1,48 @@
+.demo-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  background: #000;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.demo-banner__badge {
+  flex-shrink: 0;
+  background: var(--corp-gold, #d2b87a);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+}
+
+.demo-banner__text {
+  flex-shrink: 0;
+  color: #d4d4d4;
+}
+
+.demo-banner__credentials {
+  margin-left: auto;
+  color: #a3a3a3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-banner__credentials code {
+  font-family: monospace;
+  background: #1a1a1a;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  color: var(--corp-gold, #d2b87a);
+  font-size: 0.7rem;
+}

@@ -11,6 +11,9 @@ import { AuthProvider, useAuth } from './auth/AuthContext'
 import Login from './components/Login/Login'
 import Dashboard from './components/Dashboard/Dashboard'
 import { DataProvider } from './context/DataContext'
+import DemoBanner from './mocks/DemoBanner/DemoBanner'
+
+const IS_DEMO = import.meta.env.VITE_DEMO_MODE === 'true'
 
 /**
  * AppContent reads the current auth state and renders either the protected
@@ -42,6 +45,7 @@ function App() {
   return (
     <AuthProvider>
       <AppContent />
+      {IS_DEMO && <DemoBanner />}
     </AuthProvider>
   )
 }
