@@ -81,17 +81,17 @@ const authHandlers = [
 // ── Clients ───────────────────────────────────────────────────────────────────
 
 const clientHandlers = [
-  http.get('http://localhost:3000/clients', () =>
+  http.get('${API}/clients', () =>
     HttpResponse.json(store.clients),
   ),
 
-  http.get('http://localhost:3000/clients/:id', ({ params }) => {
+  http.get('${API}/clients/:id', ({ params }) => {
     const client = store.clients.find(c => c.id === params.id)
     if (!client) return new HttpResponse(null, { status: 404 })
     return HttpResponse.json(client)
   }),
 
-  http.post('http://localhost:3000/clients', async ({ request }) => {
+  http.post('${API}/clients', async ({ request }) => {
     const data = await request.json() as ClientInput
     const now = new Date().toISOString()
     const next = String(store.clients.length + 1).padStart(6, '0')
@@ -104,7 +104,7 @@ const clientHandlers = [
     return HttpResponse.json(newClient, { status: 201 })
   }),
 
-  http.put('http://localhost:3000/clients/:id', async ({ params, request }) => {
+  http.put('${API}/clients/:id', async ({ params, request }) => {
     const idx = store.clients.findIndex(c => c.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     const data = await request.json() as Partial<ClientInput>
@@ -113,7 +113,7 @@ const clientHandlers = [
     return HttpResponse.json(updated)
   }),
 
-  http.delete('http://localhost:3000/clients/:id', ({ params }) => {
+  http.delete('${API}/clients/:id', ({ params }) => {
     const idx = store.clients.findIndex(c => c.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     store.clients.splice(idx, 1)
@@ -121,7 +121,7 @@ const clientHandlers = [
   }),
 
   // CSV import — return mock result
-  http.post('http://localhost:3000/clients/import', () =>
+  http.post('${API}/clients/import', () =>
     HttpResponse.json({ created: 0, skipped: 0, errors: ['Import not available in demo mode'] }),
   ),
 ]
@@ -129,11 +129,11 @@ const clientHandlers = [
 // ── Sales ─────────────────────────────────────────────────────────────────────
 
 const salesHandlers = [
-  http.get('http://localhost:3000/sales', () =>
+  http.get('${API}/sales', () =>
     HttpResponse.json(store.sales),
   ),
 
-  http.post('http://localhost:3000/sales', async ({ request }) => {
+  http.post('${API}/sales', async ({ request }) => {
     const data = await request.json() as SaleInput
     const now = new Date().toISOString()
     const newSale: Sale = { ...data, id: `s-new-${Date.now()}`, createdAt: now, updatedAt: now }
@@ -141,7 +141,7 @@ const salesHandlers = [
     return HttpResponse.json(newSale, { status: 201 })
   }),
 
-  http.put('http://localhost:3000/sales/:id', async ({ params, request }) => {
+  http.put('${API}/sales/:id', async ({ params, request }) => {
     const idx = store.sales.findIndex(s => s.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     const data = await request.json() as Partial<SaleInput>
@@ -150,7 +150,7 @@ const salesHandlers = [
     return HttpResponse.json(updated)
   }),
 
-  http.delete('http://localhost:3000/sales/:id', ({ params }) => {
+  http.delete('${API}/sales/:id', ({ params }) => {
     const idx = store.sales.findIndex(s => s.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     store.sales.splice(idx, 1)
@@ -225,7 +225,7 @@ const PENDING_STATUSES = new Set<string>([
 ])
 
 const tasksHandlers = [
-  http.get('http://localhost:3000/tasks', ({ request }) => {
+  http.get('${API}/tasks', ({ request }) => {
     const url = new URL(request.url)
     let tasks: TaskWithRelations[] = store.tasks
 
@@ -234,9 +234,12 @@ const tasksHandlers = [
     const assignedTo = url.searchParams.get('assignedToUserId')
     const overdue   = url.searchParams.get('overdue')
 
-    if (clientId)   tasks = tasks.filter(t => t.clientId === clientId)
-    if (status)     tasks = tasks.filter(t => t.status === status)
-    if (assignedTo) tasks = tasks.filter(t => t.assignedToUserId === assignedTo)
+    const hasReminder = url.searchParams.get('hasReminder')
+
+    if (clientId)             tasks = tasks.filter(t => t.clientId === clientId)
+    if (status)               tasks = tasks.filter(t => t.status === status)
+    if (assignedTo)           tasks = tasks.filter(t => t.assignedToUserId === assignedTo)
+    if (hasReminder !== null) tasks = tasks.filter(t => t.hasReminder === (hasReminder === 'true'))
     if (overdue === 'true') {
       const today = new Date().toDateString()
       tasks = tasks.filter(t =>
@@ -251,7 +254,7 @@ const tasksHandlers = [
 // ── Documents ─────────────────────────────────────────────────────────────────
 
 const documentsHandlers = [
-  http.get('http://localhost:3000/documents', ({ request }) => {
+  http.get('${API}/documents', ({ request }) => {
     const url = new URL(request.url)
     let docs: DocumentRecord[] = store.documents
 
@@ -264,7 +267,7 @@ const documentsHandlers = [
     return HttpResponse.json(docs)
   }),
 
-  http.post('http://localhost:3000/documents', async ({ request }) => {
+  http.post('${API}/documents', async ({ request }) => {
     const formData = await request.formData()
     const now = new Date().toISOString()
     const newDoc: DocumentRecord = {
@@ -286,7 +289,7 @@ const documentsHandlers = [
     return HttpResponse.json(newDoc, { status: 201 })
   }),
 
-  http.patch('http://localhost:3000/documents/:id', async ({ params, request }) => {
+  http.patch('${API}/documents/:id', async ({ params, request }) => {
     const idx = store.documents.findIndex(d => d.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     const formData = await request.formData()
@@ -301,7 +304,7 @@ const documentsHandlers = [
     return HttpResponse.json(updated)
   }),
 
-  http.delete('http://localhost:3000/documents/:id', ({ params }) => {
+  http.delete('${API}/documents/:id', ({ params }) => {
     const idx = store.documents.findIndex(d => d.id === params.id)
     if (idx === -1) return new HttpResponse(null, { status: 404 })
     store.documents.splice(idx, 1)

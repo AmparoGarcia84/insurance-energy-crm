@@ -7,7 +7,12 @@ import App from './App.tsx'
 async function prepare() {
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
     const { worker } = await import('./mocks/browser')
-    return worker.start({ onUnhandledRequest: 'bypass' })
+    return worker.start({
+      // BASE_URL is '/' in dev and '/insurance-energy-crm/' on GitHub Pages —
+      // MSW must look for the service worker file at the same base path.
+      serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+      onUnhandledRequest: 'bypass',
+    })
   }
 }
 
