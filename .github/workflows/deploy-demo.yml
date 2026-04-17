@@ -27,15 +27,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          # Root package-lock.json governs the whole workspace
+          cache-dependency-path: package-lock.json
 
-      - name: Install shared package
-        working-directory: shared
-        run: npm ci
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+      # Install from the monorepo root so npm workspaces sets up
+      # the @crm/shared symlink that the frontend depends on.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
       - name: Build demo
         working-directory: frontend
