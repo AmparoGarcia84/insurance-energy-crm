@@ -9,6 +9,7 @@ import type { Client } from '../../api/clients'
 import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
 import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
 import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
+import ClientDocumentsTab from '../ClientDocumentsTab/ClientDocumentsTab'
 import './ClientDetail.css'
 
 interface Props {
@@ -125,6 +126,8 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
           <ClientSummaryTab clientId={client.id} />
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} />
+        ) : tab === 'documents' ? (
+          <ClientDocumentsTab clientId={client.id} clientName={client.name} />
         ) : (
           <div className="cd-placeholder">
             <p>{t('clients.detail.comingSoon')}</p>

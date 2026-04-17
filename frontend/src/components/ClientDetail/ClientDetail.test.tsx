@@ -16,12 +16,18 @@ vi.mock('../../auth/AuthContext', () => ({
 }))
 
 vi.mock('../../context/DataContext', () => ({
-  useSales: () => ({ sales: [], loading: false, upsertSale: vi.fn(), removeSale: vi.fn() }),
+  useSales:   () => ({ sales: [], loading: false, upsertSale: vi.fn(), removeSale: vi.fn() }),
+  useClients: () => ({ clients: [] }),
 }))
 
 vi.mock('../../api/tasks', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../api/tasks')>()
   return { ...actual, getTasks: () => Promise.resolve([]) }
+})
+
+vi.mock('../../api/documents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../api/documents')>()
+  return { ...actual, getDocuments: () => Promise.resolve([]) }
 })
 
 const baseClient: Client = {
@@ -82,6 +88,14 @@ describe('ClientDetail', () => {
     render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
     fireEvent.click(screen.getByText('clients.tabs.activity'))
     expect(screen.getByText('clients.detail.comingSoon')).toBeInTheDocument()
+  })
+
+  it('renders documents tab with add button when documents tab is active', async () => {
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    fireEvent.click(screen.getByText('clients.tabs.documents'))
+    await waitFor(() => {
+      expect(screen.getByText('documents.actions.add')).toBeInTheDocument()
+    })
   })
 
   it('renders addresses when present — visible in info modal', async () => {

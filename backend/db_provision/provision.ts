@@ -15,6 +15,7 @@ import {
   SaleBusinessType, SaleForecastCategory, SaleProjectSource, SaleType,
   TaskStatus, TaskPriority, TaskContextType, RelatedEntityType,
   ReminderChannel, ReminderRecurrence,
+  DocumentGroup, DocumentType, DocumentStatus,
 } from '../src/generated/prisma/client.js'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
@@ -148,7 +149,7 @@ async function main() {
   const c = (name: string) => clients.find(cl => cl.name === name)!
 
   // ─── Sales ────────────────────────────────────────────────────────────────
-  await prisma.sale.createMany({
+  const sales = await prisma.sale.createManyAndReturn({
     data: [
       {
         clientId: c('Carmen López Martínez').id,
@@ -552,6 +553,9 @@ async function main() {
       },
     ],
   })
+
+  // Helper: find sale by title
+  const s = (title: string) => sales.find(sl => sl.title === title)!
 
   console.log('  ✓ Sales')
 
@@ -1187,6 +1191,155 @@ async function main() {
     ],
   })
   console.log('  ✓ Collaborators (5)')
+
+  // ─── Documents ────────────────────────────────────────────────────────────
+  await prisma.document.createMany({
+    data: [
+      // 1 — Póliza hogar Carmen López (actualizada)
+      {
+        name:            'Póliza Hogar Multirriesgo — Carmen López 2023',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.POLICY,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2023-09-01'),
+        expiryDate:      new Date('2024-09-01'),
+        clientId:        c('Carmen López Martínez').id,
+        saleId:          s('Seguro de hogar multirriesgo').id,
+        uploadedByUserId: mila.id,
+      },
+      // 2 — Contrato electricidad Carmen López (pendiente firma)
+      {
+        name:            'Contrato Suministro Eléctrico Iberdrola — Carmen López',
+        group:           DocumentGroup.ENERGY,
+        documentType:    DocumentType.CONTRACT,
+        status:          DocumentStatus.PENDING_SIGNATURE,
+        includedAt:      new Date('2026-03-10'),
+        expiryDate:      new Date('2028-03-10'),
+        clientId:        c('Carmen López Martínez').id,
+        saleId:          s('Estudio contrato energía eléctrica').id,
+        uploadedByUserId: mila.id,
+      },
+      // 3 — Póliza vida Francisco Ruiz (actualizada)
+      {
+        name:            'Póliza Vida Riesgo Allianz — Francisco Ruiz 2022',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.POLICY,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2022-03-15'),
+        expiryDate:      new Date('2032-03-15'),
+        clientId:        c('Francisco Ruiz Sánchez').id,
+        saleId:          s('Seguro de vida riesgo').id,
+        uploadedByUserId: mila.id,
+      },
+      // 4 — Factura recibo vida Francisco Ruiz (en revisión)
+      {
+        name:            'Factura Recibo Anual Vida — Francisco Ruiz 2026',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.INVOICE,
+        status:          DocumentStatus.UNDER_REVIEW,
+        includedAt:      new Date('2026-03-20'),
+        clientId:        c('Francisco Ruiz Sánchez').id,
+        saleId:          s('Seguro de vida riesgo').id,
+        uploadedByUserId: mila.id,
+      },
+      // 5 — Póliza salud Elena Moreno (actualizada)
+      {
+        name:            'Póliza Salud Familiar Sanitas — Elena Moreno 2021',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.POLICY,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2021-06-01'),
+        expiryDate:      new Date('2025-06-01'),
+        clientId:        c('Elena Moreno Fernández').id,
+        saleId:          s('Seguro de salud familiar').id,
+        uploadedByUserId: mila.id,
+      },
+      // 6 — Contrato gas Talleres Rápidos (actualizado)
+      {
+        name:            'Contrato Suministro Gas Natural Repsol — Talleres Rápidos',
+        group:           DocumentGroup.ENERGY,
+        documentType:    DocumentType.CONTRACT,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2021-03-01'),
+        expiryDate:      new Date('2026-03-01'),
+        clientId:        c('Talleres Rápidos S.L.').id,
+        saleId:          s('Contrato suministro gas natural').id,
+        uploadedByUserId: mila.id,
+      },
+      // 7 — Proyecto multirriesgo hostelería Restaurante El Patio (pendiente firma)
+      {
+        name:            'Propuesta Seguro Multirriesgo Hostelería Helvetia — El Patio',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.PROJECT,
+        status:          DocumentStatus.PENDING_SIGNATURE,
+        includedAt:      new Date('2026-04-01'),
+        expiryDate:      new Date('2026-05-01'),
+        clientId:        c('Restaurante El Patio').id,
+        saleId:          s('Seguro multirriesgo hostelería').id,
+        uploadedByUserId: mila.id,
+      },
+      // 8 — Factura electricidad Restaurante El Patio (actualizada)
+      {
+        name:            'Factura Eléctrica Naturgy abril 2026 — Restaurante El Patio',
+        group:           DocumentGroup.ENERGY,
+        documentType:    DocumentType.INVOICE,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2026-04-01'),
+        clientId:        c('Restaurante El Patio').id,
+        saleId:          s('Optimización contrato eléctrico').id,
+        uploadedByUserId: asesor.id,
+      },
+      // 9 — Documentación RC Lucía Hernández (en revisión)
+      {
+        name:            'Certificado Actividad Profesional — Lucía Hernández',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.DOCUMENTATION,
+        status:          DocumentStatus.UNDER_REVIEW,
+        includedAt:      new Date('2026-04-05'),
+        clientId:        c('Lucía Hernández Jiménez').id,
+        saleId:          s('Seguro responsabilidad civil').id,
+        uploadedByUserId: asesor.id,
+      },
+      // 10 — Contrato obras Construcciones Vega (en revisión)
+      {
+        name:            'Contrato Póliza Obras y Construcción Caser — Construcciones Vega',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.CONTRACT,
+        status:          DocumentStatus.UNDER_REVIEW,
+        includedAt:      new Date('2026-02-15'),
+        expiryDate:      new Date('2027-02-15'),
+        clientId:        c('Construcciones Vega').id,
+        saleId:          s('Seguro obras y construcción').id,
+        uploadedByUserId: mila.id,
+      },
+      // 11 — Póliza RC sanitaria Clínica DentalCare (caducada)
+      {
+        name:            'Póliza RC Sanitaria Asisa — Clínica DentalCare 2021',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.POLICY,
+        status:          DocumentStatus.EXPIRED,
+        includedAt:      new Date('2021-01-01'),
+        expiryDate:      new Date('2025-12-31'),
+        clientId:        c('Clínica DentalCare').id,
+        saleId:          s('Seguro responsabilidad civil sanitaria').id,
+        uploadedByUserId: mila.id,
+      },
+      // 12 — Póliza automóvil Antonio García (actualizada, sin venta)
+      {
+        name:            'Póliza Automóvil Todo Riesgo Generali — Antonio García 2023',
+        group:           DocumentGroup.INSURANCE,
+        documentType:    DocumentType.POLICY,
+        status:          DocumentStatus.UPDATED,
+        includedAt:      new Date('2023-11-20'),
+        expiryDate:      new Date('2024-11-20'),
+        clientId:        c('Antonio García Pérez').id,
+        saleId:          s('Seguro de coche turismo').id,
+        uploadedByUserId: mila.id,
+      },
+    ],
+  })
+
+  console.log('  ✓ Documents (12)')
 
   console.log('Database provisioning complete.')
 }

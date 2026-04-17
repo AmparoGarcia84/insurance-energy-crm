@@ -1,0 +1,142 @@
+.cd-docs-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Toolbar ─────────────────────────────────────────── */
+
+.cd-docs-tab__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cd-docs-tab__count {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+}
+
+/* ── Empty ───────────────────────────────────────────── */
+
+.cd-docs-tab__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--corp-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Table ───────────────────────────────────────────── */
+
+.cd-docs-tab__table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--corp-beige);
+}
+
+.cd-docs-tab__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--corp-card);
+  font-size: 0.875rem;
+}
+
+.cd-docs-tab__table th {
+  text-align: left;
+  padding: 0.65rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  border-bottom: 1px solid var(--corp-beige);
+  white-space: nowrap;
+}
+
+.cd-docs-tab__table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+  color: var(--corp-black);
+  vertical-align: middle;
+}
+
+.cd-docs-tab__table tr:last-child td {
+  border-bottom: none;
+}
+
+.cd-docs-tab__table tbody tr:hover {
+  background: var(--corp-cream);
+}
+
+/* ── Cells ───────────────────────────────────────────── */
+
+.cd-docs-tab__name {
+  font-weight: 500;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cd-docs-tab__sale {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--corp-muted);
+  font-size: 0.82rem;
+}
+
+.cd-docs-tab__expiry {
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cd-docs-tab__no-file {
+  color: var(--corp-beige);
+}
+
+/* ── File link ───────────────────────────────────────── */
+
+.cd-docs-tab__file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--corp-gold);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+
+.cd-docs-tab__file-link:hover {
+  opacity: 0.75;
+}
+
+/* ── Actions cell ───────────────────────────────────── */
+
+.cd-docs-tab__actions {
+  width: 2.5rem;
+  text-align: center;
+}
+
+/* ── Status badge ────────────────────────────────────── */
+
+.cd-docs-tab__status {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.doc-status--pending  { background: #fef3cd; color: #856404; }
+.doc-status--expired  { background: #fde8e8; color: #c0392b; }
+.doc-status--updated  { background: #d4edda; color: #155724; }
+.doc-status--review   { background: #d1ecf1; color: #0c5460; }

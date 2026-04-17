@@ -19,6 +19,7 @@ import adminRouter from './routes/admin.js'
 import salesRouter from './routes/sales.js'
 import collaboratorsRouter from './routes/collaborators.js'
 import tasksRouter from './routes/tasks.js'
+import documentsRouter from './routes/documents.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -56,6 +57,7 @@ app.use('/admin', adminRouter)
 app.use('/sales', salesRouter)
 app.use('/collaborators', collaboratorsRouter)
 app.use('/tasks', tasksRouter)
+app.use('/documents', documentsRouter)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

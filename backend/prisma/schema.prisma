@@ -26,6 +26,7 @@ model User {
 
   workdays      Workday[]
   assignedTasks Task[]
+  documents     Document[]
 }
 
 // ── Client ────────────────────────────────────────────────────────────────────
@@ -145,6 +146,7 @@ model Client {
   cases           Case[]
   sales           Sale[]
   tasks           Task[]
+  documents       Document[]
 }
 
 model ClientAddress {
@@ -273,6 +275,8 @@ model Sale {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  documents Document[]
 }
 
 // ── Policy ────────────────────────────────────────────────────────────────────
@@ -385,6 +389,51 @@ model WorkAdjustmentRequest {
   status            AdjustmentStatus @default(PENDING)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+}
+
+// ── Document ──────────────────────────────────────────────────────────────────
+
+enum DocumentGroup {
+  INSURANCE
+  ENERGY
+}
+
+enum DocumentType {
+  INVOICE
+  CONTRACT
+  PROJECT
+  DOCUMENTATION
+  POLICY
+}
+
+enum DocumentStatus {
+  PENDING_SIGNATURE
+  EXPIRED
+  UPDATED
+  UNDER_REVIEW
+}
+
+model Document {
+  id           String         @id @default(uuid())
+  name         String
+  group        DocumentGroup?
+  documentType DocumentType
+  status       DocumentStatus @default(PENDING_SIGNATURE)
+  includedAt   DateTime       @default(now())
+  expiryDate   DateTime?      @db.Date
+  fileUrl      String?
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  saleId String?
+  sale   Sale?   @relation(fields: [saleId], references: [id])
+
+  uploadedByUserId String?
+  uploadedBy       User?   @relation(fields: [uploadedByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ── Task ──────────────────────────────────────────────────────────────────────
