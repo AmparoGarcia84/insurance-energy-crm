@@ -1,28 +1,37 @@
 import { defineConfig } from 'vitest/config'
-import { loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // loadEnv reads the .env file for the current mode (e.g. .env.demo when
-  // --mode demo is passed). The third argument '' means "load all vars",
-  // including those without the VITE_ prefix.
-  const env = loadEnv(mode, process.cwd(), '')
+  const isDemo = mode === 'demo'
 
   return {
-  plugins: [react()],
-  // VITE_BASE is set to '/insurance-energy-crm/' in .env.demo for GitHub Pages.
-  base: env.VITE_BASE ?? '/',
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    globals: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/main.tsx', 'src/i18n/**', 'src/test/**', 'src/vite-env.d.ts'],
+    plugins: [react()],
+
+    // GitHub Pages serves the app at /insurance-energy-crm/ — set the base
+    // path so all asset URLs are generated with the correct prefix.
+    base: isDemo ? '/insurance-energy-crm/' : '/',
+
+    // Inject build-time constants for demo mode so the app works without
+    // .env files (gitignored by the .env.* rule in .gitignore).
+    define: {
+      'import.meta.env.VITE_DEMO_MODE': JSON.stringify(isDemo ? 'true' : 'false'),
+      // auth.ts / users.ts / TopBar / UserManagement / MyAccount declare
+      // `const API_URL = import.meta.env.VITE_API_URL` with no fallback —
+      // without this they would produce `undefined/auth/me` in CI.
+      ...(isDemo && { 'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:3000') }),
     },
-  },
+
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      globals: true,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['src/main.tsx', 'src/i18n/**', 'src/test/**', 'src/vite-env.d.ts'],
+      },
+    },
   }
 })
