@@ -13,7 +13,15 @@
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "test:backend": "npm run test --workspace=backend",
+    "test:backend:run": "npm run test:run --workspace=backend",
+    "test:backend:coverage": "npm run test:coverage --workspace=backend",
+    "build:backend": "npm run build --workspace=backend",
+    "typecheck:backend": "npm run typecheck --workspace=backend",
+    "build:all": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test:all": "npm run test:run --workspaces --if-present",
+    "ci": "npm run typecheck && npm run test:all && npm run build:all"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.1",
