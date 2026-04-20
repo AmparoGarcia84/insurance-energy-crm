@@ -120,6 +120,48 @@
   flex-direction: column;
 }
 
+/* ── Shared data table — used in list/tab views ──────── */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--corp-beige);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--corp-card);
+  font-size: 0.875rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  border-bottom: 1px solid var(--corp-beige);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+  color: var(--corp-black);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--corp-muted-bg);
+}
+
 /* ── List widget (AddressList, BankAccountList, …) ───── */
 .item-list {
   display: flex;

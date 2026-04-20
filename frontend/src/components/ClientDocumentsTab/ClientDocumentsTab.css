@@ -28,49 +28,6 @@
   font-size: 0.9rem;
 }
 
-/* ── Table ───────────────────────────────────────────── */
-
-.cd-docs-tab__table-wrap {
-  overflow-x: auto;
-  border-radius: 10px;
-  border: 1px solid var(--corp-beige);
-}
-
-.cd-docs-tab__table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--corp-card);
-  font-size: 0.875rem;
-}
-
-.cd-docs-tab__table th {
-  text-align: left;
-  padding: 0.65rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--corp-muted);
-  background: var(--corp-muted-bg);
-  border-bottom: 1px solid var(--corp-beige);
-  white-space: nowrap;
-}
-
-.cd-docs-tab__table td {
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid var(--corp-muted-bg);
-  color: var(--corp-black);
-  vertical-align: middle;
-}
-
-.cd-docs-tab__table tr:last-child td {
-  border-bottom: none;
-}
-
-.cd-docs-tab__table tbody tr:hover {
-  background: var(--corp-cream);
-}
-
 /* ── Cells ───────────────────────────────────────────── */
 
 .cd-docs-tab__name {

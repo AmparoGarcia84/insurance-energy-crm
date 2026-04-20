@@ -145,6 +145,12 @@ export default {
     },
     salesTab: {
       noSales: 'Sin ventas aún',
+      columns: {
+        title:   'Título',
+        stage:   'Etapa',
+        revenue: 'Importe',
+        owner:   'Responsable',
+      },
     },
     summary: {
       openOpportunities: 'Oportunidades abiertas',

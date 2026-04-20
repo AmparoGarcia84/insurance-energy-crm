@@ -83,8 +83,8 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
           <p>{t('documents.table.empty')}</p>
         </div>
       ) : (
-        <div className="cd-docs-tab__table-wrap">
-          <table className="cd-docs-tab__table">
+        <div className="data-table-wrap">
+          <table className="data-table cd-docs-tab__table">
             <thead>
               <tr>
                 <th>{t('documents.table.name')}</th>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, ChevronRight } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import { useSales } from '../../context/DataContext'
 import SaleForm from '../SaleForm/SaleForm'
@@ -79,65 +79,75 @@ export default function ClientSalesTab({ clientId, clientName }: Props) {
           <p>{t('clients.salesTab.noSales')}</p>
         </div>
       ) : (
-        <ul className="cd-sales-tab__list">
-          {clientSales.map((sale) => {
-            const stage = stageInfo(sale)
-            const isEnergy = sale.type === SaleType.ENERGY
-            const revenue = isEnergy ? sale.expectedSavingsPerYear : sale.expectedRevenue
-            const displayOwner = sale.ownerUserName ?? ownerName
+        <div className="data-table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>{t('clients.salesTab.columns.title')}</th>
+                <th>{t('clients.salesTab.columns.stage')}</th>
+                <th>{t('clients.salesTab.columns.revenue')}</th>
+                <th>{t('clients.salesTab.columns.owner')}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {clientSales.map((sale) => {
+                const stage = stageInfo(sale)
+                const isEnergy = sale.type === SaleType.ENERGY
+                const revenue = isEnergy ? sale.expectedSavingsPerYear : sale.expectedRevenue
+                const displayOwner = sale.ownerUserName ?? ownerName
 
-            return (
-              <li
-                key={sale.id}
-                className="cd-sales-tab__row"
-                role="button"
-                tabIndex={0}
-                onClick={() => setEditing(sale)}
-                onKeyDown={(e) => e.key === 'Enter' && setEditing(sale)}
-              >
-                <div className="cd-sales-tab__row-main">
-                  <div className="cd-sales-tab__row-badges">
-                    {!isEnergy && sale.insuranceBranch && (
-                      <span className={`badge cd-sales-tab__branch ${branchClass(sale.insuranceBranch)}`}>
-                        {sale.insuranceBranch}
-                      </span>
-                    )}
-                    {isEnergy && sale.companyName && (
-                      <span className="badge badge-branch-energy">{sale.companyName}</span>
-                    )}
-                  </div>
-
-                  <span className="cd-sales-tab__title">{sale.title}</span>
-                </div>
-
-                <div className="cd-sales-tab__row-meta">
-                  {stage && (
-                    <span
-                      className="cd-sales-tab__stage"
-                      style={{ '--stage-color': stage.color } as React.CSSProperties}
-                    >
-                      <span className="cd-sales-tab__stage-dot" aria-hidden />
-                      {t(`sales.stages.${isEnergy ? 'energy' : 'insurance'}.${stage.label}`)}
-                    </span>
-                  )}
-
-                  {revenue != null && (
-                    <span className="cd-sales-tab__revenue">
-                      {revenue.toLocaleString('es-ES')}
-                      {isEnergy ? t('sales.card.savingsPerYear') : ' €'}
-                    </span>
-                  )}
-
-                  {displayOwner && (
-                    <span className="cd-sales-tab__owner">{displayOwner}</span>
-                  )}
-                </div>
-
-                <ChevronRight size={15} className="cd-sales-tab__chevron" />
-              </li>
-            )
-          })}
-        </ul>
+                return (
+                  <tr
+                    key={sale.id}
+                    className="cd-sales-tab__row"
+                    onClick={() => setEditing(sale)}
+                  >
+                    <td>
+                      <div className="cd-sales-tab__title-cell">
+                        {!isEnergy && sale.insuranceBranch && (
+                          <span className={`badge ${branchClass(sale.insuranceBranch)}`}>
+                            {sale.insuranceBranch}
+                          </span>
+                        )}
+                        {isEnergy && sale.companyName && (
+                          <span className="badge badge-branch-energy">{sale.companyName}</span>
+                        )}
+                        <span className="cd-sales-tab__title">{sale.title}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {stage && (
+                        <span
+                          className="cd-sales-tab__stage"
+                          style={{ '--stage-color': stage.color } as React.CSSProperties}
+                        >
+                          <span className="cd-sales-tab__stage-dot" aria-hidden />
+                          {t(`sales.stages.${isEnergy ? 'energy' : 'insurance'}.${stage.label}`)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="cd-sales-tab__revenue">
+                      {revenue != null
+                        ? `${revenue.toLocaleString('es-ES')}${isEnergy ? t('sales.card.savingsPerYear') : ' €'}`
+                        : '—'}
+                    </td>
+                    <td className="cd-sales-tab__owner">{displayOwner || '—'}</td>
+                    <td className="cd-sales-tab__actions">
+                      <button
+                        className="icon-btn"
+                        onClick={(e) => { e.stopPropagation(); setEditing(sale) }}
+                        title={t('sales.edit')}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

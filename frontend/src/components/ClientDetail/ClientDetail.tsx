@@ -111,7 +111,6 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
         {tabs.map((t) => (
           <button
             key={t.id}
-            data-label={t.label}
             className={`cd-tab${tab === t.id ? ' cd-tab-active' : ''}`}
             onClick={() => setTab(t.id)}
           >

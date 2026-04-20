@@ -1,8 +1,13 @@
+.sale-form-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .sale-form-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
 .sale-form-back {
@@ -11,6 +16,14 @@
   gap: 0.3rem;
   font-size: 0.88rem;
   color: var(--corp-muted);
+  flex-shrink: 0;
+}
+
+.sale-form__title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
 }
 
 .sale-form {
@@ -18,13 +31,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.sale-form__title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--corp-black);
-  margin: 0 0 0.5rem;
 }
 
 .sale-form__type-toggle {

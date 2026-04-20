@@ -275,16 +275,16 @@ export default function SaleForm({ sale, defaultClientId, defaultClientName, onS
   const isInsurance = form.type === SaleType.INSURANCE
 
   return (
-    <>
+    <div className="sale-form-view">
       <div className="sale-form-header">
         <button type="button" className="icon-btn sale-form-back" onClick={onCancel}>
           <ChevronLeft size={18} />
           {t('sales.backToBoard')}
         </button>
+        <h1 className="sale-form__title">{isNew ? t('sales.new') : t('sales.edit')}</h1>
       </div>
 
-      <form className="sale-form" onSubmit={handleSave}>
-        <h2 className="sale-form__title">{isNew ? t('sales.new') : t('sales.edit')}</h2>
+      <form className="sale-form form-card" onSubmit={handleSave}>
 
         {isNew && (
           <SaleTypeToggle
@@ -576,6 +576,6 @@ export default function SaleForm({ sale, defaultClientId, defaultClientName, onS
           ]}
         />
       )}
-    </>
+    </div>
   )
 }
