@@ -76,25 +76,20 @@ export default function Sales() {
 
   return (
     <div className="sales">
-      <div className="sales__header">
-        <div>
-          <h1 className="sales__title">{t('sales.title')}</h1>
-          <p className="sales__subtitle">{t('sales.subtitle')}</p>
-        </div>
+      <div className="page-header">
+        <h1 className="page-title">{t('sales.title')}</h1>
         <button className="btn-primary" onClick={() => setEditing('new')}>
           <Plus size={16} />
           {t('sales.new')}
         </button>
       </div>
 
-      <div className="sales__toggle">
-        <SaleTypeToggle
-          value={saleType}
-          onChange={setSaleType}
-          insuranceLabel={t('sales.toggleInsurance')}
-          energyLabel={t('sales.toggleEnergy')}
-        />
-      </div>
+      <SaleTypeToggle
+        value={saleType}
+        onChange={setSaleType}
+        insuranceLabel={t('sales.toggleInsurance')}
+        energyLabel={t('sales.toggleEnergy')}
+      />
 
       <div className="sales-board">
         {(stages as (InsuranceSaleStage | EnergySaleStage)[]).map((stage) => {

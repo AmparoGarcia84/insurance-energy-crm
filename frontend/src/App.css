@@ -209,6 +209,21 @@
   color: var(--corp-black);
 }
 
+/* ── Page header & title (shared across all views) ───── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
 /* ── Form card ───────────────────────────────────────── */
 .form-card {
   background: var(--corp-muted-bg);
@@ -243,7 +258,7 @@
   height: 100vh;
   overflow: hidden;
   background: var(--corp-cream);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Sofia Sans', system-ui, sans-serif;
 }
 
 .dashboard-main {

@@ -4,17 +4,7 @@
   gap: 1.25rem;
 }
 
-.client-form-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.client-form-header h1 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--corp-black);
-}
+/* ── Header — layout handled by .page-header in App.css */
 
 .client-form {
   max-width: 780px;

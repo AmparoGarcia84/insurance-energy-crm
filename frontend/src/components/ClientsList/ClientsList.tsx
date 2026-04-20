@@ -61,8 +61,8 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
 
   return (
     <div className="clients-list-view">
-      <div className="clients-list-header">
-        <h1>{t('clients.title')}</h1>
+      <div className="page-header">
+        <h1 className="page-title">{t('clients.title')}</h1>
         <div className="clients-list-actions">
           <input
             ref={fileInputRef}

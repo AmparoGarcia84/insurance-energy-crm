@@ -19,7 +19,7 @@ export default function Dashboard() {
       case 'collaborators':  return <Collaborators />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
-      default:               return <h1>{t(`nav.${activeSection}`)}</h1>
+      default:               return <div className="page-header"><h1 className="page-title">{t(`nav.${activeSection}`)}</h1></div>
     }
   }
 

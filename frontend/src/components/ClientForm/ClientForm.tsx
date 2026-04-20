@@ -182,8 +182,8 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
         />
       )}
 
-      <div className="client-form-header">
-        <h1>{isNew ? t('clients.new') : t('clients.edit')}</h1>
+      <div className="page-header">
+        <h1 className="page-title">{isNew ? t('clients.new') : t('clients.edit')}</h1>
       </div>
 
       <form className="client-form form-card" onSubmit={handleSave}>

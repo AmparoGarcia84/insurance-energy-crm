@@ -281,7 +281,7 @@ export default function SaleForm({ sale, defaultClientId, defaultClientName, onS
           <ChevronLeft size={18} />
           {t('sales.backToBoard')}
         </button>
-        <h1 className="sale-form__title">{isNew ? t('sales.new') : t('sales.edit')}</h1>
+        <h1 className="page-title">{isNew ? t('sales.new') : t('sales.edit')}</h1>
       </div>
 
       <form className="sale-form form-card" onSubmit={handleSave}>

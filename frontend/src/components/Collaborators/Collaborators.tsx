@@ -71,8 +71,8 @@ export default function Collaborators() {
 
   return (
     <div className="collaborators">
-      <div className="collaborators-header">
-        <h1>{t('collaborators.title')}</h1>
+      <div className="page-header">
+        <h1 className="page-title">{t('collaborators.title')}</h1>
         <button className="btn-primary" onClick={openNew}>
           <Plus size={16} />
           {t('collaborators.new')}

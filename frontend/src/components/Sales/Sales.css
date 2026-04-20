@@ -5,31 +5,7 @@
   height: 100%;
 }
 
-/* ── Header ────────────────────────────────────────────── */
-.sales__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
 
-.sales__title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--corp-black);
-  margin: 0 0 0.2rem;
-}
-
-.sales__subtitle {
-  font-size: 0.88rem;
-  color: var(--corp-muted);
-  margin: 0;
-}
-
-/* ── Type toggle ────────────────────────────────────────── */
-.sales__toggle {
-  align-self: flex-start;
-}
 
 /* ── Kanban board ───────────────────────────────────────── */
 .sales-board {

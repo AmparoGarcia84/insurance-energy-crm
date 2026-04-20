@@ -83,6 +83,6 @@ describe('Sales', () => {
   it('shows SaleForm when Nueva venta is clicked', async () => {
     render(<Sales />)
     await userEvent.click(screen.getByText('Nueva venta'))
-    expect(screen.getByText('Nueva venta', { selector: 'h2' })).toBeInTheDocument()
+    expect(screen.getByText('Nueva venta', { selector: 'h1' })).toBeInTheDocument()
   })
 })
