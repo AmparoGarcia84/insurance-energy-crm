@@ -40,6 +40,12 @@ enum AddressType {
 enum AccountType {
   PERSONAL
   BUSINESS
+  CLIENTS
+}
+
+enum EmailType {
+  PERSONAL
+  BUSINESS
 }
 
 enum ClientType {
@@ -111,7 +117,6 @@ model Client {
   // Contacto
   mobilePhone    String?
   secondaryPhone String?
-  email          String?
   website        String?
 
   // Empresa
@@ -128,6 +133,7 @@ model Client {
   // Relaciones
   addresses    ClientAddress[]
   bankAccounts ClientBankAccount[]
+  emails       ClientEmail[]
 
   // Jerarquía
   isMainClient Boolean  @default(false)
@@ -167,6 +173,16 @@ model ClientBankAccount {
   client   Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   type     AccountType
   iban     String
+}
+
+model ClientEmail {
+  id        String    @id @default(uuid())
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type      EmailType
+  address   String
+  isPrimary Boolean   @default(false)
+  label     String?
 }
 
 // ── Sale ──────────────────────────────────────────────────────────────────────

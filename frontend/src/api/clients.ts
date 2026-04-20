@@ -7,6 +7,10 @@ import {
   ClientBankAccount,
   ClientAddressInput,
   ClientBankAccountInput,
+  EmailType,
+  EmailTypeLabels,
+  ClientEmail,
+  ClientEmailInput,
 } from '@crm/shared'
 
 export {
@@ -18,6 +22,10 @@ export {
   type ClientBankAccount,
   type ClientAddressInput,
   type ClientBankAccountInput,
+  EmailType,
+  EmailTypeLabels,
+  type ClientEmail,
+  type ClientEmailInput,
 }
 
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/clients`
@@ -41,7 +49,6 @@ export interface Client {
 
   mobilePhone?: string
   secondaryPhone?: string
-  email?: string
   website?: string
 
   employees?: number
@@ -59,6 +66,7 @@ export interface Client {
 
   description?: string
 
+  emails?: ClientEmail[]
   addresses?: ClientAddress[]
   bankAccounts?: ClientBankAccount[]
 
@@ -66,9 +74,10 @@ export interface Client {
   updatedAt: string
 }
 
-export type ClientInput = Omit<Client, 'id' | 'clientNumber' | 'createdAt' | 'updatedAt' | 'addresses' | 'bankAccounts'> & {
+export type ClientInput = Omit<Client, 'id' | 'clientNumber' | 'createdAt' | 'updatedAt' | 'addresses' | 'bankAccounts' | 'emails'> & {
   addresses?: ClientAddressInput[]
   bankAccounts?: ClientBankAccountInput[]
+  emails?: ClientEmailInput[]
 }
 
 export class ApiError extends Error {

@@ -7,6 +7,7 @@ import type {
   CollectionManager,
   AddressType,
   AccountType,
+  EmailType,
 } from '../generated/prisma/enums.js'
 import {
   parseCSV,
@@ -33,6 +34,13 @@ export interface ClientAddressInput {
 export interface ClientBankAccountInput {
   type: AccountType
   iban: string
+}
+
+export interface ClientEmailInput {
+  type: EmailType
+  address: string
+  isPrimary: boolean
+  label?: string
 }
 
 /**
@@ -74,7 +82,6 @@ export interface ClientInput {
   // Contacto
   mobilePhone?: string
   secondaryPhone?: string
-  email?: string
   website?: string
 
   // Empresa
@@ -98,12 +105,14 @@ export interface ClientInput {
   // Relaciones
   addresses?: ClientAddressInput[]
   bankAccounts?: ClientBankAccountInput[]
+  emails?: ClientEmailInput[]
 }
 
-// Always include related addresses, bank accounts and main client info in every query result
+// Always include related addresses, bank accounts, emails and main client info in every query result
 const include = {
   addresses: true,
   bankAccounts: true,
+  emails: true,
   mainClient: { select: { id: true, name: true, clientNumber: true } },
 } satisfies Prisma.ClientInclude
 
@@ -139,7 +148,7 @@ export function findClientByNif(nif: string) {
 }
 
 export async function createClient(data: ClientInput) {
-  const { addresses, bankAccounts, ...rest } = data
+  const { addresses, bankAccounts, emails, ...rest } = data
   const clientNumber = await generateClientNumber()
   // ClientUncheckedCreateInput is used instead of ClientCreateInput so that
   // mainClientId can be passed as a plain string rather than a nested relation object
@@ -148,13 +157,14 @@ export async function createClient(data: ClientInput) {
     clientNumber,
     addresses:    addresses    ? { create: addresses }    : undefined,
     bankAccounts: bankAccounts ? { create: bankAccounts } : undefined,
+    emails:       emails       ? { create: emails }       : undefined,
   }
   return prisma.client.create({ data: createData, include })
 }
 
 export function updateClient(id: string, data: Partial<ClientInput>) {
-  const { addresses, bankAccounts, ...rest } = data
-  // Replace all addresses/bankAccounts on each update (deleteMany + create)
+  const { addresses, bankAccounts, emails, ...rest } = data
+  // Replace all addresses/bankAccounts/emails on each update (deleteMany + create)
   // so the stored list always matches exactly what the form submitted
   const updateData: Prisma.ClientUncheckedUpdateInput = {
     ...(sanitize(rest) as Prisma.ClientUncheckedUpdateInput),
@@ -163,6 +173,9 @@ export function updateClient(id: string, data: Partial<ClientInput>) {
     }),
     ...(bankAccounts !== undefined && {
       bankAccounts: { deleteMany: {}, create: bankAccounts },
+    }),
+    ...(emails !== undefined && {
+      emails: { deleteMany: {}, create: emails },
     }),
   }
   return prisma.client.update({ where: { id }, data: updateData, include })
@@ -287,7 +300,6 @@ export async function importClientsFromCsv(csvText: string): Promise<ImportResul
           commercialAgentUserId: col(row, C.COMMERCIAL_AGENT) || undefined,
           mobilePhone:           col(row, C.MOBILE_PHONE) || col(row, C.PHONE) || undefined,
           secondaryPhone:        col(row, C.SECONDARY_PHONE) || undefined,
-          email:                 col(row, C.EMAIL)       || undefined,
           website:               col(row, C.WEBSITE)     || undefined,
           employees:             employees    ?? null,
           annualRevenue:         annualRevenue ?? null,

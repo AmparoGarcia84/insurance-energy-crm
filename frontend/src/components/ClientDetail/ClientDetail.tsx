@@ -78,10 +78,10 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
                   {client.mobilePhone}
                 </span>
               )}
-              {client.email && (
+              {(client.emails?.find((e) => e.isPrimary) ?? client.emails?.[0]) && (
                 <span className="cd-meta-item">
                   <Mail size={13} />
-                  {client.email}
+                  {(client.emails?.find((e) => e.isPrimary) ?? client.emails![0]).address}
                 </span>
               )}
               {client.accountOwnerName && (

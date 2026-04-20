@@ -11,6 +11,7 @@ import {
   ClientSectorLabels,
   AddressTypeLabels,
   AccountTypeLabels,
+  EmailTypeLabels,
 } from '@crm/shared'
 import type { Client } from '../../api/clients'
 import './ClientInfoModal.css'
@@ -79,10 +80,28 @@ export default function ClientInfoModal({ client, onClose }: Props) {
             <div className="cim-grid">
               <Field label={t('clients.fields.mobilePhone')}    value={client.mobilePhone} />
               <Field label={t('clients.fields.secondaryPhone')} value={client.secondaryPhone} />
-              <Field label={t('clients.fields.email')}          value={client.email} />
               <Field label={t('clients.fields.website')}        value={client.website} />
             </div>
           </section>
+
+          {/* Correos electrónicos */}
+          {client.emails && client.emails.length > 0 && (
+            <section className="cim-section">
+              <h3 className="form-section-title">{t('clients.sections.emails')}</h3>
+              <div className="cim-card-list">
+                {client.emails.map((em) => (
+                  <div key={em.id} className="cim-card">
+                    <span className="cim-card-label">
+                      {EmailTypeLabels[em.type]}
+                      {em.isPrimary && <span className="cim-card-primary"> · {t('emailAddress.isPrimary')}</span>}
+                      {em.label && <span className="cim-card-sublabel"> · {em.label}</span>}
+                    </span>
+                    <p>{em.address}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Direcciones */}
           {client.addresses && client.addresses.length > 0 && (

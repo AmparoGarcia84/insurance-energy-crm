@@ -52,6 +52,7 @@ export default {
       addresses: 'Direcciones',
       personal: 'Documentación',
       business: 'Empresa y facturación',
+      emails: 'Correos electrónicos',
       bankAccounts: 'Cuentas bancarias',
       commercial: 'Gestión comercial',
       hierarchy: 'Jerarquía',
@@ -183,6 +184,14 @@ export default {
     iban: 'IBAN',
     add: 'Añadir cuenta',
     remove: 'Eliminar cuenta',
+  },
+  emailAddress: {
+    type: 'Tipo de correo',
+    address: 'Dirección de correo',
+    label: 'Etiqueta (opcional)',
+    isPrimary: 'Principal',
+    add: 'Añadir correo',
+    remove: 'Eliminar correo',
   },
   myAccount: {
     title: 'Mi cuenta',

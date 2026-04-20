@@ -209,9 +209,9 @@
   color: var(--corp-black);
 }
 
-/* ── Form card (white panel used across forms) ───────── */
+/* ── Form card ───────────────────────────────────────── */
 .form-card {
-  background: var(--corp-card);
+  background: var(--corp-muted-bg);
   border: 1px solid var(--corp-beige);
   border-radius: 10px;
   padding: 1.5rem;

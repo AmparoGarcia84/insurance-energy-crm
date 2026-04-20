@@ -50,9 +50,10 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
 
   const filtered = clients.filter((c) => {
     const q = search.toLowerCase()
+    const emailMatch = c.emails?.some((e) => e.address.toLowerCase().includes(q)) ?? false
     return (
       c.name.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
+      emailMatch ||
       c.nif?.toLowerCase().includes(q) ||
       c.clientNumber?.toLowerCase().includes(q)
     )
@@ -151,7 +152,7 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
                   </td>
                   <td>{c.accountOwnerName ?? '—'}</td>
                   <td>{c.mobilePhone ?? '—'}</td>
-                  <td>{c.email ?? '—'}</td>
+                  <td>{c.emails?.find((e) => e.isPrimary)?.address ?? c.emails?.[0]?.address ?? '—'}</td>
                   <td onClick={(e) => e.stopPropagation()}>
                     <div className="clients-actions">
                       <button className="icon-btn" onClick={() => onEdit(c)} title={t('clients.edit')}>

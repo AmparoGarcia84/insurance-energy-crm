@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { isValidPhone, isValidNifCif, isValidEmail, isValidWebsite } from '../../utils/validation'
+import { isValidPhone, isValidNifCif, isValidWebsite } from '../../utils/validation'
 import { ACTIVITY_CNAE } from '../../utils/cnae'
 import {
   ClientType,
@@ -31,6 +31,7 @@ import CheckboxField from '../FormField/CheckboxField'
 import TextareaField from '../FormField/TextareaField'
 import AddressList from '../AddressList/AddressList'
 import BankAccountList from '../BankAccountList/BankAccountList'
+import EmailList from '../EmailList/EmailList'
 import ConfirmModal from '../ConfirmModal/ConfirmModal'
 import './ClientForm.css'
 
@@ -49,13 +50,13 @@ const EMPTY_FORM: ClientInput = {
   type: ClientType.INDIVIDUAL, status: ClientStatus.LEAD, qualification: undefined,
   activity: '', sector: '', collectionManager: undefined,
   birthDate: '', drivingLicenseIssueDate: '', dniExpiryDate: '',
-  mobilePhone: '', secondaryPhone: '', email: '', website: '',
+  mobilePhone: '', secondaryPhone: '', website: '',
   employees: undefined, annualRevenue: undefined, sicCode: '',
   accountOwnerUserId: '', accountOwnerName: '',
   commercialAgentUserId: '', commercialAgentName: '',
   isMainClient: false, mainClientId: '',
   description: '',
-  addresses: [], bankAccounts: [],
+  addresses: [], bankAccounts: [], emails: [],
 }
 
 // Truncate an ISO datetime string to the yyyy-MM-dd format required by <input type="date">
@@ -75,7 +76,7 @@ function toFormValues(client: Client): ClientInput {
     birthDate: toDateInput(client.birthDate), drivingLicenseIssueDate: toDateInput(client.drivingLicenseIssueDate),
     dniExpiryDate: toDateInput(client.dniExpiryDate),
     mobilePhone: client.mobilePhone ?? '', secondaryPhone: client.secondaryPhone ?? '',
-    email: client.email ?? '', website: client.website ?? '',
+    website: client.website ?? '',
     employees: client.employees, annualRevenue: client.annualRevenue, sicCode: client.sicCode ?? '',
     accountOwnerUserId: client.accountOwnerUserId ?? '', accountOwnerName: client.accountOwnerName ?? '',
     commercialAgentUserId: client.commercialAgentUserId ?? '', commercialAgentName: client.commercialAgentName ?? '',
@@ -83,6 +84,7 @@ function toFormValues(client: Client): ClientInput {
     description: client.description ?? '',
     addresses:    client.addresses?.map(({ type, street, postalCode, city, province, country }) => ({ type, street, postalCode, city, province, country })) ?? [],
     bankAccounts: client.bankAccounts?.map(({ type, iban }) => ({ type, iban })) ?? [],
+    emails:       client.emails?.map(({ type, address, isPrimary, label }) => ({ type, address, isPrimary, label })) ?? [],
   }
 }
 
@@ -129,7 +131,7 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
   }
 
   const [errors, setErrors] = useState({
-    nif: '', mobilePhone: '', secondaryPhone: '', email: '', website: '',
+    nif: '', mobilePhone: '', secondaryPhone: '', website: '',
   })
 
   function setError(field: keyof typeof errors, value: string) {
@@ -237,17 +239,21 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
               value={form.secondaryPhone} onChange={(e) => set('secondaryPhone', e.target.value)}
               onBlur={(e) => setError('secondaryPhone', isValidPhone(e.target.value) ? '' : t('validation.phone'))}
               error={errors.secondaryPhone} />
-            <InputField id="client-email" label={t('clients.fields.email')}
-              name="email" type="email" autoComplete="off"
-              value={form.email} onChange={(e) => set('email', e.target.value)}
-              onBlur={(e) => setError('email', isValidEmail(e.target.value) ? '' : t('validation.email'))}
-              error={errors.email} />
             <InputField id="client-website" label={t('clients.fields.website')}
               name="website" type="text" autoComplete="off"
               value={form.website} onChange={(e) => set('website', e.target.value)}
               onBlur={(e) => setError('website', isValidWebsite(e.target.value) ? '' : t('validation.website'))}
               error={errors.website} />
           </div>
+        </section>
+
+        {/* ── Correos electrónicos ── */}
+        <section className="form-section">
+          <h2 className="form-section-title">{t('clients.sections.emails')}</h2>
+          <EmailList
+            value={form.emails ?? []}
+            onChange={(emails) => set('emails', emails)}
+          />
         </section>
 
         {/* ── Direcciones ── */}

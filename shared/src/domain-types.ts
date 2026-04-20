@@ -34,7 +34,7 @@ export interface Address {
 }
 
 // ----------------------------------------------------
-// Client addresses and bank accounts
+// Client addresses, bank accounts and emails
 // ----------------------------------------------------
 
 export interface ClientAddressInput {
@@ -53,11 +53,13 @@ export interface ClientAddress extends ClientAddressInput {
 export enum AccountType {
   PERSONAL = "PERSONAL",
   BUSINESS = "BUSINESS",
+  CLIENTS  = "CLIENTS",
 }
 
 export const AccountTypeLabels: Record<AccountType, string> = {
   [AccountType.PERSONAL]: "Personal",
   [AccountType.BUSINESS]: "Empresa",
+  [AccountType.CLIENTS]:  "Clientes",
 }
 
 export interface ClientBankAccountInput {
@@ -66,6 +68,27 @@ export interface ClientBankAccountInput {
 }
 
 export interface ClientBankAccount extends ClientBankAccountInput {
+  id: string
+}
+
+export enum EmailType {
+  PERSONAL = "PERSONAL",
+  BUSINESS = "BUSINESS",
+}
+
+export const EmailTypeLabels: Record<EmailType, string> = {
+  [EmailType.PERSONAL]: "Personal",
+  [EmailType.BUSINESS]: "Empresa",
+}
+
+export interface ClientEmailInput {
+  type: EmailType
+  address: string
+  isPrimary: boolean
+  label?: string
+}
+
+export interface ClientEmail extends ClientEmailInput {
   id: string
 }
 
@@ -453,8 +476,10 @@ export interface Client {
   // Contacto
   mobilePhone?: string
   secondaryPhone?: string
-  email?: string
   website?: string
+
+  // Correos electrónicos
+  emails?: ClientEmail[]
 
   // Direcciones
   addresses?: ClientAddress[]
