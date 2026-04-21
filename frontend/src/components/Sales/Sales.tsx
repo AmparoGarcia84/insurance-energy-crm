@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import SaleCard from '../SaleCard/SaleCard'
 import SaleForm from '../SaleForm/SaleForm'
+import SaleDetail from '../SaleDetail/SaleDetail'
 import SaleTypeToggle from '../SaleTypeToggle/SaleTypeToggle'
 import type { Sale } from '../../api/sales'
 import {
@@ -15,12 +16,21 @@ import {
   INSURANCE_STAGE_COLORS,
   ENERGY_STAGE_COLORS,
 } from '../../api/sales'
-
 import { useSales } from '../../context/DataContext'
 import './Sales.css'
 
+// ── Navigation stack ──────────────────────────────────────────────────────────
 
-export default function Sales() {
+type SalesView =
+  | { kind: 'board' }
+  | { kind: 'saleDetail'; sale: Sale }
+  | { kind: 'saleForm';   sale: Sale | null }   // null = new sale
+
+interface Props {
+  onNavigateToClient?: (clientId: string) => void
+}
+
+export default function Sales({ onNavigateToClient }: Props) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const ownerName = user?.displayName ?? ''
@@ -28,45 +38,54 @@ export default function Sales() {
   const [saleType, setSaleType] = useState<SaleType>(SaleType.INSURANCE)
   const { sales, loading: salesLoading, upsertSale, removeSale } = useSales()
   const displaySales = salesLoading ? [] : sales
-  const [editing, setEditing] = useState<Sale | null | 'new'>(null)
 
-  function handleSaved(saved: Sale) {
-    upsertSale(saved)
-    setEditing(null)
-  }
+  // Stack: last item is what's shown. push/pop are the only mutations.
+  const [stack, setStack] = useState<SalesView[]>([{ kind: 'board' }])
+  const push      = (v: SalesView) => setStack(s => [...s, v])
+  const pop       = ()             => setStack(s => s.length > 1 ? s.slice(0, -1) : s)
+  const goToBoard = ()             => setStack([{ kind: 'board' }])
 
-  function handleDelete(id: string) {
-    removeSale(id)
-    setEditing(null)
-  }
+  const current = stack[stack.length - 1]
 
-  if (editing !== null) {
+  // ── Sale form view ──────────────────────────────────────────────────────────
+  if (current.kind === 'saleForm') {
     return (
       <SaleForm
-        sale={editing === 'new' ? null : editing}
-        onSave={handleSaved}
-        onCancel={() => setEditing(null)}
-        onDelete={handleDelete}
+        sale={current.sale}
+        onSave={(saved) => { upsertSale(saved); goToBoard() }}
+        onCancel={pop}
+        onDelete={(id) => { removeSale(id); goToBoard() }}
       />
     )
   }
 
-  const filtered = displaySales.filter((s) => s.type === saleType)
-  const stages = saleType === SaleType.INSURANCE ? INSURANCE_STAGES : ENERGY_STAGES
+  // ── Sale detail view ────────────────────────────────────────────────────────
+  if (current.kind === 'saleDetail') {
+    return (
+      <SaleDetail
+        sale={current.sale}
+        onBack={pop}
+        onEdit={(s) => push({ kind: 'saleForm', sale: s })}
+        onViewClient={onNavigateToClient}
+      />
+    )
+  }
+
+  // ── Board view ──────────────────────────────────────────────────────────────
+  const filtered    = displaySales.filter((s) => s.type === saleType)
+  const stages      = saleType === SaleType.INSURANCE ? INSURANCE_STAGES : ENERGY_STAGES
   const stageColors = saleType === SaleType.INSURANCE ? INSURANCE_STAGE_COLORS : ENERGY_STAGE_COLORS
 
   function stageLabel(stage: InsuranceSaleStage | EnergySaleStage): string {
-    if (saleType === SaleType.INSURANCE) {
-      return t(`sales.stages.insurance.${stage}`)
-    }
-    return t(`sales.stages.energy.${stage}`)
+    return saleType === SaleType.INSURANCE
+      ? t(`sales.stages.insurance.${stage}`)
+      : t(`sales.stages.energy.${stage}`)
   }
 
   function columnSales(stage: InsuranceSaleStage | EnergySaleStage): Sale[] {
-    if (saleType === SaleType.INSURANCE) {
-      return filtered.filter((s) => s.insuranceStage === stage)
-    }
-    return filtered.filter((s) => s.energyStage === stage)
+    return saleType === SaleType.INSURANCE
+      ? filtered.filter((s) => s.insuranceStage === stage)
+      : filtered.filter((s) => s.energyStage === stage)
   }
 
   function columnTotal(stageSales: Sale[]): number {
@@ -78,7 +97,7 @@ export default function Sales() {
     <div className="sales">
       <div className="page-header">
         <h1 className="page-title">{t('sales.title')}</h1>
-        <button className="btn-primary" onClick={() => setEditing('new')}>
+        <button className="btn-primary" onClick={() => push({ kind: 'saleForm', sale: null })}>
           <Plus size={16} />
           {t('sales.new')}
         </button>
@@ -94,8 +113,8 @@ export default function Sales() {
       <div className="sales-board">
         {(stages as (InsuranceSaleStage | EnergySaleStage)[]).map((stage) => {
           const stageSales = columnSales(stage)
-          const total = columnTotal(stageSales)
-          const color = (stageColors as Record<string, string>)[stage]
+          const total      = columnTotal(stageSales)
+          const color      = (stageColors as Record<string, string>)[stage]
 
           return (
             <div
@@ -121,7 +140,7 @@ export default function Sales() {
                     key={sale.id}
                     sale={sale}
                     ownerName={ownerName}
-                    onClick={(s) => setEditing(s)}
+                    onClick={(s) => push({ kind: 'saleDetail', sale: s })}
                   />
                 ))}
               </div>

@@ -7,7 +7,6 @@ import {
 import { useAuth } from '../../auth/AuthContext'
 import { useSales } from '../../context/DataContext'
 import SaleCard from '../SaleCard/SaleCard'
-import SaleForm from '../SaleForm/SaleForm'
 import type { Sale } from '../../api/sales'
 import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../api/sales'
 import { getTasks } from '../../api/tasks'
@@ -78,6 +77,7 @@ export function relativeDate(isoDate: string): string {
 
 interface Props {
   clientId: string
+  onViewSale: (sale: Sale) => void
 }
 
 const PRIORITY_CLASS: Record<TaskPriority, string> = {
@@ -101,12 +101,11 @@ function isOverdue(dueDate?: string | null): boolean {
   return new Date(dueDate) < new Date(new Date().toDateString())
 }
 
-export default function ClientSummaryTab({ clientId }: Props) {
+export default function ClientSummaryTab({ clientId, onViewSale }: Props) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const ownerName = user?.displayName ?? ''
-  const { sales, loading, upsertSale, removeSale } = useSales()
-  const [editingSale, setEditingSale] = useState<Sale | null>(null)
+  const { sales, loading } = useSales()
   const [tasks, setTasks] = useState<TaskWithRelations[]>([])
 
   useEffect(() => {
@@ -114,17 +113,6 @@ export default function ClientSummaryTab({ clientId }: Props) {
       setTasks(all.filter((t) => PENDING_STATUSES.has(t.status as TaskStatus)))
     }).catch(() => {/* non-critical */})
   }, [clientId])
-
-  if (editingSale) {
-    return (
-      <SaleForm
-        sale={editingSale}
-        onSave={(saved) => { upsertSale(saved); setEditingSale(null) }}
-        onCancel={() => setEditingSale(null)}
-        onDelete={(id) => { removeSale(id); setEditingSale(null) }}
-      />
-    )
-  }
 
   const openSales = loading
     ? []
@@ -158,7 +146,7 @@ export default function ClientSummaryTab({ clientId }: Props) {
                   key={sale.id}
                   sale={sale}
                   ownerName={ownerName}
-                  onClick={setEditingSale}
+                  onClick={onViewSale}
                 />
               ))}
             </div>

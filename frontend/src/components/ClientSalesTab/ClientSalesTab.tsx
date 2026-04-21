@@ -17,6 +17,7 @@ import './ClientSalesTab.css'
 interface Props {
   clientId: string
   clientName: string
+  onViewSale: (sale: Sale) => void
 }
 
 function stageInfo(sale: Sale): { label: string; color: string } | null {
@@ -35,7 +36,7 @@ function stageInfo(sale: Sale): { label: string; color: string } | null {
   return null
 }
 
-export default function ClientSalesTab({ clientId, clientName }: Props) {
+export default function ClientSalesTab({ clientId, clientName, onViewSale }: Props) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { sales, loading, upsertSale, removeSale } = useSales()
@@ -101,7 +102,7 @@ export default function ClientSalesTab({ clientId, clientName }: Props) {
                   <tr
                     key={sale.id}
                     className="cd-sales-tab__row"
-                    onClick={() => setEditing(sale)}
+                    onClick={() => onViewSale(sale)}
                   >
                     <td>
                       <div className="cd-sales-tab__title-cell">

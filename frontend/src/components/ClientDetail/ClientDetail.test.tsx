@@ -52,46 +52,46 @@ describe('ClientDetail', () => {
   })
 
   it('renders client name in header', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     expect(screen.getByRole('heading', { name: 'Ana García' })).toBeInTheDocument()
   })
 
   it('renders initials avatar', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     expect(screen.getByText('AG')).toBeInTheDocument()
   })
 
   it('renders NIF', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     expect(screen.getAllByText('12345678A').length).toBeGreaterThan(0)
   })
 
   it('calls onBack when back button is clicked', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByTitle('clients.detail.back'))
     expect(onBack).toHaveBeenCalledOnce()
   })
 
   it('calls onEdit with client when edit button is clicked', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.detail.edit'))
     expect(onEdit).toHaveBeenCalledWith(baseClient)
   })
 
   it('shows summary tab content by default', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     expect(screen.getByText('clients.summary.openOpportunities')).toBeInTheDocument()
     expect(screen.getByText('clients.summary.pendingTasks')).toBeInTheDocument()
   })
 
   it('shows coming soon placeholder for unimplemented tabs', () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.tabs.activity'))
     expect(screen.getByText('clients.detail.comingSoon')).toBeInTheDocument()
   })
 
   it('renders documents tab with add button when documents tab is active', async () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.tabs.documents'))
     await waitFor(() => {
       expect(screen.getByText('documents.actions.add')).toBeInTheDocument()
@@ -103,7 +103,7 @@ describe('ClientDetail', () => {
       ...baseClient,
       addresses: [{ id: 'a1', type: AddressType.FISCAL, street: 'Calle Mayor 1', city: 'Madrid', postalCode: '28001' }],
     }
-    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.detail.view'))
     await waitFor(() => {
       expect(screen.getByText('clients.sections.addresses')).toBeInTheDocument()
@@ -116,7 +116,7 @@ describe('ClientDetail', () => {
       ...baseClient,
       bankAccounts: [{ id: 'b1', type: AccountType.PERSONAL, iban: 'ES12 3456 7890 1234 5678 90' }],
     }
-    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.detail.view'))
     await waitFor(() => {
       expect(screen.getByText('clients.sections.bankAccounts')).toBeInTheDocument()
@@ -125,7 +125,7 @@ describe('ClientDetail', () => {
   })
 
   it('does not render addresses section when empty', async () => {
-    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.detail.view'))
     await waitFor(() => {
       expect(screen.queryByText('clients.sections.addresses')).not.toBeInTheDocument()
@@ -134,7 +134,7 @@ describe('ClientDetail', () => {
 
   it('renders description when present — visible in info modal', async () => {
     const client: Client = { ...baseClient, description: 'Cliente muy importante' }
-    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} />)
+    render(<ClientDetail client={client} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.detail.view'))
     await waitFor(() => {
       expect(screen.getByText('Cliente muy importante')).toBeInTheDocument()

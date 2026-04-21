@@ -111,9 +111,9 @@
   grid-column: span 2;
 }
 
-/* ── Section card base — cream panel, used in lists and summary grids ── */
+/* ── Section card base — white card, consistent with detail-view cards ── */
 .section-card {
-  background: var(--corp-cream);
+  background: var(--corp-card);
   border: 1px solid var(--corp-beige);
   border-radius: 8px;
   display: flex;

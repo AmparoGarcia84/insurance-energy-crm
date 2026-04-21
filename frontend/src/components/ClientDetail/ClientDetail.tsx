@@ -6,6 +6,7 @@ import {
   ClientStatusLabels,
 } from '@crm/shared'
 import type { Client } from '../../api/clients'
+import type { Sale } from '../../api/sales'
 import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
 import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
 import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
@@ -16,6 +17,7 @@ interface Props {
   client: Client
   onBack: () => void
   onEdit: (client: Client) => void
+  onViewSale: (sale: Sale) => void
 }
 
 type Tab = 'summary' | 'activity' | 'sales' | 'mail' | 'documents'
@@ -29,7 +31,7 @@ function initials(name: string): string {
     .join('')
 }
 
-export default function ClientDetail({ client, onBack, onEdit }: Props) {
+export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Props) {
   const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('summary')
   const [showInfo, setShowInfo] = useState(false)
@@ -122,9 +124,9 @@ export default function ClientDetail({ client, onBack, onEdit }: Props) {
       {/* ── Tab content ── */}
       <div className="cd-content">
         {tab === 'summary' ? (
-          <ClientSummaryTab clientId={client.id} />
+          <ClientSummaryTab clientId={client.id} onViewSale={onViewSale} />
         ) : tab === 'sales' ? (
-          <ClientSalesTab clientId={client.id} clientName={client.name} />
+          <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (
           <ClientDocumentsTab clientId={client.id} clientName={client.name} />
         ) : (

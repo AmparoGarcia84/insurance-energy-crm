@@ -102,24 +102,24 @@ describe('ClientSalesTab', () => {
   })
 
   it('renders the new sale button', () => {
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('New sale')).toBeInTheDocument()
   })
 
   it('shows empty state when client has no sales', () => {
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('No sales yet')).toBeInTheDocument()
   })
 
   it('shows opportunities count', () => {
     mockSales = [makeInsuranceSale('1'), makeInsuranceSale('2')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('2 opportunities')).toBeInTheDocument()
   })
 
   it('renders sale title without client name', () => {
     mockSales = [makeInsuranceSale('1')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('Hogar - 1')).toBeInTheDocument()
     // client name should NOT appear as a standalone heading
     expect(screen.queryByRole('heading', { name: 'Ana López' })).toBeNull()
@@ -127,25 +127,25 @@ describe('ClientSalesTab', () => {
 
   it('renders insurance branch badge', () => {
     mockSales = [makeInsuranceSale('1')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('Hogar')).toBeInTheDocument()
   })
 
   it('renders stage label', () => {
     mockSales = [makeInsuranceSale('1')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('Awaiting response')).toBeInTheDocument()
   })
 
   it('renders revenue', () => {
     mockSales = [makeInsuranceSale('1')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText(/1[.,]?200/)).toBeInTheDocument()
   })
 
   it('renders energy company badge and savings', () => {
     mockSales = [ENERGY_SALE]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.getByText('Iberdrola')).toBeInTheDocument()
     expect(screen.getByText(/800/)).toBeInTheDocument()
     expect(screen.getByText('Awaiting documents')).toBeInTheDocument()
@@ -153,7 +153,7 @@ describe('ClientSalesTab', () => {
 
   it('does not show sales from other clients', () => {
     mockSales = [makeInsuranceSale('1'), OTHER_CLIENT_SALE]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     const rows = screen.getAllByRole('button')
     // only 1 sale row (plus the "new sale" button handled separately)
     expect(screen.queryByText('Hogar - 99')).toBeNull()
@@ -165,13 +165,13 @@ describe('ClientSalesTab', () => {
       makeInsuranceSale('3', { createdAt: '2024-01-03T00:00:00Z' }),
       makeInsuranceSale('2', { createdAt: '2024-01-02T00:00:00Z' }),
     ]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     const titles = screen.getAllByText(/Hogar - \d/).map((el) => el.textContent)
     expect(titles).toEqual(['Hogar - 3', 'Hogar - 2', 'Hogar - 1'])
   })
 
   it('opens SaleForm with client pre-filled when clicking New sale', async () => {
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     await userEvent.click(screen.getByText('New sale'))
     const form = screen.getByTestId('sale-form')
     expect(form).toBeInTheDocument()
@@ -180,18 +180,17 @@ describe('ClientSalesTab', () => {
     expect(form).toHaveAttribute('data-client-name', 'Ana López')
   })
 
-  it('opens SaleForm for editing when clicking a sale row', async () => {
+  it('calls onViewSale when clicking a sale row', async () => {
+    const onViewSale = vi.fn()
     mockSales = [makeInsuranceSale('1')]
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={onViewSale} />)
     await userEvent.click(screen.getByText('Hogar - 1'))
-    const form = screen.getByTestId('sale-form')
-    expect(form).toHaveAttribute('data-sale-id', '1')
-    expect(form).not.toHaveAttribute('data-client-id')
+    expect(onViewSale).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
   })
 
   it('renders nothing while loading', () => {
     mockLoading = true
-    render(<ClientSalesTab clientId="client-a" clientName="Ana López" />)
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.queryByText('No sales yet')).toBeNull()
     expect(screen.queryByRole('list')).toBeNull()
   })

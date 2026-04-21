@@ -51,9 +51,6 @@ vi.mock('../SaleCard/SaleCard', () => ({
   ),
 }))
 
-vi.mock('../SaleForm/SaleForm', () => ({
-  default: () => <div data-testid="sale-form" />,
-}))
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -111,70 +108,70 @@ describe('ClientSummaryTab', () => {
   })
 
   it('renders the open opportunities card title', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('Open opportunities')).toBeInTheDocument()
   })
 
   it('shows empty state when client has no open sales', () => {
     mockSales = [CLOSED_INSURANCE]
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('No open opportunities')).toBeInTheDocument()
     expect(screen.queryByTestId('sale-card')).toBeNull()
   })
 
   it('shows open insurance sales for the client', () => {
     mockSales = [OPEN_INSURANCE, CLOSED_INSURANCE]
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('Hogar - Ana López')).toBeInTheDocument()
     expect(screen.queryByText('Vida - Ana López')).toBeNull()
   })
 
   it('shows open energy sales for the client', () => {
     mockSales = [OPEN_ENERGY]
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('Luz - Ana López')).toBeInTheDocument()
   })
 
   it('does not show sales from other clients', () => {
     mockSales = [OPEN_INSURANCE, OTHER_CLIENT_SALE]
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.queryByText('Hogar - Otro')).toBeNull()
   })
 
   it('shows count badge when there are open sales', () => {
     mockSales = [OPEN_INSURANCE, OPEN_ENERGY]
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('2 opportunities')).toBeInTheDocument()
   })
 
   it('does not show count badge when no open sales', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(document.querySelector('.cd-summary__card-count')).toBeNull()
   })
 
   it('renders the pending tasks card title', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('Pending tasks')).toBeInTheDocument()
   })
 
   it('renders pending tasks empty state', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('No pending tasks')).toBeInTheDocument()
   })
 
   it('renders the recent activity card title', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('Recent activity')).toBeInTheDocument()
   })
 
   it('renders recent activity empty state', () => {
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.getByText('No activity recorded')).toBeInTheDocument()
   })
 
   it('renders nothing while loading', () => {
     mockLoading = true
-    render(<ClientSummaryTab clientId="client-a" />)
+    render(<ClientSummaryTab clientId="client-a" onViewSale={vi.fn()} />)
     expect(screen.queryByTestId('sale-card')).toBeNull()
     expect(screen.queryByText('No open opportunities')).toBeNull()
   })

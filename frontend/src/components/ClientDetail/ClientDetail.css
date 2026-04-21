@@ -122,11 +122,6 @@
   /* transparent — cards sit directly on the page background */
 }
 
-/* Cards inside tab content are white over the beige page background */
-.cd-content .section-card {
-  background: var(--corp-card);
-}
-
 /* ── Sections ───────────────────────────────────────── */
 .cd-sections {
   display: flex;

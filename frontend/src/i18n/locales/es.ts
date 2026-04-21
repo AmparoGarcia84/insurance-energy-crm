@@ -302,6 +302,7 @@ export default {
       channel:            'Canal',
       probabilityPercent: 'Probabilidad (%)',
       nextStep:           'Siguiente paso',
+      lostReason:         'Motivo de pérdida',
       campaignSource:     'Fuente de Campaña',
       forecastCategory:   'Categoría de la previsión',
       socialLeadId:       'Social Lead ID',
@@ -336,6 +337,27 @@ export default {
     },
     actions: {
       delete: 'Eliminar',
+    },
+    detail: {
+      back:             'Volver al tablero',
+      edit:             'Editar',
+      registerActivity: 'Registrar actividad',
+      comingSoon:       'Próximamente',
+      cards: {
+        client:          'Cliente',
+        clientId:        'ID',
+        viewClient:      'Ver ficha cliente',
+        value:           'Valor de la venta',
+        expectedRevenue: 'Ingresos esperados',
+        probability:     'Probabilidad',
+        dates:           'Fechas importantes',
+      },
+      tabs: {
+        information: 'Información',
+        activity:    'Actividad',
+        tasks:       'Tareas',
+        documents:   'Documentos',
+      },
     },
   },
   collaborators: {

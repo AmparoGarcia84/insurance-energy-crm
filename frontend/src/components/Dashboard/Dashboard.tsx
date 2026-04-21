@@ -11,11 +11,17 @@ import Collaborators from '../Collaborators/Collaborators'
 export default function Dashboard() {
   const { t } = useTranslation()
   const [activeSection, setActiveSection] = useState<Section>('home')
+  const [pendingClientId, setPendingClientId] = useState<string | null>(null)
+
+  function navigateToClient(clientId: string) {
+    setPendingClientId(clientId)
+    setActiveSection('clients')
+  }
 
   function renderSection() {
     switch (activeSection) {
-      case 'clients':        return <Clients />
-      case 'sales':          return <Sales />
+      case 'clients':        return <Clients initialClientId={pendingClientId ?? undefined} onClientOpened={() => setPendingClientId(null)} />
+      case 'sales':          return <Sales onNavigateToClient={navigateToClient} />
       case 'collaborators':  return <Collaborators />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
