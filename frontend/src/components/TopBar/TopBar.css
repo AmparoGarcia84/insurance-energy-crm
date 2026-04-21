@@ -1,7 +1,7 @@
 .topbar {
   height: 64px;
   min-height: 64px;
-  background: var(--corp-muted);
+  background: var(--corp-black);
   border-bottom: none;
   display: flex;
   align-items: center;
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(246, 243, 238, 0.12);
+  background: rgba(246, 243, 238, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 0 12px;
@@ -26,7 +26,7 @@
     border: none;
     background: transparent;
     outline: none;
-    font-size: 14px;
+    font-size: 16px;
     width: 100%;
     padding: 9px 0;
     color: var(--corp-cream);
@@ -74,7 +74,7 @@
   height: 8px;
   background: #b45309;
   border-radius: 50%;
-  border: 2px solid var(--corp-muted);
+  border: 2px solid var(--corp-black);
 }
 
 .topbar-user {
@@ -110,7 +110,7 @@
 }
 
 .topbar-user-role {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(246, 243, 238, 0.6);
   line-height: 1.3;
 }

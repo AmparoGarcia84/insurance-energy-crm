@@ -31,6 +31,8 @@ import {
 } from '@crm/shared'
 import type { DocumentRecord } from '../api/documents'
 import { DocumentGroup, DocumentType, DocumentStatus } from '../api/documents'
+import type { ActivityWithRelations } from '../api/activities'
+import { ActivityType, ActivityDirection } from '../api/activities'
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -1072,5 +1074,90 @@ export const DEMO_DOCUMENTS: DocumentRecord[] = [
     client:          { id: 'c-antonio', name: 'Antonio García Pérez', clientNumber: '000004' },
     sale:            { id: 's-06', title: 'Seguro de coche turismo', type: 'INSURANCE' },
     uploadedBy:      { id: 'u-mila', displayName: 'Mila' },
+  },
+]
+
+// ── Activities ────────────────────────────────────────────────────────────────
+
+export const DEMO_ACTIVITIES: ActivityWithRelations[] = [
+  {
+    id:          'act-001',
+    userId:      'u-mila',
+    clientId:    'c-carmen',
+    saleId:      undefined,
+    type:        ActivityType.CALL,
+    direction:   ActivityDirection.OUTBOUND,
+    subject:     'Llamada de seguimiento renovación hogar',
+    description: 'Confirmó interés en renovar. Pendiente de recibir oferta de la aseguradora.',
+    outcome:     'Positivo — espera oferta',
+    nextStep:    'Enviar comparativa de coberturas',
+    activityAt:  '2026-04-21T10:30:00.000Z',
+    createdAt:   '2026-04-21T10:30:00.000Z',
+    updatedAt:   '2026-04-21T10:30:00.000Z',
+    user:        { id: 'u-mila', displayName: 'Mila' },
+  },
+  {
+    id:          'act-002',
+    userId:      'u-mila',
+    clientId:    'c-carmen',
+    saleId:      undefined,
+    type:        ActivityType.EMAIL,
+    direction:   ActivityDirection.OUTBOUND,
+    subject:     'Envío de comparativa de coberturas hogar',
+    description: 'Se adjuntó PDF con tres opciones de cobertura y precios.',
+    outcome:     undefined,
+    nextStep:    'Esperar respuesta hasta el viernes',
+    activityAt:  '2026-04-18T09:00:00.000Z',
+    createdAt:   '2026-04-18T09:00:00.000Z',
+    updatedAt:   '2026-04-18T09:00:00.000Z',
+    user:        { id: 'u-mila', displayName: 'Mila' },
+  },
+  {
+    id:          'act-003',
+    userId:      'u-asesor',
+    clientId:    'c-francisco',
+    saleId:      undefined,
+    type:        ActivityType.MEETING,
+    direction:   ActivityDirection.INBOUND,
+    subject:     'Reunión presencial para estudio energético',
+    description: 'Revisión de facturas de los últimos 12 meses. Se detecta alto consumo en horas punta.',
+    outcome:     'Acordado cambio de tarifa a discriminación horaria',
+    nextStep:    'Tramitar cambio con la comercializadora',
+    activityAt:  '2026-04-15T16:00:00.000Z',
+    createdAt:   '2026-04-15T16:00:00.000Z',
+    updatedAt:   '2026-04-15T16:00:00.000Z',
+    user:        { id: 'u-asesor', displayName: 'Nuria' },
+  },
+  {
+    id:          'act-004',
+    userId:      'u-mila',
+    clientId:    'c-elena',
+    saleId:      undefined,
+    type:        ActivityType.WHATSAPP_NOTE,
+    direction:   ActivityDirection.INBOUND,
+    subject:     'WhatsApp: pregunta sobre siniestro vehículo',
+    description: 'Consulta si el parte amistoso debe entregarse en papel o vale el digital.',
+    outcome:     'Aclarado: vale digital con firma electrónica',
+    nextStep:    undefined,
+    activityAt:  '2026-04-20T14:15:00.000Z',
+    createdAt:   '2026-04-20T14:15:00.000Z',
+    updatedAt:   '2026-04-20T14:15:00.000Z',
+    user:        { id: 'u-mila', displayName: 'Mila' },
+  },
+  {
+    id:          'act-005',
+    userId:      'u-mila',
+    clientId:    'c-antonio',
+    saleId:      undefined,
+    type:        ActivityType.CALL,
+    direction:   ActivityDirection.INBOUND,
+    subject:     'Llamada recibida: datos para renovación seguro vida',
+    description: 'Cliente llama para actualizar beneficiarios. Se tomó nota de los cambios.',
+    outcome:     'Datos actualizados en expediente',
+    nextStep:    'Enviar endoso firmado',
+    activityAt:  '2026-04-19T11:00:00.000Z',
+    createdAt:   '2026-04-19T11:00:00.000Z',
+    updatedAt:   '2026-04-19T11:00:00.000Z',
+    user:        { id: 'u-mila', displayName: 'Mila' },
   },
 ]

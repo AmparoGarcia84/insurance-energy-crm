@@ -1042,6 +1042,38 @@ export interface ActivityLog extends BaseEntity {
   metadata?: Record<string, unknown>
 }
 
+// User-facing client follow-up interaction types (subset of ActivityType used for Activity records)
+export const CLIENT_ACTIVITY_TYPES = [
+  ActivityType.CALL,
+  ActivityType.EMAIL,
+  ActivityType.WHATSAPP_NOTE,
+  ActivityType.MEETING,
+] as const satisfies readonly ActivityType[]
+
+export enum ActivityDirection {
+  INBOUND  = "INBOUND",
+  OUTBOUND = "OUTBOUND",
+}
+
+export const ActivityDirectionLabels: Record<ActivityDirection, string> = {
+  [ActivityDirection.INBOUND]:  "Inbound",
+  [ActivityDirection.OUTBOUND]: "Outbound",
+}
+
+/** Client follow-up / business interaction record (distinct from ActivityLog audit trail) */
+export interface Activity extends BaseEntity {
+  userId:      UUID
+  clientId:    UUID
+  saleId?:     UUID
+  type:        ActivityType
+  direction?:  ActivityDirection
+  subject:     string
+  description?: string
+  outcome?:    string
+  nextStep?:   string
+  activityAt:  ISODateTime
+}
+
 // ----------------------------------------------------
 // User
 // ----------------------------------------------------

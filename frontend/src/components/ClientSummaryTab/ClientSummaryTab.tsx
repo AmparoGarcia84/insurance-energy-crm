@@ -12,8 +12,9 @@ import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../api/sales'
 import { getTasks } from '../../api/tasks'
 import type { TaskWithRelations } from '../../api/tasks'
 import { TaskStatus, TaskPriority } from '../../api/tasks'
-import type { ActivityLog } from '@crm/shared'
 import { ActivityType } from '@crm/shared'
+import type { ActivityWithRelations } from '../../api/activities'
+import { getActivities } from '../../api/activities'
 import './ClientSummaryTab.css'
 
 // ── Open-stage helpers ────────────────────────────────────────────────────────
@@ -106,7 +107,8 @@ export default function ClientSummaryTab({ clientId, onViewSale }: Props) {
   const { user } = useAuth()
   const ownerName = user?.displayName ?? ''
   const { sales, loading } = useSales()
-  const [tasks, setTasks] = useState<TaskWithRelations[]>([])
+  const [tasks, setTasks]           = useState<TaskWithRelations[]>([])
+  const [activities, setActivities] = useState<ActivityWithRelations[]>([])
 
   useEffect(() => {
     getTasks({ clientId }).then((all) => {
@@ -114,12 +116,15 @@ export default function ClientSummaryTab({ clientId, onViewSale }: Props) {
     }).catch(() => {/* non-critical */})
   }, [clientId])
 
+  useEffect(() => {
+    getActivities({ clientId }).then((all) => {
+      setActivities(all.slice(0, 5))
+    }).catch(() => {/* non-critical */})
+  }, [clientId])
+
   const openSales = loading
     ? []
     : sales.filter((s) => s.clientId === clientId && isOpenSale(s))
-
-  // TODO: replace with DataContext when client activities are implemented
-  const activities: ActivityLog[] = []
 
   return (
     <div className="cd-summary">
@@ -214,9 +219,9 @@ export default function ClientSummaryTab({ clientId, onViewSale }: Props) {
                     <span className="cd-summary__activity-icon" aria-hidden>
                       <Icon size={14} />
                     </span>
-                    <span className="cd-summary__activity-text">{entry.summary}</span>
+                    <span className="cd-summary__activity-text">{entry.subject}</span>
                     <span className="cd-summary__activity-date">
-                      {relativeDate(entry.createdAt)}
+                      {relativeDate(entry.activityAt)}
                     </span>
                   </li>
                 )

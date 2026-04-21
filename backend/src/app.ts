@@ -17,6 +17,7 @@ import salesRouter from './routes/sales.js'
 import collaboratorsRouter from './routes/collaborators.js'
 import tasksRouter from './routes/tasks.js'
 import documentsRouter from './routes/documents.js'
+import activitiesRouter from './routes/activities.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -43,3 +44,4 @@ app.use('/sales', salesRouter)
 app.use('/collaborators', collaboratorsRouter)
 app.use('/tasks', tasksRouter)
 app.use('/documents', documentsRouter)
+app.use('/activities', activitiesRouter)

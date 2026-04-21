@@ -2,7 +2,7 @@
   width: 208px;
   min-width: 208px;
   height: 100vh;
-  background: var(--corp-muted);
+  background: var(--corp-black);
   border-right: none;
   display: flex;
   flex-direction: column;
@@ -46,7 +46,7 @@
     border-radius: 8px;
     color: rgba(246, 243, 238, 0.8);
     text-decoration: none;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     transition: background 0.15s, color 0.15s;
 

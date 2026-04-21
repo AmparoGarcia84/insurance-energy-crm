@@ -16,6 +16,7 @@ import {
   TaskStatus, TaskPriority, TaskContextType, RelatedEntityType,
   ReminderChannel, ReminderRecurrence,
   DocumentGroup, DocumentType, DocumentStatus,
+  ActivityType, ActivityDirection,
 } from '../src/generated/prisma/client.js'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
@@ -1340,6 +1341,111 @@ async function main() {
   })
 
   console.log('  ✓ Documents (12)')
+
+  // ─── Activities ────────────────────────────────────────────────────────────
+  await prisma.activity.createMany({
+    data: [
+      // Carmen López — seguimiento seguro hogar
+      {
+        userId:      mila.id,
+        clientId:    c('Carmen López Martínez').id,
+        saleId:      s('Seguro de hogar multirriesgo').id,
+        type:        ActivityType.CALL,
+        direction:   ActivityDirection.OUTBOUND,
+        subject:     'Llamada de seguimiento — documentación pendiente',
+        description: 'La cliente confirmó que tiene las escrituras. Pendiente de escanear y enviar.',
+        outcome:     'Positivo — documentación en camino',
+        nextStep:    'Esperar documentación antes del 30 de abril',
+        activityAt:  new Date('2026-04-20T10:30:00'),
+      },
+      {
+        userId:      mila.id,
+        clientId:    c('Carmen López Martínez').id,
+        saleId:      s('Seguro de hogar multirriesgo').id,
+        type:        ActivityType.EMAIL,
+        direction:   ActivityDirection.OUTBOUND,
+        subject:     'Envío de comparativa de coberturas hogar',
+        description: 'Se adjuntó PDF con tres opciones de cobertura y precios actualizados de Mapfre.',
+        outcome:     undefined,
+        nextStep:    'Esperar respuesta del cliente',
+        activityAt:  new Date('2026-04-15T09:00:00'),
+      },
+      // Francisco Ruiz — estudio energético
+      {
+        userId:      mila.id,
+        clientId:    c('Francisco Ruiz Sánchez').id,
+        saleId:      s('Estudio contrato energía eléctrica').id,
+        type:        ActivityType.MEETING,
+        direction:   ActivityDirection.INBOUND,
+        subject:     'Reunión presencial — revisión facturas eléctricas',
+        description: 'Análisis de los últimos 12 meses de consumo. Alto consumo en horas punta detectado.',
+        outcome:     'Recomendado cambio a tarifa con discriminación horaria',
+        nextStep:    'Tramitar cambio con la comercializadora',
+        activityAt:  new Date('2026-04-14T16:00:00'),
+      },
+      {
+        userId:      asesor.id,
+        clientId:    c('Francisco Ruiz Sánchez').id,
+        type:        ActivityType.CALL,
+        direction:   ActivityDirection.OUTBOUND,
+        subject:     'Llamada de presentación del estudio energético',
+        description: 'Primera toma de contacto para explicar el servicio de estudio energético gratuito.',
+        outcome:     'Interesado — acepta reunión presencial',
+        nextStep:    'Confirmar fecha de reunión',
+        activityAt:  new Date('2026-04-08T11:00:00'),
+      },
+      // Elena Moreno — siniestro vehículo
+      {
+        userId:      mila.id,
+        clientId:    c('Elena Moreno Fernández').id,
+        type:        ActivityType.WHATSAPP_NOTE,
+        direction:   ActivityDirection.INBOUND,
+        subject:     'WhatsApp: duda sobre parte amistoso digital',
+        description: 'La cliente pregunta si el parte amistoso digital tiene la misma validez que en papel.',
+        outcome:     'Confirmado: vale digital con firma electrónica',
+        nextStep:    undefined,
+        activityAt:  new Date('2026-04-19T14:15:00'),
+      },
+      // Antonio García — seguro vida
+      {
+        userId:      mila.id,
+        clientId:    c('Antonio García Pérez').id,
+        type:        ActivityType.CALL,
+        direction:   ActivityDirection.INBOUND,
+        subject:     'Llamada recibida — actualización de beneficiarios',
+        description: 'El cliente llama para cambiar los beneficiarios del seguro de vida. Se toman los nuevos datos.',
+        outcome:     'Datos actualizados en expediente',
+        nextStep:    'Enviar endoso firmado al cliente',
+        activityAt:  new Date('2026-04-18T11:00:00'),
+      },
+      // Lucía Fernández — primer contacto
+      {
+        userId:      asesor.id,
+        clientId:    c('Lucía Fernández Torres').id,
+        type:        ActivityType.CALL,
+        direction:   ActivityDirection.OUTBOUND,
+        subject:     'Primer contacto — seguro de salud',
+        description: 'Llamada de captación. La clienta muestra interés en un seguro de salud para toda la familia.',
+        outcome:     'Interesada — solicita comparativa',
+        nextStep:    'Preparar comparativa Sanitas / Adeslas y enviar por email',
+        activityAt:  new Date('2026-04-17T10:00:00'),
+      },
+      // Roberto Jiménez — sin respuesta
+      {
+        userId:      asesor.id,
+        clientId:    c('Roberto Jiménez Morales').id,
+        type:        ActivityType.CALL,
+        direction:   ActivityDirection.OUTBOUND,
+        subject:     'Intento de contacto — renovación seguro coche',
+        description: 'No contesta. Se deja mensaje en el buzón de voz.',
+        outcome:     'Sin respuesta',
+        nextStep:    'Reintentar llamada en 3 días',
+        activityAt:  new Date('2026-04-16T09:30:00'),
+      },
+    ],
+  })
+
+  console.log('  ✓ Activities (8)')
 
   console.log('Database provisioning complete.')
 }

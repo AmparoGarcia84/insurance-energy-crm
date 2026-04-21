@@ -249,4 +249,50 @@ describe('ClientDocumentsTab', () => {
     })
     expect(screen.getAllByRole('row').length).toBe(3) // 1 header + 2 data rows
   })
+
+  it('shows search input when documents exist', async () => {
+    mockGetDocuments.mockResolvedValue([makeDoc()])
+    render(<ClientDocumentsTab clientId="c1" clientName="Ana García" />)
+    await waitFor(() => screen.getByRole('table'))
+    expect(screen.getByPlaceholderText('documents.table.search')).toBeInTheDocument()
+  })
+
+  it('does not show search input when there are no documents', async () => {
+    mockGetDocuments.mockResolvedValue([])
+    render(<ClientDocumentsTab clientId="c1" clientName="Ana García" />)
+    await waitFor(() => screen.getByText('documents.table.empty'))
+    expect(screen.queryByPlaceholderText('documents.table.search')).toBeNull()
+  })
+
+  it('filters documents by name', async () => {
+    mockGetDocuments.mockResolvedValue([
+      makeDoc({ id: 'd1', name: 'Póliza Hogar 2025' }),
+      makeDoc({ id: 'd2', name: 'Contrato Energía' }),
+    ])
+    render(<ClientDocumentsTab clientId="c1" clientName="Ana García" />)
+    await waitFor(() => screen.getByPlaceholderText('documents.table.search'))
+    await userEvent.type(screen.getByPlaceholderText('documents.table.search'), 'energía')
+    expect(screen.queryByText('Póliza Hogar 2025')).not.toBeInTheDocument()
+    expect(screen.getByText('Contrato Energía')).toBeInTheDocument()
+  })
+
+  it('filters documents by associated sale title', async () => {
+    mockGetDocuments.mockResolvedValue([
+      makeDoc({ id: 'd1', name: 'Doc 1', sale: { id: 's1', title: 'Seguro Auto', type: 'INSURANCE' } }),
+      makeDoc({ id: 'd2', name: 'Doc 2', sale: { id: 's2', title: 'Luz Ana', type: 'ENERGY' } }),
+    ])
+    render(<ClientDocumentsTab clientId="c1" clientName="Ana García" />)
+    await waitFor(() => screen.getByPlaceholderText('documents.table.search'))
+    await userEvent.type(screen.getByPlaceholderText('documents.table.search'), 'auto')
+    expect(screen.getByText('Doc 1')).toBeInTheDocument()
+    expect(screen.queryByText('Doc 2')).not.toBeInTheDocument()
+  })
+
+  it('shows empty search message when no documents match', async () => {
+    mockGetDocuments.mockResolvedValue([makeDoc()])
+    render(<ClientDocumentsTab clientId="c1" clientName="Ana García" />)
+    await waitFor(() => screen.getByPlaceholderText('documents.table.search'))
+    await userEvent.type(screen.getByPlaceholderText('documents.table.search'), 'zzznomatch')
+    expect(screen.getByText('documents.table.emptySearch')).toBeInTheDocument()
+  })
 })

@@ -23,10 +23,11 @@ import type { Collaborator, CollaboratorInput } from '../api/collaborators'
 import type { TaskWithRelations } from '../api/tasks'
 import { TaskStatus } from '../api/tasks'
 import type { DocumentRecord } from '../api/documents'
+import type { ActivityWithRelations } from '../api/activities'
 import {
   DEMO_USERS, DEMO_CREDENTIALS,
   DEMO_CLIENTS, DEMO_SALES, DEMO_COLLABORATORS,
-  DEMO_TASKS, DEMO_DOCUMENTS,
+  DEMO_TASKS, DEMO_DOCUMENTS, DEMO_ACTIVITIES,
 } from './seedData'
 
 // ── In-memory store (reset on every page load) ────────────────────────────────
@@ -39,6 +40,7 @@ const store = {
   collaborators: structuredClone(DEMO_COLLABORATORS) as Collaborator[],
   tasks:       structuredClone(DEMO_TASKS)       as TaskWithRelations[],
   documents:   structuredClone(DEMO_DOCUMENTS)   as DocumentRecord[],
+  activities:  structuredClone(DEMO_ACTIVITIES)  as ActivityWithRelations[],
 }
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -312,6 +314,75 @@ const documentsHandlers = [
   }),
 ]
 
+// ── Activities ────────────────────────────────────────────────────────────────
+
+const activityHandlers = [
+  http.get(`${API}/activities`, ({ request }) => {
+    const url    = new URL(request.url)
+    const clientId = url.searchParams.get('clientId')
+    const saleId   = url.searchParams.get('saleId')
+    const type     = url.searchParams.get('type')
+    let results = store.activities
+    if (clientId) results = results.filter(a => a.clientId === clientId)
+    if (saleId)   results = results.filter(a => a.saleId   === saleId)
+    if (type)     results = results.filter(a => a.type     === type)
+    const sorted = [...results].sort(
+      (a, b) => new Date(b.activityAt).getTime() - new Date(a.activityAt).getTime()
+    )
+    return HttpResponse.json(sorted)
+  }),
+
+  http.get(`${API}/activities/:id`, ({ params }) => {
+    const activity = store.activities.find(a => a.id === params.id)
+    if (!activity) return new HttpResponse(null, { status: 404 })
+    return HttpResponse.json(activity)
+  }),
+
+  http.post(`${API}/activities`, async ({ request }) => {
+    if (!store.currentUser) return new HttpResponse(null, { status: 401 })
+    const body = await request.json() as Partial<ActivityWithRelations>
+    const now = new Date().toISOString()
+    const newActivity: ActivityWithRelations = {
+      id:          `act-${Date.now()}`,
+      userId:      store.currentUser.id,
+      clientId:    body.clientId ?? '',
+      saleId:      body.saleId,
+      type:        body.type!,
+      direction:   body.direction,
+      subject:     body.subject ?? '',
+      description: body.description,
+      outcome:     body.outcome,
+      nextStep:    body.nextStep,
+      activityAt:  body.activityAt ?? now,
+      createdAt:   now,
+      updatedAt:   now,
+      user:        { id: store.currentUser.id, displayName: store.currentUser.displayName },
+    }
+    store.activities.unshift(newActivity)
+    return HttpResponse.json(newActivity, { status: 201 })
+  }),
+
+  http.patch(`${API}/activities/:id`, async ({ params, request }) => {
+    const idx = store.activities.findIndex(a => a.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const body = await request.json() as Partial<ActivityWithRelations>
+    const updated: ActivityWithRelations = {
+      ...store.activities[idx],
+      ...body,
+      updatedAt: new Date().toISOString(),
+    }
+    store.activities[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete(`${API}/activities/:id`, ({ params }) => {
+    const idx = store.activities.findIndex(a => a.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.activities.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export const handlers = [
@@ -322,4 +393,5 @@ export const handlers = [
   ...collaboratorHandlers,
   ...tasksHandlers,
   ...documentsHandlers,
+  ...activityHandlers,
 ]

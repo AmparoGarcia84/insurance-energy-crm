@@ -1,0 +1,28 @@
+.activity-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.activity-form__row:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+
+.activity-form__error {
+  color: var(--color-danger, #c0392b);
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.activity-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}

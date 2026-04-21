@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Search, Upload } from 'lucide-react'
 import { usePermissions } from '../../hooks/usePermissions'
 import { ClientTypeLabels, ClientStatusLabels } from '@crm/shared'
 import type { Client, ImportResult } from '../../api/clients'
+import { normalizeSearch } from '../../utils/search'
 import './ClientsList.css'
 
 interface Props {
@@ -49,13 +50,13 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
   }
 
   const filtered = clients.filter((c) => {
-    const q = search.toLowerCase()
-    const emailMatch = c.emails?.some((e) => e.address.toLowerCase().includes(q)) ?? false
+    const q = normalizeSearch(search)
+    const emailMatch = c.emails?.some((e) => normalizeSearch(e.address).includes(q)) ?? false
     return (
-      c.name.toLowerCase().includes(q) ||
+      normalizeSearch(c.name).includes(q) ||
       emailMatch ||
-      c.nif?.toLowerCase().includes(q) ||
-      c.clientNumber?.toLowerCase().includes(q)
+      (c.nif ? normalizeSearch(c.nif).includes(q) : false) ||
+      (c.clientNumber ? normalizeSearch(c.clientNumber).includes(q) : false)
     )
   })
 
@@ -98,7 +99,7 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
         </div>
       )}
 
-      <div className="clients-search">
+      <div className="table-search">
         <Search size={16} />
         <input
           id="clients-search" name="clients-search" type="search" autoComplete="off"

@@ -120,6 +120,28 @@
   flex-direction: column;
 }
 
+/* ── Shared table search bar ─────────────────────────── */
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--corp-card);
+  border: 1px solid var(--corp-beige);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  max-width: 420px;
+  color: var(--corp-muted);
+}
+
+.table-search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--corp-black);
+  width: 100%;
+}
+
 /* ── Shared data table — used in list/tab views ──────── */
 .data-table-wrap {
   overflow-x: auto;

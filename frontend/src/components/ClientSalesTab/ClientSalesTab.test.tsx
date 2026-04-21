@@ -14,6 +14,8 @@ vi.mock('react-i18next', () => ({
         'sales.new':                                          'New sale',
         'sales.card.savingsPerYear':                         '/year savings',
         'clients.salesTab.noSales':                          'No sales yet',
+        'clients.salesTab.search':                           'Search sales...',
+        'clients.salesTab.emptySearch':                      'No results',
         'sales.stages.insurance.RESPONSE_PENDING':           'Awaiting response',
         'sales.stages.insurance.LOST':                       'Lost',
         'sales.stages.energy.DOCUMENTS_PENDING':             'Awaiting documents',
@@ -193,5 +195,39 @@ describe('ClientSalesTab', () => {
     render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
     expect(screen.queryByText('No sales yet')).toBeNull()
     expect(screen.queryByRole('list')).toBeNull()
+  })
+
+  it('shows search input when there are sales', () => {
+    mockSales = [makeInsuranceSale('1')]
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
+    expect(screen.getByPlaceholderText('Search sales...')).toBeInTheDocument()
+  })
+
+  it('does not show search input when there are no sales', () => {
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
+    expect(screen.queryByPlaceholderText('Search sales...')).toBeNull()
+  })
+
+  it('filters sales by title', async () => {
+    mockSales = [makeInsuranceSale('1'), makeInsuranceSale('2', { title: 'Auto - 2' })]
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
+    await userEvent.type(screen.getByPlaceholderText('Search sales...'), 'auto')
+    expect(screen.queryByText('Hogar - 1')).toBeNull()
+    expect(screen.getByText('Auto - 2')).toBeInTheDocument()
+  })
+
+  it('filters sales by branch', async () => {
+    mockSales = [makeInsuranceSale('1'), makeInsuranceSale('2', { insuranceBranch: 'Vida', title: 'Vida - 2' })]
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
+    await userEvent.type(screen.getByPlaceholderText('Search sales...'), 'vida')
+    expect(screen.queryByText('Hogar - 1')).toBeNull()
+    expect(screen.getByText('Vida - 2')).toBeInTheDocument()
+  })
+
+  it('shows empty search message when no results', async () => {
+    mockSales = [makeInsuranceSale('1')]
+    render(<ClientSalesTab clientId="client-a" clientName="Ana López" onViewSale={vi.fn()} />)
+    await userEvent.type(screen.getByPlaceholderText('Search sales...'), 'zzznomatch')
+    expect(screen.getByText('No results')).toBeInTheDocument()
   })
 })

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, ExternalLink, Trash2 } from 'lucide-react'
+import { Plus, ExternalLink, Trash2, Search } from 'lucide-react'
+import { normalizeSearch } from '../../utils/search'
 import {
   getDocuments,
   deleteDocument,
@@ -34,6 +35,7 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
 
   const [docs,          setDocs]          = useState<DocumentRecord[]>([])
   const [loading,       setLoading]       = useState(true)
+  const [search,        setSearch]        = useState('')
   const [showUpload,    setShowUpload]    = useState(false)
   const [toDelete,      setToDelete]      = useState<DocumentRecord | null>(null)
   const [deleting,      setDeleting]      = useState(false)
@@ -63,6 +65,14 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
 
   const backendBase = 'http://localhost:3000'
 
+  const filtered = docs.filter((doc) => {
+    const q = normalizeSearch(search)
+    return (
+      normalizeSearch(doc.name).includes(q) ||
+      (doc.sale?.title ? normalizeSearch(doc.sale.title).includes(q) : false)
+    )
+  })
+
   return (
     <div className="cd-docs-tab">
 
@@ -77,10 +87,24 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
         </button>
       </div>
 
+      {/* ── Search ── */}
+      {!loading && docs.length > 0 && (
+        <div className="table-search">
+          <Search size={15} />
+          <input
+            type="search"
+            autoComplete="off"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('documents.table.search')}
+          />
+        </div>
+      )}
+
       {/* ── Table / empty ── */}
-      {loading ? null : docs.length === 0 ? (
+      {loading ? null : filtered.length === 0 ? (
         <div className="cd-docs-tab__empty">
-          <p>{t('documents.table.empty')}</p>
+          <p>{search ? t('documents.table.emptySearch') : t('documents.table.empty')}</p>
         </div>
       ) : (
         <div className="data-table-wrap">
@@ -98,7 +122,7 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
               </tr>
             </thead>
             <tbody>
-              {docs.map((doc) => (
+              {filtered.map((doc) => (
                 <tr key={doc.id}>
                   <td className="cd-docs-tab__name">{doc.name}</td>
                   <td>{t(`documents.documentType.${doc.documentType as DocumentType}`)}</td>

@@ -30,6 +30,11 @@ vi.mock('../../api/documents', async (importOriginal) => {
   return { ...actual, getDocuments: () => Promise.resolve([]) }
 })
 
+vi.mock('../../api/activities', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../api/activities')>()
+  return { ...actual, getActivities: () => Promise.resolve([]) }
+})
+
 const baseClient: Client = {
   id: '1',
   name: 'Ana García',
@@ -84,10 +89,18 @@ describe('ClientDetail', () => {
     expect(screen.getByText('clients.summary.pendingTasks')).toBeInTheDocument()
   })
 
-  it('shows coming soon placeholder for unimplemented tabs', () => {
+  it('shows coming soon placeholder for unimplemented tabs (mail)', async () => {
+    render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
+    fireEvent.click(screen.getByText('clients.tabs.mail'))
+    expect(screen.getByText('clients.detail.comingSoon')).toBeInTheDocument()
+  })
+
+  it('shows activity tab content when activity tab is clicked', async () => {
     render(<ClientDetail client={baseClient} onBack={onBack} onEdit={onEdit} onViewSale={vi.fn()} />)
     fireEvent.click(screen.getByText('clients.tabs.activity'))
-    expect(screen.getByText('clients.detail.comingSoon')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('activities.noActivities')).toBeInTheDocument()
+    })
   })
 
   it('renders documents tab with add button when documents tab is active', async () => {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Search } from 'lucide-react'
+import { normalizeSearch } from '../../utils/search'
 import { useAuth } from '../../auth/AuthContext'
 import { useSales } from '../../context/DataContext'
 import SaleForm from '../SaleForm/SaleForm'
@@ -41,6 +42,7 @@ export default function ClientSalesTab({ clientId, clientName, onViewSale }: Pro
   const { user } = useAuth()
   const { sales, loading, upsertSale, removeSale } = useSales()
   const [editing, setEditing] = useState<Sale | 'new' | null>(null)
+  const [search, setSearch]   = useState('')
 
   if (editing !== null) {
     return (
@@ -61,6 +63,16 @@ export default function ClientSalesTab({ clientId, clientName, onViewSale }: Pro
         .filter((s) => s.clientId === clientId)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
+  const filtered = clientSales.filter((s) => {
+    const q = normalizeSearch(search)
+    return (
+      normalizeSearch(s.title).includes(q) ||
+      (s.insuranceBranch ? normalizeSearch(s.insuranceBranch).includes(q) : false) ||
+      (s.companyName ? normalizeSearch(s.companyName).includes(q) : false) ||
+      (s.ownerUserName ? normalizeSearch(s.ownerUserName).includes(q) : false)
+    )
+  })
+
   const ownerName = user?.displayName ?? ''
 
   return (
@@ -75,9 +87,22 @@ export default function ClientSalesTab({ clientId, clientName, onViewSale }: Pro
         </button>
       </div>
 
-      {loading ? null : clientSales.length === 0 ? (
+      {clientSales.length > 0 && (
+        <div className="table-search">
+          <Search size={15} />
+          <input
+            type="search"
+            autoComplete="off"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('clients.salesTab.search')}
+          />
+        </div>
+      )}
+
+      {loading ? null : filtered.length === 0 ? (
         <div className="cd-sales-tab__empty">
-          <p>{t('clients.salesTab.noSales')}</p>
+          <p>{search ? t('clients.salesTab.emptySearch') : t('clients.salesTab.noSales')}</p>
         </div>
       ) : (
         <div className="data-table-wrap">
@@ -92,7 +117,7 @@ export default function ClientSalesTab({ clientId, clientName, onViewSale }: Pro
               </tr>
             </thead>
             <tbody>
-              {clientSales.map((sale) => {
+              {filtered.map((sale) => {
                 const stage = stageInfo(sale)
                 const isEnergy = sale.type === SaleType.ENERGY
                 const revenue = isEnergy ? sale.expectedSavingsPerYear : sale.expectedRevenue

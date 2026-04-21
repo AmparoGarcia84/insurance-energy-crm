@@ -27,6 +27,7 @@ model User {
   workdays      Workday[]
   assignedTasks Task[]
   documents     Document[]
+  activities    Activity[]
 }
 
 // ── Client ────────────────────────────────────────────────────────────────────
@@ -153,6 +154,7 @@ model Client {
   sales           Sale[]
   tasks           Task[]
   documents       Document[]
+  activities      Activity[]
 }
 
 model ClientAddress {
@@ -292,7 +294,8 @@ model Sale {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  documents Document[]
+  documents  Document[]
+  activities Activity[]
 }
 
 // ── Policy ────────────────────────────────────────────────────────────────────
@@ -536,4 +539,45 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ── Activity ──────────────────────────────────────────────────────────────────
+
+enum ActivityType {
+  CALL
+  EMAIL
+  WHATSAPP_NOTE
+  MEETING
+}
+
+enum ActivityDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model Activity {
+  id      String @id @default(uuid())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  saleId   String?
+  sale     Sale?  @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  type        ActivityType
+  direction   ActivityDirection?
+  subject     String
+  description String?
+  outcome     String?
+  nextStep    String?
+  activityAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([saleId])
+  @@index([userId])
+  @@index([activityAt])
 }
