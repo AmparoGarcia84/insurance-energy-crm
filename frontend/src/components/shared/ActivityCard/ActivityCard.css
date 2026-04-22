@@ -1,0 +1,111 @@
+.activity-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+}
+
+.activity-card__icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.125rem;
+  /* default — overridden by color modifiers */
+  background: var(--corp-muted-bg);
+  color: var(--corp-muted);
+}
+
+.activity-card__icon--green  { background: #d1fae5; color: #059669; }
+.activity-card__icon--blue   { background: #dbeafe; color: #2563eb; }
+.activity-card__icon--amber  { background: #fef3c7; color: #d97706; }
+.activity-card__icon--purple { background: #ede9fe; color: #7c3aed; }
+.activity-card__icon--orange { background: #ffedd5; color: #ea580c; }
+.activity-card__icon--teal   { background: #ccfbf1; color: #0d9488; }
+.activity-card__icon--muted  { background: var(--corp-muted-bg); color: var(--corp-muted); }
+
+.activity-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Grid: left=meta (type+direction), right=when (date+user) always pinned */
+.activity-card__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: 1rem;
+}
+
+.activity-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.activity-card__when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  white-space: nowrap;
+}
+
+.activity-card__type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--corp-muted);
+}
+
+.activity-card__direction {
+  font-size: 0.75rem;
+  background: var(--corp-muted-bg);
+  color: var(--corp-muted);
+  border-radius: 4px;
+  padding: 0 0.375rem;
+}
+
+.activity-card__date {
+  font-size: 0.8125rem;
+  color: var(--corp-muted);
+}
+
+.activity-card__user {
+  font-size: 0.75rem;
+  color: var(--corp-muted);
+}
+
+.activity-card__subject {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.activity-card__detail {
+  font-size: 0.875rem;
+  color: var(--corp-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.activity-card__detail--muted strong {
+  color: var(--corp-black);
+  font-weight: 500;
+}
+
+.activity-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}

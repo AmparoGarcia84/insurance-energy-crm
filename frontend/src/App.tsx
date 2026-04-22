@@ -8,8 +8,8 @@
  */
 import './App.css'
 import { AuthProvider, useAuth } from './auth/AuthContext'
-import Login from './components/Login/Login'
-import Dashboard from './components/Dashboard/Dashboard'
+import Login from './components/layout/Login/Login'
+import Dashboard from './components/layout/Dashboard/Dashboard'
 import { DataProvider } from './context/DataContext'
 import DemoBanner from './mocks/DemoBanner/DemoBanner'
 
