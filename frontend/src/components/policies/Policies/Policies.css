@@ -1,0 +1,97 @@
+.policies {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Empty ───────────────────────────────────────────────────────────────── */
+
+.policies__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--corp-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Row ─────────────────────────────────────────────────────────────────── */
+
+.policies__row {
+  cursor: pointer;
+}
+
+/* ── Client cell ─────────────────────────────────────────────────────────── */
+
+.policies__client {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  white-space: nowrap;
+}
+
+/* ── Title cell ──────────────────────────────────────────────────────────── */
+
+.policies__title-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.policies__title {
+  font-size: 0.875rem;
+  color: var(--corp-black);
+}
+
+/* ── Stage cell ──────────────────────────────────────────────────────────── */
+
+.policies__stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+}
+
+.policies__stage-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--stage-color, var(--corp-beige));
+  flex-shrink: 0;
+}
+
+/* ── Revenue cell ────────────────────────────────────────────────────────── */
+
+.policies__revenue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--corp-gold);
+  white-space: nowrap;
+}
+
+/* ── Policy number cell ──────────────────────────────────────────────────── */
+
+.policies__policy-number {
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Owner cell ──────────────────────────────────────────────────────────── */
+
+.policies__owner {
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+}
+
+/* ── Actions cell ────────────────────────────────────────────────────────── */
+
+.policies__actions {
+  width: 2.5rem;
+  text-align: center;
+}

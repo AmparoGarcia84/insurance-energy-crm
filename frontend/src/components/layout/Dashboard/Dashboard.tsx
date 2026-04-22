@@ -5,6 +5,8 @@ import TopBar from '../TopBar/TopBar'
 import Home from '../../home/Home/Home'
 import Clients from '../../clients/Clients/Clients'
 import Sales from '../../sales/Sales/Sales'
+import Policies from '../../policies/Policies/Policies'
+import Energy from '../../energy/Energy/Energy'
 import UserManagement from '../../settings/UserManagement/UserManagement'
 import MyAccount from '../../settings/MyAccount/MyAccount'
 import Collaborators from '../../settings/Collaborators/Collaborators'
@@ -24,6 +26,8 @@ export default function Dashboard() {
       case 'home':           return <Home />
       case 'clients':        return <Clients initialClientId={pendingClientId ?? undefined} onClientOpened={() => setPendingClientId(null)} />
       case 'sales':          return <Sales onNavigateToClient={navigateToClient} />
+      case 'policies':       return <Policies onNavigateToClient={navigateToClient} />
+      case 'energy':         return <Energy onNavigateToClient={navigateToClient} />
       case 'collaborators':  return <Collaborators />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
