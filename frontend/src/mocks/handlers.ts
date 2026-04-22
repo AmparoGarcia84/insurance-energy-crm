@@ -383,6 +383,125 @@ const activityHandlers = [
   }),
 ]
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+const INSURANCE_OPEN_STAGES = new Set([
+  'RESPONSE_PENDING', 'DOCUMENTS_PENDING', 'SIGNATURE_PENDING', 'ISSUANCE_PENDING',
+  'BILLING_THIS_MONTH', 'BILLING_NEXT_MONTH', 'RECURRENT_BILLING',
+  'INVOICE_PENDING_PAYMENT', 'WRONG_SETTLEMENT',
+])
+const ENERGY_OPEN_STAGES = new Set([
+  'RESPONSE_PENDING', 'DOCUMENTS_PENDING', 'SIGNATURE_PENDING',
+  'ACTIVATION_PENDING', 'BILLING_THIS_MONTH',
+])
+
+function monthRange(year: number, month: number) {
+  const gte = new Date(year, month, 1).toISOString()
+  const lt  = new Date(year, month + 1, 1).toISOString()
+  return { gte, lt }
+}
+function inRange(iso: string | null | undefined, range: { gte: string; lt: string }): boolean {
+  if (!iso) return false
+  return iso >= range.gte && iso < range.lt
+}
+function sumAmount(sales: Sale[]): number {
+  return sales.reduce((acc, s) => acc + (s.amount ?? 0), 0)
+}
+function deltaPercent(cur: number, prev: number): number | null {
+  if (prev === 0) return null
+  return Math.round(((cur - prev) / prev) * 100)
+}
+
+const dashboardHandlers = [
+  http.get(`${API}/dashboard/summary`, () => {
+    const now = new Date()
+    const ty = now.getFullYear(), tm = now.getMonth()
+    const ly = tm === 0 ? ty - 1 : ty, lm = tm === 0 ? 11 : tm - 1
+
+    const thisRange = monthRange(ty, tm)
+    const lastRange = monthRange(ly, lm)
+
+    const toCollectThis = store.sales.filter(s => inRange(s.billingDate ?? null, thisRange))
+    const collectedThis = toCollectThis.filter(
+      s => s.insuranceStage === 'BILLED_AND_PAID' || s.energyStage === 'BILLED_AND_PAID'
+    )
+    const toCollectLast = store.sales.filter(s => inRange(s.billingDate ?? null, lastRange))
+    const collectedLast = toCollectLast.filter(
+      s => s.insuranceStage === 'BILLED_AND_PAID' || s.energyStage === 'BILLED_AND_PAID'
+    )
+    const newSalesThis  = store.sales.filter(s => inRange(s.createdAt, thisRange)).length
+    const newSalesLast  = store.sales.filter(s => inRange(s.createdAt, lastRange)).length
+    const newClientsThis = store.clients.filter(c => inRange(c.createdAt, thisRange)).length
+    const newClientsLast = store.clients.filter(c => inRange(c.createdAt, lastRange)).length
+
+    let openCount = 0, openValue = 0, insuranceOpenCount = 0, energyOpenCount = 0
+    for (const s of store.sales) {
+      let open = false
+      if (s.type === 'INSURANCE' && s.insuranceStage && INSURANCE_OPEN_STAGES.has(s.insuranceStage)) {
+        open = true; insuranceOpenCount++
+      } else if (s.type === 'ENERGY' && s.energyStage && ENERGY_OPEN_STAGES.has(s.energyStage)) {
+        open = true; energyOpenCount++
+      }
+      if (open) { openCount++; openValue += s.expectedRevenue ?? s.amount ?? 0 }
+    }
+
+    const recentActivities = [...store.activities]
+      .sort((a, b) => b.activityAt.localeCompare(a.activityAt))
+      .slice(0, 8)
+      .map(a => ({
+        id:         a.id,
+        type:       a.type,
+        subject:    a.subject,
+        activityAt: a.activityAt,
+        clientName: a.user?.displayName ?? null,
+        saleTitle:  null,
+        userName:   a.user?.displayName ?? null,
+      }))
+
+    const pendingTasks = [...store.tasks]
+      .filter(t => t.status !== TaskStatus.DONE)
+      .sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return a.dueDate.localeCompare(b.dueDate)
+      })
+      .slice(0, 6)
+      .map(t => ({
+        id:             t.id,
+        subject:        t.subject,
+        priority:       t.priority,
+        dueDate:        t.dueDate ?? null,
+        clientName:     t.client?.name ?? null,
+        assignedToName: t.assignedTo?.displayName ?? null,
+      }))
+
+    return HttpResponse.json({
+      thisMonth: {
+        toCollectAmount: sumAmount(toCollectThis),
+        collectedAmount: sumAmount(collectedThis),
+        newSalesCount:   newSalesThis,
+        newClientsCount: newClientsThis,
+      },
+      lastMonth: {
+        toCollectAmount: sumAmount(toCollectLast),
+        collectedAmount: sumAmount(collectedLast),
+        newSalesCount:   newSalesLast,
+        newClientsCount: newClientsLast,
+      },
+      delta: {
+        toCollectAmount: deltaPercent(sumAmount(toCollectThis), sumAmount(toCollectLast)),
+        collectedAmount: deltaPercent(sumAmount(collectedThis), sumAmount(collectedLast)),
+        newSalesCount:   deltaPercent(newSalesThis, newSalesLast),
+        newClientsCount: deltaPercent(newClientsThis, newClientsLast),
+      },
+      pipeline: { openCount, openValue, insuranceOpenCount, energyOpenCount },
+      recentActivities,
+      pendingTasks,
+    })
+  }),
+]
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export const handlers = [
@@ -394,4 +513,5 @@ export const handlers = [
   ...tasksHandlers,
   ...documentsHandlers,
   ...activityHandlers,
+  ...dashboardHandlers,
 ]

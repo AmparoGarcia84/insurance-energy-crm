@@ -20,7 +20,6 @@ import {
   Shield,
   Zap,
   AlertCircle,
-  Clock,
   LogOut,
   UserCog,
   Handshake,
@@ -46,7 +45,6 @@ const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'policies',      key: 'nav.policies',      icon: Shield },
   { section: 'energy',        key: 'nav.energy',        icon: Zap },
   { section: 'cases',         key: 'nav.cases',         icon: AlertCircle },
-  { section: 'timeTracking',  key: 'nav.timeTracking',  icon: Clock },
   { section: 'collaborators', key: 'nav.collaborators', icon: Handshake },
 ]
 

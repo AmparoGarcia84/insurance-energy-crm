@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Sidebar, { Section } from '../Sidebar/Sidebar'
 import TopBar from '../TopBar/TopBar'
+import Home from '../../home/Home/Home'
 import Clients from '../../clients/Clients/Clients'
 import Sales from '../../sales/Sales/Sales'
 import UserManagement from '../../settings/UserManagement/UserManagement'
@@ -20,6 +21,7 @@ export default function Dashboard() {
 
   function renderSection() {
     switch (activeSection) {
+      case 'home':           return <Home />
       case 'clients':        return <Clients initialClientId={pendingClientId ?? undefined} onClientOpened={() => setPendingClientId(null)} />
       case 'sales':          return <Sales onNavigateToClient={navigateToClient} />
       case 'collaborators':  return <Collaborators />

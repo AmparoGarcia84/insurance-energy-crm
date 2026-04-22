@@ -12,6 +12,11 @@ vi.mock('../../../api/clients', () => ({
   getClients: vi.fn().mockResolvedValue([]),
 }))
 
+// Home makes an async request — mock it so Dashboard tests stay focused on routing/layout
+vi.mock('../../home/Home/Home', () => ({
+  default: () => <div data-testid="home-section">Inicio</div>,
+}))
+
 function renderDashboard() {
   return render(<AuthProvider><Dashboard /></AuthProvider>)
 }
@@ -30,6 +35,7 @@ describe('Dashboard', () => {
 
   it('shows home section by default', () => {
     renderDashboard()
+    expect(screen.getByTestId('home-section')).toBeInTheDocument()
     expect(screen.getByRole('main')).toHaveTextContent('Inicio')
   })
 })
