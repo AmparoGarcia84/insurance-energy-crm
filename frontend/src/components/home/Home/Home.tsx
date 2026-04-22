@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next'
 import {
   TrendingUp, TrendingDown, Minus,
   Euro, CheckCircle2, BarChart2, Users,
-  Phone, Mail, MessageCircle, Video, ArrowRightLeft, FileText, Download, Plus, Pencil,
-  Shield, Zap, AlertCircle, Clock,
+  Shield, Zap, AlertCircle,
 } from 'lucide-react'
 import { useAuth } from '../../../auth/AuthContext'
 import { getDashboardSummary } from '../../../api/dashboard'
-import type { DashboardSummary, DashboardActivity, DashboardTask } from '../../../api/dashboard'
+import type { DashboardSummary } from '../../../api/dashboard'
+import TaskListCard from '../../shared/TaskListCard/TaskListCard'
+import ActivityListCard from '../../shared/ActivityListCard/ActivityListCard'
+import type { TaskItem } from '../../shared/TaskListCard/TaskListCard'
+import type { ActivityItem } from '../../shared/ActivityListCard/ActivityListCard'
 import './Home.css'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -17,36 +20,7 @@ function formatEur(value: number): string {
   return value.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €'
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-}
-
-function isOverdue(iso: string | null): boolean {
-  if (!iso) return false
-  return new Date(iso) < new Date()
-}
-
-const ACTIVITY_ICONS: Record<string, React.ElementType> = {
-  CALL:           Phone,
-  EMAIL:          Mail,
-  WHATSAPP_NOTE:  MessageCircle,
-  MEETING:        Video,
-  STAGE_CHANGED:  ArrowRightLeft,
-  DOC_UPLOADED:   FileText,
-  EXPORT:         Download,
-  CREATED:        Plus,
-  UPDATED:        Pencil,
-}
-
-const PRIORITY_CLASS: Record<string, string> = {
-  LOWEST:  'task-priority--lowest',
-  LOW:     'task-priority--low',
-  NORMAL:  'task-priority--normal',
-  HIGH:    'task-priority--high',
-  HIGHEST: 'task-priority--highest',
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── KpiCard sub-component ─────────────────────────────────────────────────────
 
 interface KpiCardProps {
   icon: React.ElementType
@@ -85,50 +59,6 @@ function KpiCard({ icon: Icon, iconClass, label, value, delta, deltaLabel, noCom
         </span>
       </div>
     </div>
-  )
-}
-
-function ActivityRow({ activity, t }: { activity: DashboardActivity; t: (key: string) => string }) {
-  const Icon = ACTIVITY_ICONS[activity.type] ?? Phone
-  const label = t(`home.activityType.${activity.type}`)
-  const context = activity.clientName ?? activity.saleTitle ?? ''
-
-  return (
-    <li className="home-activity-item">
-      <span className="home-activity-item__icon"><Icon size={14} /></span>
-      <span className="home-activity-item__body">
-        <span className="home-activity-item__label">{label}</span>
-        {activity.subject && (
-          <span className="home-activity-item__subject"> — {activity.subject}</span>
-        )}
-        {context && (
-          <span className="home-activity-item__context"> · {context}</span>
-        )}
-      </span>
-      <span className="home-activity-item__date">{formatDate(activity.activityAt)}</span>
-    </li>
-  )
-}
-
-function TaskRow({ task, t }: { task: DashboardTask; t: (key: string) => string }) {
-  const overdue = isOverdue(task.dueDate)
-
-  return (
-    <li className="home-task-item">
-      <span className={`home-task-item__priority ${PRIORITY_CLASS[task.priority] ?? ''}`} />
-      <span className="home-task-item__body">
-        <span className="home-task-item__subject">{task.subject}</span>
-        {task.clientName && (
-          <span className="home-task-item__meta">{task.clientName}</span>
-        )}
-      </span>
-      <span className={`home-task-item__due ${overdue ? 'due--overdue' : ''}`}>
-        <Clock size={11} />
-        {task.dueDate
-          ? (overdue ? t('home.pendingTasks.overdue') : formatDate(task.dueDate))
-          : t('home.pendingTasks.noDueDate')}
-      </span>
-    </li>
   )
 }
 
@@ -172,11 +102,28 @@ export default function Home() {
   }
 
   const { thisMonth, delta, pipeline, recentActivities, pendingTasks } = summary
+
   const pipelineTotal = pipeline.insuranceOpenCount + pipeline.energyOpenCount
   const insurancePct = pipelineTotal > 0
     ? Math.round((pipeline.insuranceOpenCount / pipelineTotal) * 100)
     : 0
   const energyPct = 100 - insurancePct
+
+  const taskItems: TaskItem[] = pendingTasks.map(t => ({
+    id:       t.id,
+    subject:  t.subject,
+    priority: t.priority,
+    dueDate:  t.dueDate,
+    meta:     t.clientName ?? null,
+  }))
+
+  const activityItems: ActivityItem[] = recentActivities.map(a => ({
+    id:      a.id,
+    type:    a.type,
+    subject: a.subject,
+    date:    a.activityAt,
+    context: a.clientName ?? a.saleTitle ?? null,
+  }))
 
   return (
     <div className="home-shell">
@@ -244,7 +191,6 @@ export default function Home() {
             <p className="home-empty">{t('home.pipeline.empty')}</p>
           ) : (
             <div className="home-pipeline-body">
-              {/* Bar */}
               <div className="home-pipeline-bar">
                 {insurancePct > 0 && (
                   <div
@@ -262,7 +208,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Legend */}
               <div className="home-pipeline-legend">
                 {pipeline.insuranceOpenCount > 0 && (
                   <div className="home-pipeline-legend__item">
@@ -280,7 +225,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Value */}
               {pipeline.openValue > 0 && (
                 <div className="home-pipeline-value">
                   <span className="home-pipeline-value__label">{t('home.pipeline.openValue')}</span>
@@ -292,39 +236,21 @@ export default function Home() {
         </div>
 
         {/* Pending tasks */}
-        <div className="section-card home-tasks-card">
-          <div className="home-card-header">
-            <CheckCircle2 size={16} className="home-card-header__icon" />
-            <h2 className="home-card-header__title">{t('home.pendingTasks.title')}</h2>
-          </div>
-          {pendingTasks.length === 0 ? (
-            <p className="home-empty">{t('home.pendingTasks.empty')}</p>
-          ) : (
-            <ul className="home-task-list">
-              {pendingTasks.map(task => (
-                <TaskRow key={task.id} task={task} t={t} />
-              ))}
-            </ul>
-          )}
-        </div>
+        <TaskListCard
+          title={t('home.pendingTasks.title')}
+          items={taskItems}
+          emptyLabel={t('home.pendingTasks.empty')}
+          noDueDateLabel={t('home.pendingTasks.noDueDate')}
+        />
       </div>
 
       {/* ── Recent activity ── */}
-      <div className="section-card home-activity-card">
-        <div className="home-card-header">
-          <Phone size={16} className="home-card-header__icon" />
-          <h2 className="home-card-header__title">{t('home.recentActivity.title')}</h2>
-        </div>
-        {recentActivities.length === 0 ? (
-          <p className="home-empty">{t('home.recentActivity.empty')}</p>
-        ) : (
-          <ul className="home-activity-list">
-            {recentActivities.map(a => (
-              <ActivityRow key={a.id} activity={a} t={t} />
-            ))}
-          </ul>
-        )}
-      </div>
+      <ActivityListCard
+        title={t('home.recentActivity.title')}
+        items={activityItems}
+        emptyLabel={t('home.recentActivity.empty')}
+        dateFormat="absolute"
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import ClientSummaryTab, { relativeDate } from './ClientSummaryTab'
+import ClientSummaryTab from './ClientSummaryTab'
+import { relativeDate } from '../../shared/ActivityListCard/ActivityListCard'
 import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../../api/sales'
 import type { Sale } from '../../../api/sales'
 

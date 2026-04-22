@@ -1,0 +1,123 @@
+/* ── Card shell ──────────────────────────────────────────────────────────── */
+
+.tlc {
+  min-height: 160px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.tlc__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.tlc__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.tlc__badge {
+  font-size: 0.72rem;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ── Empty ───────────────────────────────────────────────────────────────── */
+
+.tlc__empty {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+  text-align: center;
+  padding: 2rem;
+  margin: 0;
+}
+
+/* ── List ────────────────────────────────────────────────────────────────── */
+
+.tlc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tlc__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+}
+
+.tlc__item:last-child {
+  border-bottom: none;
+}
+
+/* ── Priority dot ────────────────────────────────────────────────────────── */
+
+.tlc__priority {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+/* Colour scale — single source of truth for all task list views */
+.task-priority--lowest  { background: #c8c4be; }
+.task-priority--low     { background: #a8c48a; }
+.task-priority--normal  { background: var(--corp-gold); }
+.task-priority--high    { background: #e07840; }
+.task-priority--highest { background: #c84040; }
+
+/* ── Body: subject + meta ────────────────────────────────────────────────── */
+
+.tlc__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.tlc__subject {
+  font-size: 0.845rem;
+  color: var(--corp-black);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tlc__meta {
+  font-size: 0.72rem;
+  color: var(--corp-muted);
+}
+
+/* ── Due date ────────────────────────────────────────────────────────────── */
+
+.tlc__due {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--corp-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.tlc__due--overdue {
+  color: #c84040;
+  font-weight: 600;
+}

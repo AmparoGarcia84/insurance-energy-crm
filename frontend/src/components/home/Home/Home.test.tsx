@@ -194,7 +194,7 @@ describe('Home', () => {
     render(<Home />)
     await waitFor(() => {
       // Subject text lives in a <span class="home-activity-item__subject">
-      const subjectEls = document.querySelectorAll('.home-activity-item__subject')
+      const subjectEls = document.querySelectorAll('.alc__subject')
       const texts = Array.from(subjectEls).map(el => el.textContent ?? '')
       expect(texts.some(t => t.includes('Seguimiento póliza hogar'))).toBe(true)
       expect(texts.some(t => t.includes('Envío documentación'))).toBe(true)

@@ -1,0 +1,95 @@
+/* ── Card shell ──────────────────────────────────────────────────────────── */
+
+.alc {
+  min-height: 160px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.alc__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.alc__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+/* ── Empty ───────────────────────────────────────────────────────────────── */
+
+.alc__empty {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+  text-align: center;
+  padding: 2rem;
+  margin: 0;
+}
+
+/* ── List ────────────────────────────────────────────────────────────────── */
+
+.alc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.alc__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+}
+
+.alc__item:last-child {
+  border-bottom: none;
+}
+
+/* ── Icon ────────────────────────────────────────────────────────────────── */
+
+.alc__icon {
+  color: var(--corp-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+
+.alc__body {
+  flex: 1;
+  font-size: 0.845rem;
+  color: var(--corp-black);
+  line-height: 1.4;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alc__subject {
+  font-weight: 500;
+}
+
+.alc__context {
+  color: var(--corp-muted);
+  font-size: 0.8rem;
+}
+
+/* ── Date ────────────────────────────────────────────────────────────────── */
+
+.alc__date {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+  margin-top: 2px;
+}
