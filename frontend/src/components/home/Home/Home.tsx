@@ -109,7 +109,7 @@ export default function Home() {
     : 0
   const energyPct = 100 - insurancePct
 
-  const taskItems: TaskItem[] = pendingTasks.map(t => ({
+  const taskItems: TaskItem[] = pendingTasks.slice(0, 5).map(t => ({
     id:       t.id,
     subject:  t.subject,
     priority: t.priority,
@@ -117,7 +117,7 @@ export default function Home() {
     meta:     t.clientName ?? null,
   }))
 
-  const activityItems: ActivityItem[] = recentActivities.map(a => ({
+  const activityItems: ActivityItem[] = recentActivities.slice(0, 5).map(a => ({
     id:      a.id,
     type:    a.type,
     subject: a.subject,
@@ -172,70 +172,74 @@ export default function Home() {
         />
       </div>
 
-      {/* ── Middle row: pipeline + tasks ── */}
-      <div className="home-middle-row">
-
-        {/* Pipeline card */}
-        <div className="section-card home-pipeline-card">
-          <div className="home-card-header">
-            <TrendingUp size={16} className="home-card-header__icon" />
-            <h2 className="home-card-header__title">{t('home.pipeline.title')}</h2>
-            {pipeline.openCount > 0 && (
-              <span className="home-card-header__badge">
-                {t('home.pipeline.openSales', { count: pipeline.openCount })}
-              </span>
-            )}
-          </div>
-
-          {pipeline.openCount === 0 ? (
-            <p className="home-empty">{t('home.pipeline.empty')}</p>
-          ) : (
-            <div className="home-pipeline-body">
-              <div className="home-pipeline-bar">
-                {insurancePct > 0 && (
-                  <div
-                    className="home-pipeline-bar__segment home-pipeline-bar__segment--insurance"
-                    style={{ width: `${insurancePct}%` }}
-                    title={`${t('home.pipeline.insurance')}: ${pipeline.insuranceOpenCount}`}
-                  />
-                )}
-                {energyPct > 0 && (
-                  <div
-                    className="home-pipeline-bar__segment home-pipeline-bar__segment--energy"
-                    style={{ width: `${energyPct}%` }}
-                    title={`${t('home.pipeline.energy')}: ${pipeline.energyOpenCount}`}
-                  />
-                )}
-              </div>
-
-              <div className="home-pipeline-legend">
-                {pipeline.insuranceOpenCount > 0 && (
-                  <div className="home-pipeline-legend__item">
-                    <Shield size={13} className="home-pipeline-legend__icon--insurance" />
-                    <span className="home-pipeline-legend__label">{t('home.pipeline.insurance')}</span>
-                    <span className="home-pipeline-legend__count">{pipeline.insuranceOpenCount}</span>
-                  </div>
-                )}
-                {pipeline.energyOpenCount > 0 && (
-                  <div className="home-pipeline-legend__item">
-                    <Zap size={13} className="home-pipeline-legend__icon--energy" />
-                    <span className="home-pipeline-legend__label">{t('home.pipeline.energy')}</span>
-                    <span className="home-pipeline-legend__count">{pipeline.energyOpenCount}</span>
-                  </div>
-                )}
-              </div>
-
-              {pipeline.openValue > 0 && (
-                <div className="home-pipeline-value">
-                  <span className="home-pipeline-value__label">{t('home.pipeline.openValue')}</span>
-                  <span className="home-pipeline-value__amount">{formatEur(pipeline.openValue)}</span>
-                </div>
-              )}
-            </div>
+      {/* ── Pipeline — full width ── */}
+      <div className="section-card home-pipeline-card">
+        <div className="home-card-header">
+          <TrendingUp size={16} className="home-card-header__icon" />
+          <h2 className="home-card-header__title">{t('home.pipeline.title')}</h2>
+          {pipeline.openCount > 0 && (
+            <span className="home-card-header__badge">
+              {t('home.pipeline.openSales', { count: pipeline.openCount })}
+            </span>
           )}
         </div>
 
-        {/* Pending tasks */}
+        {pipeline.openCount === 0 ? (
+          <p className="home-empty">{t('home.pipeline.empty')}</p>
+        ) : (
+          <div className="home-pipeline-body">
+            <div className="home-pipeline-bar">
+              {insurancePct > 0 && (
+                <div
+                  className="home-pipeline-bar__segment home-pipeline-bar__segment--insurance"
+                  style={{ width: `${insurancePct}%` }}
+                  title={`${t('home.pipeline.insurance')}: ${pipeline.insuranceOpenCount}`}
+                />
+              )}
+              {energyPct > 0 && (
+                <div
+                  className="home-pipeline-bar__segment home-pipeline-bar__segment--energy"
+                  style={{ width: `${energyPct}%` }}
+                  title={`${t('home.pipeline.energy')}: ${pipeline.energyOpenCount}`}
+                />
+              )}
+            </div>
+
+            <div className="home-pipeline-legend">
+              {pipeline.insuranceOpenCount > 0 && (
+                <div className="home-pipeline-legend__item">
+                  <Shield size={13} className="home-pipeline-legend__icon--insurance" />
+                  <span className="home-pipeline-legend__label">{t('home.pipeline.insurance')}</span>
+                  <span className="home-pipeline-legend__count">{pipeline.insuranceOpenCount}</span>
+                </div>
+              )}
+              {pipeline.energyOpenCount > 0 && (
+                <div className="home-pipeline-legend__item">
+                  <Zap size={13} className="home-pipeline-legend__icon--energy" />
+                  <span className="home-pipeline-legend__label">{t('home.pipeline.energy')}</span>
+                  <span className="home-pipeline-legend__count">{pipeline.energyOpenCount}</span>
+                </div>
+              )}
+            </div>
+
+            {pipeline.openValue > 0 && (
+              <div className="home-pipeline-value">
+                <span className="home-pipeline-value__label">{t('home.pipeline.openValue')}</span>
+                <span className="home-pipeline-value__amount">{formatEur(pipeline.openValue)}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom row: activity + tasks side by side ── */}
+      <div className="home-bottom-row">
+        <ActivityListCard
+          title={t('home.recentActivity.title')}
+          items={activityItems}
+          emptyLabel={t('home.recentActivity.empty')}
+          dateFormat="absolute"
+        />
         <TaskListCard
           title={t('home.pendingTasks.title')}
           items={taskItems}
@@ -243,14 +247,6 @@ export default function Home() {
           noDueDateLabel={t('home.pendingTasks.noDueDate')}
         />
       </div>
-
-      {/* ── Recent activity ── */}
-      <ActivityListCard
-        title={t('home.recentActivity.title')}
-        items={activityItems}
-        emptyLabel={t('home.recentActivity.empty')}
-        dateFormat="absolute"
-      />
     </div>
   )
 }

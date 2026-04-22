@@ -106,17 +106,23 @@
 .delta--down    { color: #b03030; }
 .delta--neutral { color: var(--corp-muted); }
 
-/* ── Middle row ──────────────────────────────────────────────────────────── */
+/* ── Bottom row: activity + tasks side by side ───────────────────────────── */
 
-.home-middle-row {
+.home-bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: start;
 }
 
+.home-bottom-row .alc,
+.home-bottom-row .tlc {
+  height: 320px;
+  overflow-y: auto;
+}
+
 @media (max-width: 760px) {
-  .home-middle-row {
+  .home-bottom-row {
     grid-template-columns: 1fr;
   }
 }
