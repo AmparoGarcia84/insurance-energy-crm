@@ -30,6 +30,7 @@ import { getClients, type Client } from '../api/clients'
 import { getSales, type Sale } from '../api/sales'
 import { getUsers } from '../api/users'
 import { getCollaborators, type Collaborator } from '../api/collaborators'
+import { getCases, type Case } from '../api/cases'
 import type { AuthUser } from '../api/auth'
 
 // ── Context shape ────────────────────────────────────────────────────────────
@@ -63,6 +64,13 @@ interface DataContextValue {
   ensureCollaborators: () => void
   upsertCollaborator: (collaborator: Collaborator) => void
   removeCollaborator: (id: string) => void
+
+  // Cases
+  cases: Case[]
+  casesLoading: boolean
+  ensureCases: () => void
+  upsertCase: (c: Case) => void
+  removeCase: (id: string) => void
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
@@ -195,12 +203,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setCollaborators((prev) => prev.filter((c) => c.id !== id))
   }, [])
 
+  // ── Cases ──
+  const [cases, setCases] = useState<Case[]>([])
+  const [casesLoading, setCasesLoading] = useState(false)
+  const casesFetched = useRef(false)
+
+  const ensureCases = useCallback(() => {
+    if (casesFetched.current) return
+    casesFetched.current = true
+    setCasesLoading(true)
+    getCases()
+      .then(setCases)
+      .catch(() => { casesFetched.current = false })
+      .finally(() => setCasesLoading(false))
+  }, [])
+
+  const upsertCase = useCallback((c: Case) => {
+    setCases((prev) => {
+      const exists = prev.some((x) => x.id === c.id)
+      return exists
+        ? prev.map((x) => (x.id === c.id ? c : x))
+        : [c, ...prev]
+    })
+  }, [])
+
+  const removeCase = useCallback((id: string) => {
+    setCases((prev) => prev.filter((c) => c.id !== id))
+  }, [])
+
   return (
     <DataContext.Provider value={{
       clients, clientsLoading, ensureClients, upsertClient, removeClient, refreshClients,
       sales, salesLoading, ensureSales, upsertSale, removeSale,
       users, usersLoading, ensureUsers, upsertUser, removeUser,
       collaborators, collaboratorsLoading, ensureCollaborators, upsertCollaborator, removeCollaborator,
+      cases, casesLoading, ensureCases, upsertCase, removeCase,
     }}>
       {children}
     </DataContext.Provider>
@@ -259,5 +296,16 @@ export function useCollaborators() {
     loading: ctx.collaboratorsLoading,
     upsertCollaborator: ctx.upsertCollaborator,
     removeCollaborator: ctx.removeCollaborator,
+  }
+}
+
+export function useCases() {
+  const ctx = useDataContext()
+  useEffect(() => { ctx.ensureCases() }, [ctx.ensureCases])
+  return {
+    cases: ctx.cases,
+    loading: ctx.casesLoading,
+    upsertCase: ctx.upsertCase,
+    removeCase: ctx.removeCase,
   }
 }

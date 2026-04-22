@@ -24,10 +24,11 @@ import type { TaskWithRelations } from '../api/tasks'
 import { TaskStatus } from '../api/tasks'
 import type { DocumentRecord } from '../api/documents'
 import type { ActivityWithRelations } from '../api/activities'
+import type { Case, CaseInput } from '../api/cases'
 import {
   DEMO_USERS, DEMO_CREDENTIALS,
   DEMO_CLIENTS, DEMO_SALES, DEMO_COLLABORATORS,
-  DEMO_TASKS, DEMO_DOCUMENTS, DEMO_ACTIVITIES,
+  DEMO_TASKS, DEMO_DOCUMENTS, DEMO_ACTIVITIES, DEMO_CASES,
 } from './seedData'
 
 // ── In-memory store (reset on every page load) ────────────────────────────────
@@ -41,6 +42,7 @@ const store = {
   tasks:       structuredClone(DEMO_TASKS)       as TaskWithRelations[],
   documents:   structuredClone(DEMO_DOCUMENTS)   as DocumentRecord[],
   activities:  structuredClone(DEMO_ACTIVITIES)  as ActivityWithRelations[],
+  cases:       structuredClone(DEMO_CASES)       as Case[],
 }
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -502,6 +504,60 @@ const dashboardHandlers = [
   }),
 ]
 
+// ── Cases ─────────────────────────────────────────────────────────────────────
+
+const casesHandlers = [
+  http.get(`${API}/cases`, () =>
+    HttpResponse.json(
+      [...store.cases].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    ),
+  ),
+
+  http.get(`${API}/cases/:id`, ({ params }) => {
+    const found = store.cases.find(c => c.id === params.id)
+    if (!found) return new HttpResponse(null, { status: 404 })
+    return HttpResponse.json(found)
+  }),
+
+  http.post(`${API}/cases`, async ({ request }) => {
+    const data = await request.json() as CaseInput
+    const now = new Date().toISOString()
+    const client = store.clients.find(c => c.id === data.clientId)
+    const newCase: Case = {
+      id:          `case-new-${Date.now()}`,
+      clientId:    data.clientId,
+      client:      { id: data.clientId, name: client?.name ?? '' },
+      title:       data.title,
+      description: data.description,
+      status:      data.status ?? 'OPEN',
+      createdAt:   now,
+      updatedAt:   now,
+    }
+    store.cases.unshift(newCase)
+    return HttpResponse.json(newCase, { status: 201 })
+  }),
+
+  http.put(`${API}/cases/:id`, async ({ params, request }) => {
+    const idx = store.cases.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const data = await request.json() as Partial<CaseInput>
+    const updated: Case = {
+      ...store.cases[idx],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    }
+    store.cases[idx] = updated
+    return HttpResponse.json(updated)
+  }),
+
+  http.delete(`${API}/cases/:id`, ({ params }) => {
+    const idx = store.cases.findIndex(c => c.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.cases.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export const handlers = [
@@ -514,4 +570,5 @@ export const handlers = [
   ...documentsHandlers,
   ...activityHandlers,
   ...dashboardHandlers,
+  ...casesHandlers,
 ]

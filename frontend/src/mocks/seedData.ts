@@ -33,6 +33,7 @@ import type { DocumentRecord } from '../api/documents'
 import { DocumentGroup, DocumentType, DocumentStatus } from '../api/documents'
 import type { ActivityWithRelations } from '../api/activities'
 import { ActivityType, ActivityDirection } from '../api/activities'
+import type { Case } from '../api/cases'
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -1074,6 +1075,91 @@ export const DEMO_DOCUMENTS: DocumentRecord[] = [
     client:          { id: 'c-antonio', name: 'Antonio García Pérez', clientNumber: '000004' },
     sale:            { id: 's-06', title: 'Seguro de coche turismo', type: 'INSURANCE' },
     uploadedBy:      { id: 'u-mila', displayName: 'Mila' },
+  },
+]
+
+// ── Cases ─────────────────────────────────────────────────────────────────────
+
+export const DEMO_CASES: Case[] = [
+  {
+    id: 'case-001', clientId: 'c-carmen',
+    client: { id: 'c-carmen', name: 'Carmen López Martínez' },
+    title: 'Siniestro agua en vivienda',
+    description: 'Rotura de tubería en baño principal. Daños en suelo y pared. Expediente abierto con Mapfre nº SIN-2024-00123.',
+    status: 'IN_PROGRESS',
+    createdAt: '2024-03-10T09:00:00Z', updatedAt: '2024-04-02T11:00:00Z',
+  },
+  {
+    id: 'case-002', clientId: 'c-antonio',
+    client: { id: 'c-antonio', name: 'Antonio García Pérez' },
+    title: 'Accidente de tráfico — reclamación a tercero',
+    description: 'Colisión por alcance en autovía A-3. El tercero reconoce culpa. Pendiente de peritación del vehículo.',
+    status: 'IN_PROGRESS',
+    createdAt: '2024-03-18T10:00:00Z', updatedAt: '2024-04-05T09:30:00Z',
+  },
+  {
+    id: 'case-003', clientId: 'c-antonio',
+    client: { id: 'c-antonio', name: 'Antonio García Pérez' },
+    title: 'Consulta cambio de vehículo asegurado',
+    description: 'El cliente quiere traspasar la póliza al nuevo vehículo pendiente de compra.',
+    status: 'OPEN',
+    createdAt: '2024-04-01T08:00:00Z', updatedAt: '2024-04-01T08:00:00Z',
+  },
+  {
+    id: 'case-004', clientId: 'c-elena',
+    client: { id: 'c-elena', name: 'Elena Moreno Fernández' },
+    title: 'Reclamación denegación cobertura Sanitas',
+    description: 'Sanitas deniega intervención de rodilla por preexistencia. Se requiere informe médico para recurso.',
+    status: 'OPEN',
+    createdAt: '2024-03-25T14:00:00Z', updatedAt: '2024-03-25T14:00:00Z',
+  },
+  {
+    id: 'case-005', clientId: 'c-talleres',
+    client: { id: 'c-talleres', name: 'Talleres Rápidos S.L.' },
+    title: 'Siniestro robo en instalaciones',
+    description: 'Robo de herramienta y maquinaria durante fin de semana. Denuncia presentada. Perito visitará el lunes.',
+    status: 'IN_PROGRESS',
+    createdAt: '2024-02-20T08:00:00Z', updatedAt: '2024-03-15T10:00:00Z',
+  },
+  {
+    id: 'case-006', clientId: 'c-talleres',
+    client: { id: 'c-talleres', name: 'Talleres Rápidos S.L.' },
+    title: 'Incidencia facturación eléctrica',
+    description: 'Factura de enero con consumo anormalmente alto. Solicitada revisión a Repsol.',
+    status: 'RESOLVED',
+    createdAt: '2024-02-05T09:00:00Z', updatedAt: '2024-03-01T16:00:00Z',
+  },
+  {
+    id: 'case-007', clientId: 'c-restaurante',
+    client: { id: 'c-restaurante', name: 'Restaurante El Patio' },
+    title: 'Actualización valor continente',
+    description: 'Tras reforma del local, el cliente solicita revisar el valor asegurado del continente.',
+    status: 'OPEN',
+    createdAt: '2024-04-08T10:00:00Z', updatedAt: '2024-04-08T10:00:00Z',
+  },
+  {
+    id: 'case-008', clientId: 'c-francisco',
+    client: { id: 'c-francisco', name: 'Francisco Ruiz Sánchez' },
+    title: 'Revisión anual póliza de vida',
+    description: 'Revisión periódica de cobertura y actualización de beneficiarios.',
+    status: 'RESOLVED',
+    createdAt: '2024-01-15T11:00:00Z', updatedAt: '2024-01-30T12:00:00Z',
+  },
+  {
+    id: 'case-009', clientId: 'c-pablo',
+    client: { id: 'c-pablo', name: 'Pablo Navarro Gil' },
+    title: 'Gestión baja por impago',
+    description: 'Póliza cancelada tras 3 recibos devueltos. Se comunica al cliente y se cierra el expediente.',
+    status: 'CLOSED',
+    createdAt: '2023-11-10T09:00:00Z', updatedAt: '2023-12-05T17:00:00Z',
+  },
+  {
+    id: 'case-010', clientId: 'c-clinica',
+    client: { id: 'c-clinica', name: 'Clínica DentalCare' },
+    title: 'Ampliación RC a nuevo profesional',
+    description: 'Incorporación de nueva dentista al equipo. Pendiente de comunicar datos a Asisa para incluirla en póliza.',
+    status: 'OPEN',
+    createdAt: '2024-04-10T10:00:00Z', updatedAt: '2024-04-10T10:00:00Z',
   },
 ]
 

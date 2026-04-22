@@ -1,0 +1,71 @@
+.cases {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Empty ───────────────────────────────────────────────────────────────── */
+
+.cases__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--corp-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Row ─────────────────────────────────────────────────────────────────── */
+
+.cases__row {
+  vertical-align: top;
+}
+
+/* ── Client cell ─────────────────────────────────────────────────────────── */
+
+.cases__client {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  white-space: nowrap;
+}
+
+/* ── Title cell ──────────────────────────────────────────────────────────── */
+
+.cases__title {
+  font-size: 0.875rem;
+  color: var(--corp-black);
+  white-space: nowrap;
+}
+
+/* ── Description cell ────────────────────────────────────────────────────── */
+
+.cases__description {
+  max-width: 28rem;
+}
+
+.cases__desc-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  line-height: 1.4;
+}
+
+/* ── Date cell ───────────────────────────────────────────────────────────── */
+
+.cases__date {
+  font-size: 0.82rem;
+  color: var(--corp-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Status badges ───────────────────────────────────────────────────────── */
+
+.badge-case-open        { background: #ddeeff; color: #1a5a8a; }
+.badge-case-in-progress { background: #fff4d6; color: #a07800; }
+.badge-case-resolved    { background: #d6f0e0; color: #1a7a3e; }
+.badge-case-closed      { background: #e8e4df; color: var(--corp-muted); }

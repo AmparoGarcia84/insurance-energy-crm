@@ -19,6 +19,7 @@ import tasksRouter from './routes/tasks.js'
 import documentsRouter from './routes/documents.js'
 import activitiesRouter from './routes/activities.js'
 import dashboardRouter from './routes/dashboard.js'
+import casesRouter from './routes/cases.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -47,3 +48,4 @@ app.use('/tasks', tasksRouter)
 app.use('/documents', documentsRouter)
 app.use('/activities', activitiesRouter)
 app.use('/dashboard', dashboardRouter)
+app.use('/cases', casesRouter)

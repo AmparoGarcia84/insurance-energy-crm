@@ -1,0 +1,57 @@
+import { Response } from 'express'
+import { AuthRequest } from '../middleware/auth.js'
+import * as caseService from '../services/case.service.js'
+
+export async function listCases(_req: AuthRequest, res: Response): Promise<void> {
+  const cases = await caseService.listCases()
+  res.json(cases)
+}
+
+export async function getCase(req: AuthRequest, res: Response): Promise<void> {
+  const found = await caseService.getCaseById(req.params.id as string)
+  if (!found) {
+    res.status(404).json({ error: 'Case not found' })
+    return
+  }
+  res.json(found)
+}
+
+export async function createCase(req: AuthRequest, res: Response): Promise<void> {
+  const { clientId, title, description, status } = req.body
+  if (!clientId || !title) {
+    res.status(400).json({ error: 'clientId and title are required' })
+    return
+  }
+  try {
+    const created = await caseService.createCase({ clientId, title, description, status })
+    res.status(201).json(created)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create case', detail: String(err) })
+  }
+}
+
+export async function updateCase(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const updated = await caseService.updateCase(req.params.id as string, req.body)
+    res.json(updated)
+  } catch (err: unknown) {
+    if ((err as { code?: string })?.code === 'P2025') {
+      res.status(404).json({ error: 'Case not found' })
+      return
+    }
+    res.status(500).json({ error: 'Failed to update case', detail: String(err) })
+  }
+}
+
+export async function deleteCase(req: AuthRequest, res: Response): Promise<void> {
+  if (req.user!.role !== 'OWNER') {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+  try {
+    await caseService.deleteCase(req.params.id as string)
+    res.status(204).send()
+  } catch {
+    res.status(404).json({ error: 'Case not found' })
+  }
+}

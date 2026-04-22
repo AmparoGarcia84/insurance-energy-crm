@@ -1,0 +1,36 @@
+.case-form-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.case-form {
+  max-width: 780px;
+}
+
+.case-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ── Danger button ────────────────────────────────────────────────────────── */
+
+.btn-danger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #d9534f;
+  border-radius: 6px;
+  background: transparent;
+  color: #c0392b;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: #fde8e8;
+}
