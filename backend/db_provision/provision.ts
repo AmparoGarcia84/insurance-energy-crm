@@ -54,93 +54,23 @@ async function main() {
   const clients = await prisma.client.createManyAndReturn({
     data: [
       // Individuals — ACTIVE
-      {
-        clientNumber: '000001',
-        type: 'INDIVIDUAL', status: 'ACTIVE',
-        name: 'Carmen López Martínez',
-        nif: '12345678A', mobilePhone: '612 345 678', email: 'carmen.lopez@gmail.com',
-      },
-      {
-        clientNumber: '000002',
-        type: 'INDIVIDUAL', status: 'ACTIVE',
-        name: 'Francisco Ruiz Sánchez',
-        nif: '87654321B', mobilePhone: '623 456 789', email: 'fran.ruiz@hotmail.com',
-      },
-      {
-        clientNumber: '000003',
-        type: 'INDIVIDUAL', status: 'ACTIVE',
-        name: 'Elena Moreno Fernández',
-        nif: '11223344C', mobilePhone: '634 567 890', email: 'elena.moreno@gmail.com',
-      },
-      {
-        clientNumber: '000004',
-        type: 'INDIVIDUAL', status: 'ACTIVE',
-        name: 'Antonio García Pérez',
-        nif: '44332211D', mobilePhone: '645 678 901', email: 'antonio.garcia@outlook.com',
-      },
-      {
-        clientNumber: '000005',
-        type: 'INDIVIDUAL', status: 'ACTIVE',
-        name: 'Lucía Hernández Jiménez',
-        nif: '55667788E', mobilePhone: '656 789 012', email: 'lucia.hdz@gmail.com',
-      },
+      { clientNumber: '000001', type: 'INDIVIDUAL', status: 'ACTIVE', name: 'Carmen López Martínez',    nif: '12345678A', mobilePhone: '612 345 678' },
+      { clientNumber: '000002', type: 'INDIVIDUAL', status: 'ACTIVE', name: 'Francisco Ruiz Sánchez',   nif: '87654321B', mobilePhone: '623 456 789' },
+      { clientNumber: '000003', type: 'INDIVIDUAL', status: 'ACTIVE', name: 'Elena Moreno Fernández',   nif: '11223344C', mobilePhone: '634 567 890' },
+      { clientNumber: '000004', type: 'INDIVIDUAL', status: 'ACTIVE', name: 'Antonio García Pérez',     nif: '44332211D', mobilePhone: '645 678 901' },
+      { clientNumber: '000005', type: 'INDIVIDUAL', status: 'ACTIVE', name: 'Lucía Hernández Jiménez',  nif: '55667788E', mobilePhone: '656 789 012' },
       // Individuals — LEAD
-      {
-        clientNumber: '000006',
-        type: 'INDIVIDUAL', status: 'LEAD',
-        name: 'Roberto Díaz Torres',
-        mobilePhone: '667 890 123', email: 'roberto.diaz@gmail.com',
-      },
-      {
-        clientNumber: '000007',
-        type: 'INDIVIDUAL', status: 'LEAD',
-        name: 'María Sanz Romero',
-        mobilePhone: '678 901 234', email: 'maria.sanz@icloud.com',
-      },
+      { clientNumber: '000006', type: 'INDIVIDUAL', status: 'LEAD',   name: 'Roberto Díaz Torres',      mobilePhone: '667 890 123' },
+      { clientNumber: '000007', type: 'INDIVIDUAL', status: 'LEAD',   name: 'María Sanz Romero',        mobilePhone: '678 901 234' },
       // Individuals — INACTIVE / LOST
-      {
-        clientNumber: '000008',
-        type: 'INDIVIDUAL', status: 'INACTIVE',
-        name: 'Pablo Navarro Gil',
-        nif: '99887766F', mobilePhone: '689 012 345', email: 'pablo.navarro@gmail.com',
-      },
-      {
-        clientNumber: '000009',
-        type: 'INDIVIDUAL', status: 'LOST',
-        name: 'Sara Muñoz Delgado',
-        mobilePhone: '690 123 456', email: 'sara.munoz@gmail.com',
-      },
+      { clientNumber: '000008', type: 'INDIVIDUAL', status: 'INACTIVE', name: 'Pablo Navarro Gil',      nif: '99887766F', mobilePhone: '689 012 345' },
+      { clientNumber: '000009', type: 'INDIVIDUAL', status: 'LOST',   name: 'Sara Muñoz Delgado',       mobilePhone: '690 123 456' },
       // Businesses — ACTIVE
-      {
-        clientNumber: '000010',
-        type: 'BUSINESS', status: 'ACTIVE',
-        name: 'Talleres Rápidos S.L.',
-        nif: 'B12345678', mobilePhone: '91 234 56 78', email: 'info@talleresrapidos.es',
-      },
-      {
-        clientNumber: '000011',
-        type: 'BUSINESS', status: 'ACTIVE',
-        name: 'Restaurante El Patio',
-        nif: 'B87654321', mobilePhone: '95 678 12 34', email: 'reservas@restauranteelpatio.com',
-      },
-      {
-        clientNumber: '000012',
-        type: 'BUSINESS', status: 'ACTIVE',
-        name: 'Clínica DentalCare',
-        nif: 'B11223344', mobilePhone: '93 456 78 90', email: 'admin@dentalcare.es',
-      },
-      {
-        clientNumber: '000013',
-        type: 'BUSINESS', status: 'LEAD',
-        name: 'Academia Lingua',
-        nif: 'J44332211', mobilePhone: '96 789 01 23', email: 'info@academia-lingua.es',
-      },
-      {
-        clientNumber: '000014',
-        type: 'BUSINESS', status: 'INACTIVE',
-        name: 'Construcciones Vega',
-        nif: 'A55667788', mobilePhone: '91 890 12 34',
-      },
+      { clientNumber: '000010', type: 'BUSINESS', status: 'ACTIVE',   name: 'Talleres Rápidos S.L.',    nif: 'B12345678', mobilePhone: '91 234 56 78' },
+      { clientNumber: '000011', type: 'BUSINESS', status: 'ACTIVE',   name: 'Restaurante El Patio',     nif: 'B87654321', mobilePhone: '95 678 12 34' },
+      { clientNumber: '000012', type: 'BUSINESS', status: 'ACTIVE',   name: 'Clínica DentalCare',       nif: 'B11223344', mobilePhone: '93 456 78 90' },
+      { clientNumber: '000013', type: 'BUSINESS', status: 'LEAD',     name: 'Academia Lingua',          nif: 'J44332211', mobilePhone: '96 789 01 23' },
+      { clientNumber: '000014', type: 'BUSINESS', status: 'INACTIVE', name: 'Construcciones Vega',      nif: 'A55667788', mobilePhone: '91 890 12 34' },
     ],
   })
 
@@ -148,6 +78,27 @@ async function main() {
 
   // Helper: find client by name
   const c = (name: string) => clients.find(cl => cl.name === name)!
+
+  // ─── Client emails ─────────────────────────────────────────────────────────
+  await prisma.clientEmail.createMany({
+    data: [
+      { clientId: c('Carmen López Martínez').id,   type: 'PERSONAL',  address: 'carmen.lopez@gmail.com',           isPrimary: true },
+      { clientId: c('Francisco Ruiz Sánchez').id,  type: 'PERSONAL',  address: 'fran.ruiz@hotmail.com',            isPrimary: true },
+      { clientId: c('Elena Moreno Fernández').id,  type: 'PERSONAL',  address: 'elena.moreno@gmail.com',           isPrimary: true },
+      { clientId: c('Antonio García Pérez').id,    type: 'PERSONAL',  address: 'antonio.garcia@outlook.com',       isPrimary: true },
+      { clientId: c('Lucía Hernández Jiménez').id, type: 'PERSONAL',  address: 'lucia.hdz@gmail.com',              isPrimary: true },
+      { clientId: c('Roberto Díaz Torres').id,     type: 'PERSONAL',  address: 'roberto.diaz@gmail.com',           isPrimary: true },
+      { clientId: c('María Sanz Romero').id,       type: 'PERSONAL',  address: 'maria.sanz@icloud.com',            isPrimary: true },
+      { clientId: c('Pablo Navarro Gil').id,       type: 'PERSONAL',  address: 'pablo.navarro@gmail.com',          isPrimary: true },
+      { clientId: c('Sara Muñoz Delgado').id,      type: 'PERSONAL',  address: 'sara.munoz@gmail.com',             isPrimary: true },
+      { clientId: c('Talleres Rápidos S.L.').id,   type: 'BUSINESS',  address: 'info@talleresrapidos.es',          isPrimary: true },
+      { clientId: c('Restaurante El Patio').id,    type: 'BUSINESS',  address: 'reservas@restauranteelpatio.com',  isPrimary: true },
+      { clientId: c('Clínica DentalCare').id,      type: 'BUSINESS',  address: 'admin@dentalcare.es',              isPrimary: true },
+      { clientId: c('Academia Lingua').id,         type: 'BUSINESS',  address: 'info@academia-lingua.es',          isPrimary: true },
+    ],
+  })
+
+  console.log('  ✓ Client emails (13)')
 
   // ─── Sales ────────────────────────────────────────────────────────────────
   const sales = await prisma.sale.createManyAndReturn({
@@ -1421,7 +1372,7 @@ async function main() {
       // Lucía Fernández — primer contacto
       {
         userId:      asesor.id,
-        clientId:    c('Lucía Fernández Torres').id,
+        clientId:    c('Lucía Hernández Jiménez').id,
         type:        ActivityType.CALL,
         direction:   ActivityDirection.OUTBOUND,
         subject:     'Primer contacto — seguro de salud',
@@ -1433,7 +1384,7 @@ async function main() {
       // Roberto Jiménez — sin respuesta
       {
         userId:      asesor.id,
-        clientId:    c('Roberto Jiménez Morales').id,
+        clientId:    c('Roberto Díaz Torres').id,
         type:        ActivityType.CALL,
         direction:   ActivityDirection.OUTBOUND,
         subject:     'Intento de contacto — renovación seguro coche',
