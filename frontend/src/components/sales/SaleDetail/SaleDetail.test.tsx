@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import SaleDetail from './SaleDetail'
 import type { Sale } from '../../../api/sales'
@@ -10,6 +10,29 @@ vi.mock('react-i18next', () => ({
     i18n: { language: 'es' },
   }),
 }))
+
+vi.mock('../../../auth/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'u-owner', role: 'OWNER', displayName: 'Mila' } }),
+}))
+
+vi.mock('../../../hooks/usePermissions', () => ({
+  usePermissions: () => ({ canDelete: true }),
+}))
+
+vi.mock('../../../api/activities', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/activities')>()
+  return { ...actual, getActivities: vi.fn().mockResolvedValue([]) }
+})
+
+vi.mock('../../../api/tasks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/tasks')>()
+  return { ...actual, getTasks: vi.fn().mockResolvedValue([]) }
+})
+
+vi.mock('../../../api/documents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/documents')>()
+  return { ...actual, getDocuments: vi.fn().mockResolvedValue([]) }
+})
 
 const mockClient = {
   id: 'client-001',
@@ -23,6 +46,7 @@ const mockClient = {
 
 vi.mock('../../../context/DataContext', () => ({
   useClients: () => ({ clients: [mockClient], loading: false }),
+  useSales:   () => ({ sales: [], loading: false }),
 }))
 
 const baseSale: Sale = {
@@ -113,19 +137,28 @@ describe('SaleDetail', () => {
     expect(screen.getByText('sales.detail.tabs.documents')).toBeInTheDocument()
   })
 
-  it('shows coming soon placeholder for activity, tasks, and documents tabs', () => {
+  it('activity tab renders the new activity button', async () => {
     render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
-    // information tab shows actual content, not a placeholder
-    expect(screen.queryByText('sales.detail.comingSoon')).not.toBeInTheDocument()
-
     fireEvent.click(screen.getByText('sales.detail.tabs.activity'))
-    expect(screen.getByText('sales.detail.comingSoon')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('activities.newActivity')).toBeInTheDocument()
+    })
+  })
 
+  it('tasks tab renders the new task button', async () => {
+    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
     fireEvent.click(screen.getByText('sales.detail.tabs.tasks'))
-    expect(screen.getByText('sales.detail.comingSoon')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('tasks.newTask')).toBeInTheDocument()
+    })
+  })
 
+  it('documents tab renders the add document button', async () => {
+    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
     fireEvent.click(screen.getByText('sales.detail.tabs.documents'))
-    expect(screen.getByText('sales.detail.comingSoon')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('documents.actions.add')).toBeInTheDocument()
+    })
   })
 
   it('shows info card in information tab', () => {
@@ -174,10 +207,12 @@ describe('SaleDetail', () => {
     expect(screen.getByText('sales.fields.expectedSavings')).toBeInTheDocument()
   })
 
-  it('info card not shown when switching to activity tab', () => {
+  it('info card not shown when switching to activity tab', async () => {
     render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
     fireEvent.click(screen.getByText('sales.detail.tabs.activity'))
-    expect(screen.queryByText('sales.sections.saleInfo')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('sales.sections.saleInfo')).not.toBeInTheDocument()
+    })
   })
 
   it('renders expected revenue in value card', () => {

@@ -1,0 +1,203 @@
+.stt-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+/* ── Toolbar ─────────────────────────────────────────── */
+
+.stt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.stt-toolbar__left {
+  flex: 1;
+  min-width: 0;
+}
+
+.stt-toolbar__search {
+  max-width: 260px;
+}
+
+/* ── Kanban board ─────────────────────────────────────── */
+
+.stt-board {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 120px;
+  width: 100%;
+}
+
+.stt-board::-webkit-scrollbar      { height: 6px; }
+.stt-board::-webkit-scrollbar-track  { background: var(--corp-muted-bg); border-radius: 3px; }
+.stt-board::-webkit-scrollbar-thumb  { background: var(--corp-beige); border-radius: 3px; }
+
+/* ── Column ─────────────────────────────────────────── */
+
+.stt-column {
+  flex: 1 1 0;
+  min-width: 130px;
+  background: var(--corp-muted-bg);
+  border-radius: 10px;
+  border-top: 3px solid var(--column-color, var(--corp-beige));
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 320px);
+  transition: background 0.15s ease;
+}
+
+.stt-column--over {
+  background: #ddd9d3;
+}
+
+.stt-column__header {
+  padding: 0.7rem 0.85rem 0.55rem;
+  border-radius: 7px 7px 0 0;
+  background: inherit;
+}
+
+.stt-column__name {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--corp-black);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stt-column__count {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--corp-muted);
+  margin-top: 0.1rem;
+}
+
+.stt-column__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0 0.55rem 0.55rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.stt-column__cards::-webkit-scrollbar      { width: 4px; }
+.stt-column__cards::-webkit-scrollbar-track  { background: transparent; }
+.stt-column__cards::-webkit-scrollbar-thumb  { background: var(--corp-beige); border-radius: 2px; }
+
+/* ── Task card ─────────────────────────────────────────── */
+
+.stt-card {
+  background: var(--corp-card);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: grab;
+  border: 1px solid #e0dcd7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+}
+
+.stt-card:active { cursor: grabbing; }
+
+.stt-card:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stt-card--dragging {
+  opacity: 0.35;
+}
+
+.stt-card--overlay {
+  cursor: grabbing;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transform: rotate(1.5deg);
+}
+
+.stt-card__subject {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.stt-card__subject--done {
+  text-decoration: line-through;
+  color: var(--corp-muted);
+}
+
+.stt-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.stt-card__actions {
+  display: flex;
+  gap: 0.15rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0.15rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.stt-card:hover .stt-card__actions {
+  opacity: 1;
+}
+
+/* ── Priority badge ──────────────────────────────────── */
+
+.stt-priority {
+  display: inline-block;
+  padding: 0.12rem 0.4rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stt-priority--lowest  { background: #f0f0f0; color: #555; }
+.stt-priority--low     { background: #e8f5e9; color: #388e3c; }
+.stt-priority--normal  { background: #e3f2fd; color: #1565c0; }
+.stt-priority--high    { background: #fff3e0; color: #e65100; }
+.stt-priority--highest { background: #fde8e8; color: #c0392b; }
+
+/* ── Due date ────────────────────────────────────────── */
+
+.stt-due {
+  font-size: 0.68rem;
+  color: var(--corp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stt-due--overdue {
+  color: #c0392b;
+  font-weight: 500;
+}
+
+/* ── Assigned user ───────────────────────────────────── */
+
+.stt-assigned {
+  font-size: 0.68rem;
+  color: var(--corp-muted);
+  font-style: italic;
+}
+
+/* ── Completed icon ──────────────────────────────────── */
+
+.stt-icon--done { color: #27ae60; }

@@ -8,6 +8,9 @@ import {
   ENERGY_STAGE_COLORS,
 } from '../../../api/sales'
 import { useClients } from '../../../context/DataContext'
+import SaleActivityTab from '../SaleActivityTab/SaleActivityTab'
+import SaleTasksTab from '../SaleTasksTab/SaleTasksTab'
+import SaleDocumentsTab from '../SaleDocumentsTab/SaleDocumentsTab'
 import './SaleDetail.css'
 
 interface Props {
@@ -52,6 +55,7 @@ function InfoField({ label, value, full }: { label: string; value?: string | nul
 export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props) {
   const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('information')
+  const [activityFormOpen, setActivityFormOpen] = useState(false)
   const { clients } = useClients()
   const client = clients.find((c) => c.id === sale.clientId)
   const primaryEmail = client?.emails?.find((e) => e.isPrimary) ?? client?.emails?.[0]
@@ -128,7 +132,10 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
             <Pencil size={15} />
             {t('sales.detail.edit')}
           </button>
-          <button className="btn-primary sd-btn-activity">
+          <button
+            className="btn-primary sd-btn-activity"
+            onClick={() => { setTab('activity'); setActivityFormOpen(true) }}
+          >
             <Plus size={15} />
             {t('sales.detail.registerActivity')}
           </button>
@@ -251,7 +258,7 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
 
       {/* ── Tab content ── */}
       <div className="cd-content">
-        {tab === 'information' ? (
+        {tab === 'information' && (
           <div className="section-card sd-card sd-info-card">
             <div className="sd-card-header">
               <Info size={15} className="sd-card-icon" />
@@ -285,10 +292,30 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
               </dl>
             </div>
           </div>
-        ) : (
-          <div className="cd-placeholder">
-            <p>{t('sales.detail.comingSoon')}</p>
-          </div>
+        )}
+
+        {tab === 'activity' && (
+          <SaleActivityTab
+            saleId={sale.id}
+            clientId={sale.clientId}
+            openFormOnMount={activityFormOpen}
+            key={`activity-${activityFormOpen}`}
+          />
+        )}
+
+        {tab === 'tasks' && (
+          <SaleTasksTab
+            saleId={sale.id}
+            clientId={sale.clientId}
+          />
+        )}
+
+        {tab === 'documents' && (
+          <SaleDocumentsTab
+            saleId={sale.id}
+            clientId={sale.clientId}
+            clientName={sale.clientName ?? ''}
+          />
         )}
       </div>
 

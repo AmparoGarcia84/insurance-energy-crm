@@ -89,3 +89,16 @@
   background: var(--corp-beige);
   border-radius: 2px;
 }
+
+/* ── Drag-and-drop states ────────────────────────────────── */
+.sales-column--over {
+  background: #ddd9d3;
+}
+
+.sales-card-overlay {
+  cursor: grabbing;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  transform: rotate(1deg);
+  opacity: 0.95;
+}

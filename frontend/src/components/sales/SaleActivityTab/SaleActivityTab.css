@@ -1,0 +1,43 @@
+.sat-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sat-toolbar__count {
+  font-size: 0.85rem;
+  color: var(--corp-muted);
+}
+
+.sat-form-panel {
+  padding: 1.25rem;
+}
+
+.sat-form-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0 0 1rem 0;
+}
+
+.sat-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--corp-muted);
+  font-size: 0.9rem;
+}
+
+.sat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}

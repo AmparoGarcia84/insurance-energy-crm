@@ -1,0 +1,103 @@
+/* ── Form view wrapper ───────────────────────────────────────────────────── */
+
+.task-form-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.task-form-view__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.task-form-view__back {
+  color: var(--corp-muted);
+  flex-shrink: 0;
+}
+
+.task-form-view__back:hover {
+  color: var(--corp-black);
+}
+
+.task-form-view__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--corp-black);
+  margin: 0;
+}
+
+.task-form-view__card {
+  padding: 1.5rem;
+}
+
+/* ── Form layout ─────────────────────────────────────────────────────────── */
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.task-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .task-form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Reminder ────────────────────────────────────────────────────────────── */
+
+.task-form__reminder-toggle {
+  padding: 0.5rem 0 0.25rem;
+  border-top: 1px solid var(--corp-muted-bg);
+}
+
+.task-form__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  cursor: pointer;
+  user-select: none;
+}
+
+.task-form__checkbox-label input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--corp-gold);
+  cursor: pointer;
+}
+
+.task-form__reminder-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--corp-muted-bg);
+  border-radius: 6px;
+}
+
+/* ── Error / actions ─────────────────────────────────────────────────────── */
+
+.task-form__error {
+  font-size: 0.8125rem;
+  color: #c0392b;
+  margin: 0;
+}
+
+.task-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--corp-muted-bg);
+}

@@ -11,7 +11,7 @@
  *  Sales   GET/POST/PUT/DELETE /sales
  *  Users   GET/POST/DELETE /admin/users
  *  Collab. GET/POST/PUT/DELETE /collaborators
- *  Tasks   GET /tasks  (read-only; mutations not yet in the UI)
+ *  Tasks   GET/POST/PATCH/DELETE /tasks
  *  Docs    GET/POST/PATCH/DELETE /documents
  */
 
@@ -20,7 +20,7 @@ import type { AuthUser } from '../api/auth'
 import type { Client, ClientInput } from '../api/clients'
 import type { Sale, SaleInput } from '../api/sales'
 import type { Collaborator, CollaboratorInput } from '../api/collaborators'
-import type { TaskWithRelations } from '../api/tasks'
+import type { TaskWithRelations, TaskPayload } from '../api/tasks'
 import { TaskStatus } from '../api/tasks'
 import type { DocumentRecord } from '../api/documents'
 import type { ActivityWithRelations } from '../api/activities'
@@ -233,17 +233,20 @@ const tasksHandlers = [
     const url = new URL(request.url)
     let tasks: TaskWithRelations[] = store.tasks
 
-    const clientId  = url.searchParams.get('clientId')
-    const status    = url.searchParams.get('status')
-    const assignedTo = url.searchParams.get('assignedToUserId')
-    const overdue   = url.searchParams.get('overdue')
-
-    const hasReminder = url.searchParams.get('hasReminder')
+    const clientId          = url.searchParams.get('clientId')
+    const status            = url.searchParams.get('status')
+    const assignedTo        = url.searchParams.get('assignedToUserId')
+    const overdue           = url.searchParams.get('overdue')
+    const hasReminder       = url.searchParams.get('hasReminder')
+    const relatedEntityType = url.searchParams.get('relatedEntityType')
+    const relatedEntityId   = url.searchParams.get('relatedEntityId')
 
     if (clientId)             tasks = tasks.filter(t => t.clientId === clientId)
     if (status)               tasks = tasks.filter(t => t.status === status)
     if (assignedTo)           tasks = tasks.filter(t => t.assignedToUserId === assignedTo)
     if (hasReminder !== null) tasks = tasks.filter(t => t.hasReminder === (hasReminder === 'true'))
+    if (relatedEntityType)    tasks = tasks.filter(t => t.relatedEntityType === relatedEntityType)
+    if (relatedEntityId)      tasks = tasks.filter(t => t.relatedEntityId === relatedEntityId)
     if (overdue === 'true') {
       const today = new Date().toDateString()
       tasks = tasks.filter(t =>
@@ -252,6 +255,45 @@ const tasksHandlers = [
     }
 
     return HttpResponse.json(tasks)
+  }),
+
+  http.post(`${API}/tasks`, async ({ request }) => {
+    const body = await request.json() as TaskPayload
+    const now  = new Date().toISOString()
+    const newTask: TaskWithRelations = {
+      id:                crypto.randomUUID(),
+      subject:           body.subject,
+      description:       body.description,
+      status:            body.status ?? TaskStatus.NOT_STARTED,
+      priority:          body.priority,
+      relatedEntityType: body.relatedEntityType,
+      relatedEntityId:   body.relatedEntityId,
+      dueDate:           body.dueDate ?? undefined,
+      assignedToUserId:  body.assignedToUserId,
+      clientId:          body.clientId,
+      hasReminder:       body.hasReminder ?? false,
+      createdAt:         now,
+      updatedAt:         now,
+    }
+    store.tasks.unshift(newTask)
+    return HttpResponse.json(newTask, { status: 201 })
+  }),
+
+  http.patch(`${API}/tasks/:id`, async ({ params, request }) => {
+    const id   = params.id as string
+    const body = await request.json() as Partial<TaskPayload>
+    const idx  = store.tasks.findIndex(t => t.id === id)
+    if (idx === -1) return HttpResponse.json({ error: 'Task not found' }, { status: 404 })
+    store.tasks[idx] = { ...store.tasks[idx], ...body, updatedAt: new Date().toISOString() }
+    return HttpResponse.json(store.tasks[idx])
+  }),
+
+  http.delete(`${API}/tasks/:id`, ({ params }) => {
+    const id = params.id as string
+    const idx = store.tasks.findIndex(t => t.id === id)
+    if (idx === -1) return HttpResponse.json({ error: 'Task not found' }, { status: 404 })
+    store.tasks.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
   }),
 ]
 

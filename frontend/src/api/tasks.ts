@@ -1,7 +1,8 @@
-import type { Task, TaskStatus, TaskPriority } from '@crm/shared'
+import type { Task } from '@crm/shared'
 
-export type { Task, TaskStatus, TaskPriority }
-export { TaskStatus, TaskPriority } from '@crm/shared'
+export type { Task }
+export { TaskStatus, TaskPriority, RelatedEntityType, ReminderChannel, ReminderRecurrence } from '@crm/shared'
+import type { TaskStatus, TaskPriority, RelatedEntityType, ReminderChannel, ReminderRecurrence } from '@crm/shared'
 
 /** Shape returned by the backend — includes denormalized relations */
 export interface TaskWithRelations extends Task {
@@ -10,11 +11,29 @@ export interface TaskWithRelations extends Task {
 }
 
 export interface TaskFilters {
-  clientId?:  string
-  status?:    TaskStatus
-  assignedToUserId?: string
-  overdue?:   boolean
-  hasReminder?: boolean
+  clientId?:          string
+  status?:            TaskStatus
+  assignedToUserId?:  string
+  overdue?:           boolean
+  hasReminder?:       boolean
+  relatedEntityType?: RelatedEntityType
+  relatedEntityId?:   string
+}
+
+export interface TaskPayload {
+  subject:              string
+  description?:         string
+  status?:              TaskStatus
+  priority?:            TaskPriority
+  relatedEntityType?:   RelatedEntityType
+  relatedEntityId?:     string
+  dueDate?:             string | null
+  assignedToUserId?:    string
+  clientId?:            string
+  hasReminder?:         boolean
+  reminderAt?:          string | null
+  reminderChannel?:     ReminderChannel
+  reminderRecurrence?:  ReminderRecurrence
 }
 
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/tasks`
@@ -33,7 +52,29 @@ export function getTasks(filters: TaskFilters = {}): Promise<TaskWithRelations[]
   if (filters.assignedToUserId)  params.set('assignedToUserId',  filters.assignedToUserId)
   if (filters.overdue)           params.set('overdue',           'true')
   if (filters.hasReminder !== undefined) params.set('hasReminder', String(filters.hasReminder))
+  if (filters.relatedEntityType) params.set('relatedEntityType', filters.relatedEntityType)
+  if (filters.relatedEntityId)   params.set('relatedEntityId',   filters.relatedEntityId)
 
   const qs = params.toString()
   return request<TaskWithRelations[]>(qs ? `${BASE}?${qs}` : BASE)
+}
+
+export function createTask(data: TaskPayload): Promise<TaskWithRelations> {
+  return request<TaskWithRelations>(BASE, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(data),
+  })
+}
+
+export function updateTask(id: string, data: Partial<TaskPayload>): Promise<TaskWithRelations> {
+  return request<TaskWithRelations>(`${BASE}/${id}`, {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(data),
+  })
+}
+
+export function deleteTask(id: string): Promise<void> {
+  return request<void>(`${BASE}/${id}`, { method: 'DELETE' })
 }
