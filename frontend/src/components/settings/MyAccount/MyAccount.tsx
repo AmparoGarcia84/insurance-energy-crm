@@ -89,7 +89,9 @@ export default function MyAccount() {
     }
   }
 
-  const avatarSrc = user?.avatarUrl ? `${API_URL}${user.avatarUrl}` : null
+  const avatarSrc = user?.avatarUrl
+    ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`)
+    : null
 
   return (
     <div className="my-account">

@@ -9,24 +9,18 @@
  * testable and prevents HTTP concerns from leaking into business logic.
  */
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { Request, Response } from 'express'
 import multer from 'multer'
 import * as authService from '../services/auth.service.js'
+import * as storageService from '../services/storage.service.js'
 import { AuthRequest } from '../middleware/auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '../../uploads/avatars'),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    cb(null, `${(_req as AuthRequest).user!.userId}${ext}`)
-  },
-})
-
 export const avatarUpload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
@@ -160,8 +154,25 @@ export async function uploadAvatar(req: AuthRequest, res: Response): Promise<voi
   }
 
   try {
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`
-    const user = await authService.updateAvatar(req.user!.userId, avatarUrl)
+    const ext = path.extname(req.file.originalname) || '.jpg'
+    const userId = req.user!.userId
+
+    let avatarUrl: string
+
+    if (storageService.isConfigured()) {
+      // R2: upload buffer directly, get back a public URL
+      const key = `avatars/${userId}${ext}`
+      avatarUrl = await storageService.uploadFile(req.file.buffer, key, req.file.mimetype)
+    } else {
+      // Local fallback: write buffer to disk (dev without R2 credentials)
+      const filename = `${userId}${ext}`
+      const dest = path.join(__dirname, '../../uploads/avatars')
+      fs.mkdirSync(dest, { recursive: true })
+      fs.writeFileSync(path.join(dest, filename), req.file.buffer)
+      avatarUrl = `/uploads/avatars/${filename}`
+    }
+
+    const user = await authService.updateAvatar(userId, avatarUrl)
     res.json({ user })
   } catch {
     res.status(500).json({ error: 'Failed to update avatar' })

@@ -1,25 +1,18 @@
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { Response } from 'express'
 import multer from 'multer'
 import { Prisma } from '../generated/prisma/client.js'
 import { AuthRequest } from '../middleware/auth.js'
 import * as documentService from '../services/document.service.js'
+import * as storageService from '../services/storage.service.js'
 import type { DocumentFilters } from '../services/document.service.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '../../uploads/documents'),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    const base = path.basename(file.originalname, ext).replace(/\s+/g, '-')
-    cb(null, `${Date.now()}-${base}${ext}`)
-  },
-})
-
 export const documentUpload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
   fileFilter: (_req, file, cb) => {
     if (file.mimetype !== 'application/pdf') {
@@ -29,6 +22,27 @@ export const documentUpload = multer({
     cb(null, true)
   },
 }).single('file')
+
+/**
+ * Saves an uploaded PDF file and returns its URL.
+ * Uploads to R2 when configured; falls back to local disk in development.
+ */
+async function saveUploadedFile(file: Express.Multer.File): Promise<string> {
+  const ext = path.extname(file.originalname) || '.pdf'
+  const base = path.basename(file.originalname, ext).replace(/\s+/g, '-')
+  const filename = `${Date.now()}-${base}${ext}`
+
+  if (storageService.isConfigured()) {
+    const key = `documents/${filename}`
+    return storageService.uploadFile(file.buffer, key, file.mimetype)
+  }
+
+  // Local fallback for development
+  const dest = path.join(__dirname, '../../uploads/documents')
+  fs.mkdirSync(dest, { recursive: true })
+  fs.writeFileSync(path.join(dest, filename), file.buffer)
+  return `/uploads/documents/${filename}`
+}
 
 // ── List ──────────────────────────────────────────────────────────────────────
 
@@ -76,7 +90,7 @@ export async function createDocument(req: AuthRequest, res: Response): Promise<v
     return
   }
 
-  const fileUrl = file ? `/uploads/documents/${file.filename}` : (body.fileUrl ?? null)
+  const fileUrl = file ? await saveUploadedFile(file) : (body.fileUrl ?? null)
 
   try {
     const doc = await documentService.createDocument({
@@ -102,7 +116,7 @@ export async function updateDocument(req: AuthRequest, res: Response): Promise<v
 
   const data: Record<string, unknown> = { ...body }
   if (file) {
-    data.fileUrl = `/uploads/documents/${file.filename}`
+    data.fileUrl = await saveUploadedFile(file)
   }
 
   try {
@@ -129,7 +143,10 @@ export async function deleteDocument(req: AuthRequest, res: Response): Promise<v
     return
   }
   try {
+    const doc = await documentService.getDocumentById(req.params.id as string)
     await documentService.deleteDocument(req.params.id as string)
+    // Best-effort: remove the file from R2 after the DB record is gone
+    await storageService.deleteFile(doc?.fileUrl)
     res.status(204).send()
   } catch {
     res.status(404).json({ error: 'Document not found' })

@@ -139,7 +139,7 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
                   <td>
                     {doc.fileUrl ? (
                       <a
-                        href={`${backendBase}${doc.fileUrl}`}
+                        href={doc.fileUrl.startsWith('http') ? doc.fileUrl : `${backendBase}${doc.fileUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="cd-docs-tab__file-link"

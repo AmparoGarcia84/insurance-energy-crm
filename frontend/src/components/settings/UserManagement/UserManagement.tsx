@@ -122,7 +122,9 @@ export default function UserManagement() {
 
       <ul className="user-management-list">
         {users.map((u) => {
-          const avatarSrc = u.avatarUrl ? `${API_URL}${u.avatarUrl}` : null
+          const avatarSrc = u.avatarUrl
+            ? (u.avatarUrl.startsWith('http') ? u.avatarUrl : `${API_URL}${u.avatarUrl}`)
+            : null
           return (
             <li key={u.id} className="user-management-item">
               <Avatar src={avatarSrc} name={u.displayName} size={38} />
