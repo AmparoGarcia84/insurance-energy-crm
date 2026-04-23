@@ -78,6 +78,12 @@ describe('GET /activities', () => {
     expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ clientId: 'c-001' }))
   })
 
+  it('passes caseId filter to the service', async () => {
+    mockList.mockResolvedValue([] as never)
+    await request(app).get('/activities?caseId=case-001').set('Cookie', OWNER_COOKIE)
+    expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ caseId: 'case-001' }))
+  })
+
   it('passes type filter to the service when valid', async () => {
     mockList.mockResolvedValue([] as never)
     await request(app).get('/activities?type=CALL').set('Cookie', OWNER_COOKIE)
@@ -118,13 +124,31 @@ describe('POST /activities', () => {
     activityAt: '2026-04-21T10:00:00.000Z',
   }
 
-  it('returns 400 when clientId is missing', async () => {
+  it('returns 400 when clientId, saleId and caseId are all missing', async () => {
     const res = await request(app)
       .post('/activities')
       .set('Cookie', OWNER_COOKIE)
       .send({ type: 'CALL', subject: 'x', activityAt: '2026-04-21T10:00:00.000Z' })
     expect(res.status).toBe(400)
     expect(res.body.error).toMatch(/clientId/)
+  })
+
+  it('accepts an activity with saleId instead of clientId (clientId auto-derived)', async () => {
+    mockCreate.mockResolvedValue(STUB_ACTIVITY as never)
+    const res = await request(app)
+      .post('/activities')
+      .set('Cookie', OWNER_COOKIE)
+      .send({ saleId: 's-001', type: 'CALL', subject: 'x', activityAt: '2026-04-21T10:00:00.000Z' })
+    expect(res.status).toBe(201)
+  })
+
+  it('accepts an activity with caseId instead of clientId (clientId auto-derived)', async () => {
+    mockCreate.mockResolvedValue(STUB_ACTIVITY as never)
+    const res = await request(app)
+      .post('/activities')
+      .set('Cookie', OWNER_COOKIE)
+      .send({ caseId: 'case-001', type: 'CALL', subject: 'x', activityAt: '2026-04-21T10:00:00.000Z' })
+    expect(res.status).toBe(201)
   })
 
   it('returns 400 when type is missing', async () => {

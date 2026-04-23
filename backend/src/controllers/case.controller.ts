@@ -17,15 +17,24 @@ export async function getCase(req: AuthRequest, res: Response): Promise<void> {
 }
 
 export async function createCase(req: AuthRequest, res: Response): Promise<void> {
-  const { clientId, title, description, status } = req.body
-  if (!clientId || !title) {
-    res.status(400).json({ error: 'clientId and title are required' })
+  const { saleId, title, description, status } = req.body
+  if (!saleId || typeof saleId !== 'string') {
+    res.status(400).json({ error: 'saleId is required' })
+    return
+  }
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    res.status(400).json({ error: 'title is required' })
     return
   }
   try {
-    const created = await caseService.createCase({ clientId, title, description, status })
+    const created = await caseService.createCase({ saleId, title, description, status })
     res.status(201).json(created)
-  } catch (err) {
+  } catch (err: unknown) {
+    const e = err as { code?: string; message?: string }
+    if (e?.code === 'P2025') {
+      res.status(422).json({ error: 'Sale not found', detail: 'saleId does not reference an existing sale' })
+      return
+    }
     res.status(500).json({ error: 'Failed to create case', detail: String(err) })
   }
 }
@@ -35,7 +44,8 @@ export async function updateCase(req: AuthRequest, res: Response): Promise<void>
     const updated = await caseService.updateCase(req.params.id as string, req.body)
     res.json(updated)
   } catch (err: unknown) {
-    if ((err as { code?: string })?.code === 'P2025') {
+    const e = err as { code?: string }
+    if (e?.code === 'P2025') {
       res.status(404).json({ error: 'Case not found' })
       return
     }

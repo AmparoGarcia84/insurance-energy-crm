@@ -33,6 +33,8 @@ const EMPLOYEE_COOKIE = makeAuthCookie('u-emp',   'EMPLOYEE')
 
 const STUB_CASE = {
   id:          'case-001',
+  saleId:      's-001',
+  sale:        { id: 's-001', title: 'Seguro de hogar multirriesgo' },
   clientId:    'c-carmen',
   client:      { id: 'c-carmen', name: 'Carmen López' },
   title:       'Siniestro agua en vivienda',
@@ -93,31 +95,31 @@ describe('GET /cases/:id', () => {
 
 describe('POST /cases', () => {
   it('returns 401 when not authenticated', async () => {
-    const res = await request(app).post('/cases').send({ clientId: 'c-1', title: 'Test' })
+    const res = await request(app).post('/cases').send({ saleId: 's-1', title: 'Test' })
     expect(res.status).toBe(401)
   })
 
-  it('returns 400 when clientId is missing', async () => {
+  it('returns 400 when saleId is missing', async () => {
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ title: 'Sin cliente' })
+      .send({ title: 'Sin venta' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBeDefined()
+    expect(res.body.error).toMatch(/saleId/)
   })
 
   it('returns 400 when title is missing', async () => {
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ clientId: 'c-1' })
+      .send({ saleId: 's-1' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBeDefined()
+    expect(res.body.error).toMatch(/title/)
   })
 
   it('returns 201 and the created case on success', async () => {
     mockCreate.mockResolvedValue(STUB_CASE as never)
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ clientId: 'c-carmen', title: 'Siniestro agua en vivienda' })
+      .send({ saleId: 's-001', title: 'Siniestro agua en vivienda' })
     expect(res.status).toBe(201)
     expect(res.body.title).toBe('Siniestro agua en vivienda')
   })
@@ -126,7 +128,7 @@ describe('POST /cases', () => {
     mockCreate.mockResolvedValue(STUB_CASE as never)
     const res = await request(app)
       .post('/cases').set('Cookie', EMPLOYEE_COOKIE)
-      .send({ clientId: 'c-carmen', title: 'Nuevo caso' })
+      .send({ saleId: 's-001', title: 'Nuevo caso' })
     expect(res.status).toBe(201)
   })
 })

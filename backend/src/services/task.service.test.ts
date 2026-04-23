@@ -2,20 +2,26 @@
  * Unit tests for task.service.ts
  *
  * The Prisma client is mocked so no database connection is required.
- * The main focus is on `buildWhere` (not exported directly) verified by
- * inspecting what gets passed to `prisma.task.findMany`.
+ * Tests cover: buildWhere filters, sanitize (empty string / date conversion),
+ * and the cascade hierarchy resolution (caseId → saleId → clientId).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { TaskStatus, TaskContextType, RelatedEntityType, TaskPriority } from '../generated/prisma/enums.js'
+import type { TaskStatus, TaskContextType, TaskPriority } from '../generated/prisma/enums.js'
 
 vi.mock('../db/prisma.js', () => ({
   default: {
     task: {
-      findMany:  vi.fn().mockResolvedValue([]),
+      findMany:   vi.fn().mockResolvedValue([]),
       findUnique: vi.fn(),
-      create:    vi.fn(),
-      update:    vi.fn(),
-      delete:    vi.fn(),
+      create:     vi.fn(),
+      update:     vi.fn(),
+      delete:     vi.fn(),
+    },
+    case: {
+      findUniqueOrThrow: vi.fn(),
+    },
+    sale: {
+      findUniqueOrThrow: vi.fn(),
     },
   },
 }))
@@ -27,6 +33,8 @@ const mockFindMany  = vi.mocked(prisma.task.findMany)
 const mockCreate    = vi.mocked(prisma.task.create)
 const mockUpdate    = vi.mocked(prisma.task.update)
 const mockDelete    = vi.mocked(prisma.task.delete)
+const mockCaseFind  = vi.mocked(prisma.case.findUniqueOrThrow)
+const mockSaleFind  = vi.mocked(prisma.sale.findUniqueOrThrow)
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -73,19 +81,27 @@ describe('listTasks — buildWhere filter logic', () => {
     )
   })
 
-  it('applies contextType filter', async () => {
+  it('applies saleId filter', async () => {
     mockFindMany.mockResolvedValue([] as never)
-    await listTasks({ contextType: 'SALE' as TaskContextType })
+    await listTasks({ saleId: 's-001' })
     expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ contextType: 'SALE' }) })
+      expect.objectContaining({ where: expect.objectContaining({ saleId: 's-001' }) })
     )
   })
 
-  it('applies relatedEntityType filter', async () => {
+  it('applies caseId filter', async () => {
     mockFindMany.mockResolvedValue([] as never)
-    await listTasks({ relatedEntityType: 'POLICY' as RelatedEntityType })
+    await listTasks({ caseId: 'case-001' })
     expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ relatedEntityType: 'POLICY' }) })
+      expect.objectContaining({ where: expect.objectContaining({ caseId: 'case-001' }) })
+    )
+  })
+
+  it('applies contextType filter', async () => {
+    mockFindMany.mockResolvedValue([] as never)
+    await listTasks({ contextType: 'CONTACT' as TaskContextType })
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ contextType: 'CONTACT' }) })
     )
   })
 
@@ -155,11 +171,55 @@ describe('listTasks — buildWhere filter logic', () => {
   })
 })
 
-// ─── createTask ───────────────────────────────────────────────────────────────
+// ─── Cascade hierarchy resolution ────────────────────────────────────────────
+
+describe('createTask — cascade hierarchy resolution', () => {
+  it('resolves saleId and clientId from caseId', async () => {
+    mockCaseFind.mockResolvedValue({ saleId: 's-001', clientId: 'c-001' } as never)
+    const stub = { id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null }
+    mockCreate.mockResolvedValue(stub as never)
+
+    await createTask({ subject: 'X', caseId: 'case-001' })
+
+    expect(mockCaseFind).toHaveBeenCalledWith({ where: { id: 'case-001' }, select: { saleId: true, clientId: true } })
+    const data = (mockCreate.mock.calls[0][0] as { data: Record<string, unknown> }).data
+    expect(data.caseId).toBe('case-001')
+    expect(data.saleId).toBe('s-001')
+    expect(data.clientId).toBe('c-001')
+  })
+
+  it('resolves clientId from saleId (no caseId)', async () => {
+    mockSaleFind.mockResolvedValue({ clientId: 'c-001' } as never)
+    const stub = { id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null }
+    mockCreate.mockResolvedValue(stub as never)
+
+    await createTask({ subject: 'X', saleId: 's-001' })
+
+    expect(mockSaleFind).toHaveBeenCalledWith({ where: { id: 's-001' }, select: { clientId: true } })
+    const data = (mockCreate.mock.calls[0][0] as { data: Record<string, unknown> }).data
+    expect(data.saleId).toBe('s-001')
+    expect(data.clientId).toBe('c-001')
+    expect(data.caseId).toBeUndefined()
+  })
+
+  it('uses clientId directly when no caseId or saleId', async () => {
+    const stub = { id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null }
+    mockCreate.mockResolvedValue(stub as never)
+
+    await createTask({ subject: 'X', clientId: 'c-001' })
+
+    expect(mockCaseFind).not.toHaveBeenCalled()
+    expect(mockSaleFind).not.toHaveBeenCalled()
+    const data = (mockCreate.mock.calls[0][0] as { data: Record<string, unknown> }).data
+    expect(data.clientId).toBe('c-001')
+  })
+})
+
+// ─── createTask — sanitize ────────────────────────────────────────────────────
 
 describe('createTask', () => {
   it('calls prisma.task.create with the sanitized input', async () => {
-    const stub = { id: 't-1', subject: 'Call client', assignedTo: null, client: null }
+    const stub = { id: 't-1', subject: 'Call client', assignedTo: null, client: null, sale: null, case: null }
     mockCreate.mockResolvedValue(stub as never)
 
     const result = await createTask({ subject: 'Call client' })
@@ -169,17 +229,16 @@ describe('createTask', () => {
   })
 
   it('converts empty string fields to undefined (sanitize)', async () => {
-    mockCreate.mockResolvedValue({ id: 't-1', subject: 'X', assignedTo: null, client: null } as never)
+    mockCreate.mockResolvedValue({ id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null } as never)
 
     await createTask({ subject: 'X', description: '' })
 
     const callArg = (mockCreate.mock.calls[0][0] as { data: Record<string, unknown> }).data
-    // Empty string → undefined (not stored)
     expect(callArg.description).toBeUndefined()
   })
 
   it('converts date string fields to Date objects (sanitize)', async () => {
-    mockCreate.mockResolvedValue({ id: 't-1', subject: 'X', assignedTo: null, client: null } as never)
+    mockCreate.mockResolvedValue({ id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null } as never)
 
     await createTask({ subject: 'X', dueDate: '2025-06-01' })
 
@@ -192,7 +251,7 @@ describe('createTask', () => {
 
 describe('updateTask', () => {
   it('calls prisma.task.update with the given id and sanitized data', async () => {
-    const stub = { id: 't-1', subject: 'Updated', assignedTo: null, client: null }
+    const stub = { id: 't-1', subject: 'Updated', assignedTo: null, client: null, sale: null, case: null }
     mockUpdate.mockResolvedValue(stub as never)
 
     const result = await updateTask('t-1', { subject: 'Updated' })
@@ -201,6 +260,29 @@ describe('updateTask', () => {
       expect.objectContaining({ where: { id: 't-1' } })
     )
     expect(result).toEqual(stub)
+  })
+
+  it('re-runs cascade when saleId changes in update', async () => {
+    mockSaleFind.mockResolvedValue({ clientId: 'c-new' } as never)
+    const stub = { id: 't-1', subject: 'X', assignedTo: null, client: null, sale: null, case: null }
+    mockUpdate.mockResolvedValue(stub as never)
+
+    await updateTask('t-1', { saleId: 's-new' })
+
+    expect(mockSaleFind).toHaveBeenCalledWith({ where: { id: 's-new' }, select: { clientId: true } })
+    const data = (mockUpdate.mock.calls[0][0] as { data: Record<string, unknown> }).data
+    expect(data.saleId).toBe('s-new')
+    expect(data.clientId).toBe('c-new')
+  })
+
+  it('skips cascade when no hierarchy field is in the update', async () => {
+    const stub = { id: 't-1', subject: 'Updated', assignedTo: null, client: null, sale: null, case: null }
+    mockUpdate.mockResolvedValue(stub as never)
+
+    await updateTask('t-1', { subject: 'Updated' })
+
+    expect(mockCaseFind).not.toHaveBeenCalled()
+    expect(mockSaleFind).not.toHaveBeenCalled()
   })
 })
 

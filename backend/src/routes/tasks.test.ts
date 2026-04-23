@@ -90,6 +90,18 @@ describe('GET /tasks', () => {
     expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ clientId: 'c-001' }))
   })
 
+  it('passes saleId filter to the service', async () => {
+    mockList.mockResolvedValue([] as never)
+    await request(app).get('/tasks?saleId=s-001').set('Cookie', OWNER_COOKIE)
+    expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ saleId: 's-001' }))
+  })
+
+  it('passes caseId filter to the service', async () => {
+    mockList.mockResolvedValue([] as never)
+    await request(app).get('/tasks?caseId=case-001').set('Cookie', OWNER_COOKIE)
+    expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ caseId: 'case-001' }))
+  })
+
   it('passes dueBefore filter to the service', async () => {
     mockList.mockResolvedValue([] as never)
     await request(app).get('/tasks?dueBefore=2025-01-31').set('Cookie', OWNER_COOKIE)
@@ -228,28 +240,28 @@ describe('POST /tasks — reminder validation', () => {
   })
 })
 
-describe('POST /tasks — polymorphic relation validation', () => {
-  it('returns 400 when relatedEntityId is set without relatedEntityType', async () => {
-    const res = await request(app)
-      .post('/tasks').set('Cookie', OWNER_COOKIE)
-      .send({ subject: 'X', relatedEntityId: 'e-001' })
-    expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/relatedEntityType/)
-  })
-
-  it('returns 400 when relatedEntityType is set without relatedEntityId', async () => {
-    const res = await request(app)
-      .post('/tasks').set('Cookie', OWNER_COOKIE)
-      .send({ subject: 'X', relatedEntityType: 'SALE' })
-    expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/relatedEntityId/)
-  })
-
-  it('accepts a task with both relatedEntityId and relatedEntityType', async () => {
+describe('POST /tasks — hierarchy FK validation', () => {
+  it('accepts a task with only clientId', async () => {
     mockCreate.mockResolvedValue(STUB_TASK as never)
     const res = await request(app)
       .post('/tasks').set('Cookie', OWNER_COOKIE)
-      .send({ subject: 'X', relatedEntityId: 'e-001', relatedEntityType: 'SALE' })
+      .send({ subject: 'X', clientId: 'c-001' })
+    expect(res.status).toBe(201)
+  })
+
+  it('accepts a task with saleId (clientId auto-derived)', async () => {
+    mockCreate.mockResolvedValue(STUB_TASK as never)
+    const res = await request(app)
+      .post('/tasks').set('Cookie', OWNER_COOKIE)
+      .send({ subject: 'X', saleId: 's-001' })
+    expect(res.status).toBe(201)
+  })
+
+  it('accepts a task with caseId (saleId and clientId auto-derived)', async () => {
+    mockCreate.mockResolvedValue(STUB_TASK as never)
+    const res = await request(app)
+      .post('/tasks').set('Cookie', OWNER_COOKIE)
+      .send({ subject: 'X', caseId: 'case-001' })
     expect(res.status).toBe(201)
   })
 })

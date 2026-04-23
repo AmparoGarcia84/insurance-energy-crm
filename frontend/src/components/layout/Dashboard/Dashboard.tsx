@@ -11,6 +11,7 @@ import UserManagement from '../../settings/UserManagement/UserManagement'
 import MyAccount from '../../settings/MyAccount/MyAccount'
 import Collaborators from '../../settings/Collaborators/Collaborators'
 import Cases from '../../cases/Cases/Cases'
+import Tasks from '../../tasks/Tasks/Tasks'
 
 export default function Dashboard() {
   const { t } = useTranslation()
@@ -30,6 +31,7 @@ export default function Dashboard() {
       case 'policies':       return <Policies onNavigateToClient={navigateToClient} />
       case 'energy':         return <Energy onNavigateToClient={navigateToClient} />
       case 'cases':          return <Cases />
+      case 'tasks':          return <Tasks />
       case 'collaborators':  return <Collaborators />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />

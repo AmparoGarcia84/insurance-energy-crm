@@ -12,6 +12,7 @@ import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
 import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
 import ClientDocumentsTab from '../ClientDocumentsTab/ClientDocumentsTab'
 import ClientActivityTab from '../ClientActivityTab/ClientActivityTab'
+import ClientTasksTab from '../ClientTasksTab/ClientTasksTab'
 import './ClientDetail.css'
 
 interface Props {
@@ -21,7 +22,7 @@ interface Props {
   onViewSale: (sale: Sale) => void
 }
 
-type Tab = 'summary' | 'activity' | 'sales' | 'mail' | 'documents'
+type Tab = 'summary' | 'tasks' | 'activity' | 'sales' | 'mail' | 'documents'
 
 function initials(name: string): string {
   return name
@@ -39,6 +40,7 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'summary',   label: t('clients.tabs.summary') },
+    { id: 'tasks',     label: t('clients.tabs.tasks') },
     { id: 'activity',  label: t('clients.tabs.activity') },
     { id: 'sales',     label: t('clients.tabs.sales') },
     { id: 'mail',      label: t('clients.tabs.mail') },
@@ -126,6 +128,8 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
       <div className="cd-content">
         {tab === 'summary' ? (
           <ClientSummaryTab clientId={client.id} onViewSale={onViewSale} />
+        ) : tab === 'tasks' ? (
+          <ClientTasksTab clientId={client.id} />
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (

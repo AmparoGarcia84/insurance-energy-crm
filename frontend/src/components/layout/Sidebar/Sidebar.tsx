@@ -20,6 +20,7 @@ import {
   Shield,
   Zap,
   AlertCircle,
+  ClipboardList,
   LogOut,
   UserCog,
   Handshake,
@@ -36,7 +37,7 @@ import './Sidebar.css'
  * Icons are lucide-react components passed as references (not JSX) so they
  * can be instantiated with custom props inside the map.
  */
-export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'timeTracking' | 'collaborators' | 'userManagement' | 'myAccount'
+export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'tasks' | 'timeTracking' | 'collaborators' | 'userManagement' | 'myAccount'
 
 const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'home',          key: 'nav.home',          icon: LayoutDashboard },
@@ -45,6 +46,7 @@ const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'policies',      key: 'nav.policies',      icon: Shield },
   { section: 'energy',        key: 'nav.energy',        icon: Zap },
   { section: 'cases',         key: 'nav.cases',         icon: AlertCircle },
+  { section: 'tasks',         key: 'nav.tasks',         icon: ClipboardList },
   { section: 'collaborators', key: 'nav.collaborators', icon: Handshake },
 ]
 

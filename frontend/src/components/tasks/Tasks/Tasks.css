@@ -1,0 +1,197 @@
+.tasks-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+/* ── Search ──────────────────────────────────────────────────────────────── */
+
+.tasks-search {
+  max-width: 320px;
+}
+
+/* ── Kanban board ─────────────────────────────────────────────────────────── */
+
+.tasks-board {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 120px;
+  width: 100%;
+}
+
+.tasks-board::-webkit-scrollbar        { height: 6px; }
+.tasks-board::-webkit-scrollbar-track  { background: var(--corp-muted-bg); border-radius: 3px; }
+.tasks-board::-webkit-scrollbar-thumb  { background: var(--corp-beige); border-radius: 3px; }
+
+/* ── Column ───────────────────────────────────────────────────────────────── */
+
+.tasks-column {
+  flex: 1 1 0;
+  min-width: 150px;
+  background: var(--corp-muted-bg);
+  border-radius: 10px;
+  border-top: 3px solid var(--column-color, var(--corp-beige));
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 300px);
+  transition: background 0.15s ease;
+}
+
+.tasks-column--over {
+  background: #ddd9d3;
+}
+
+.tasks-column__header {
+  padding: 0.7rem 0.85rem 0.55rem;
+  border-radius: 7px 7px 0 0;
+  background: inherit;
+}
+
+.tasks-column__name {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--corp-black);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tasks-column__count {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--corp-muted);
+  margin-top: 0.1rem;
+}
+
+.tasks-column__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0 0.55rem 0.55rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tasks-column__cards::-webkit-scrollbar        { width: 4px; }
+.tasks-column__cards::-webkit-scrollbar-track  { background: transparent; }
+.tasks-column__cards::-webkit-scrollbar-thumb  { background: var(--corp-beige); border-radius: 2px; }
+
+/* ── Task card ────────────────────────────────────────────────────────────── */
+
+.tasks-card {
+  background: var(--corp-card);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: grab;
+  border: 1px solid #e0dcd7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+}
+
+.tasks-card:active { cursor: grabbing; }
+
+.tasks-card:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tasks-card--dragging {
+  opacity: 0.35;
+}
+
+.tasks-card--overlay {
+  cursor: grabbing;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transform: rotate(1.5deg);
+}
+
+.tasks-card__client {
+  font-size: 0.68rem;
+  color: var(--corp-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.tasks-card__subject {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.tasks-card__subject--done {
+  text-decoration: line-through;
+  color: var(--corp-muted);
+}
+
+.tasks-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.tasks-card__actions {
+  display: flex;
+  gap: 0.15rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0.15rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.tasks-card:hover .tasks-card__actions {
+  opacity: 1;
+}
+
+/* ── Priority badge ───────────────────────────────────────────────────────── */
+
+.tasks-priority {
+  display: inline-block;
+  padding: 0.12rem 0.4rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tasks-priority--lowest  { background: #f0f0f0; color: #555; }
+.tasks-priority--low     { background: #e8f5e9; color: #388e3c; }
+.tasks-priority--normal  { background: #e3f2fd; color: #1565c0; }
+.tasks-priority--high    { background: #fff3e0; color: #e65100; }
+.tasks-priority--highest { background: #fde8e8; color: #c0392b; }
+
+/* ── Due date ─────────────────────────────────────────────────────────────── */
+
+.tasks-due {
+  font-size: 0.68rem;
+  color: var(--corp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tasks-due--overdue {
+  color: #c0392b;
+  font-weight: 500;
+}
+
+/* ── Assigned user ────────────────────────────────────────────────────────── */
+
+.tasks-assigned {
+  font-size: 0.68rem;
+  color: var(--corp-muted);
+  font-style: italic;
+}
+
+/* ── Completed icon ───────────────────────────────────────────────────────── */
+
+.tasks-icon--done { color: #27ae60; }

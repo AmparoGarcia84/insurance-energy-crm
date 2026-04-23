@@ -294,8 +294,12 @@ model Sale {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  cases      Case[]
+  tasks      Task[]
   documents  Document[]
   activities Activity[]
+
+  @@index([clientId])
 }
 
 // ── Policy ────────────────────────────────────────────────────────────────────
@@ -321,6 +325,8 @@ model Policy {
   notes        String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  @@index([clientId])
 }
 
 // ── EnergyContract ────────────────────────────────────────────────────────────
@@ -344,6 +350,8 @@ model EnergyContract {
   notes     String?
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
+
+  @@index([clientId])
 }
 
 // ── Case ──────────────────────────────────────────────────────────────────────
@@ -357,13 +365,24 @@ enum CaseStatus {
 
 model Case {
   id          String     @id @default(uuid())
-  clientId    String
-  client      Client     @relation(fields: [clientId], references: [id])
+
+  // Every case must belong to a sale; clientId is denormalized for direct querying
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+
   title       String
   description String?
   status      CaseStatus @default(OPEN)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  tasks      Task[]
+  activities Activity[]
+
+  @@index([clientId])
+  @@index([saleId])
 }
 
 // ── Collaborator ──────────────────────────────────────────────────────────────
@@ -390,6 +409,8 @@ model Workday {
   updatedAt DateTime @updatedAt
 
   adjustmentRequests WorkAdjustmentRequest[]
+
+  @@index([userId, date])
 }
 
 enum AdjustmentStatus {
@@ -453,6 +474,8 @@ model Document {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([clientId])
 }
 
 // ── Task ──────────────────────────────────────────────────────────────────────
@@ -479,21 +502,6 @@ enum TaskContextType {
   CONTACT
 }
 
-enum RelatedEntityType {
-  CLIENT
-  SALE
-  QUOTE
-  PROJECT
-  SALES_ORDER
-  PURCHASE_ORDER
-  INVOICE
-  CAMPAIGN
-  SUPPLIER
-  CASE
-  CONTRACT
-  PERSONAL_DATA
-}
-
 enum ReminderChannel {
   EMAIL
   IN_APP
@@ -517,19 +525,23 @@ model Task {
   priority    TaskPriority?
   contextType TaskContextType?
 
-  // Polymorphic relation at application level
-  relatedEntityType RelatedEntityType?
-  relatedEntityId   String?
-
   dueDate DateTime? @db.Date
 
   // Assignment
   assignedToUserId String?
   assignedTo       User?   @relation(fields: [assignedToUserId], references: [id])
 
-  // Optional client link
+  // Hierarchy: task can be linked at any level — client only, client+sale, or client+sale+case.
+  // When caseId is set, saleId and clientId are auto-populated from the case hierarchy.
+  // When saleId is set (no case), clientId is auto-populated from the sale.
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id])
+
+  saleId String?
+  sale   Sale?   @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
 
   // Reminder (stored inline — no separate table needed at this stage)
   hasReminder        Boolean            @default(false)
@@ -539,6 +551,12 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([assignedToUserId])
+  @@index([clientId])
+  @@index([saleId])
+  @@index([caseId])
+  @@index([dueDate])
 }
 
 // ── Activity ──────────────────────────────────────────────────────────────────
@@ -560,10 +578,18 @@ model Activity {
 
   userId   String
   user     User   @relation(fields: [userId], references: [id])
+
+  // clientId is always required; saleId and caseId are optional.
+  // When caseId is set, saleId and clientId are auto-populated from the case hierarchy.
+  // When saleId is set (no case), clientId is auto-populated from the sale.
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  saleId   String?
-  sale     Sale?  @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  saleId String?
+  sale   Sale?   @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
 
   type        ActivityType
   direction   ActivityDirection?
@@ -578,6 +604,7 @@ model Activity {
 
   @@index([clientId])
   @@index([saleId])
+  @@index([caseId])
   @@index([userId])
   @@index([activityAt])
 }

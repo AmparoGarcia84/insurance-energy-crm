@@ -6,6 +6,7 @@ export default {
     policies: 'Policies',
     energy: 'Energy',
     cases: 'Cases',
+    tasks: 'Tasks',
     timeTracking: 'Time Tracking',
     collaborators: 'Collaborators',
     userManagement: 'User Management',
@@ -182,6 +183,7 @@ export default {
     },
     tabs: {
       summary:   'Summary',
+      tasks:     'Tasks',
       activity:  'Activity',
       sales:     'Sales',
       mail:      'Mail',

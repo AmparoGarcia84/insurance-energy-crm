@@ -698,8 +698,8 @@ export interface Case extends BaseEntity {
   caseNumber: string
 
   clientId: UUID
-  /** Optional link to the related sale/opportunity. */
-  saleId?: UUID
+  /** Every case must belong to a sale. clientId is denormalized for direct querying. */
+  saleId: UUID
 
   status: CaseStatus
   priority: CasePriority
@@ -783,11 +783,14 @@ export interface Task extends BaseEntity {
   status:              TaskStatus
   priority?:           TaskPriority
   contextType?:        TaskContextType
-  relatedEntityType?:  RelatedEntityType
-  relatedEntityId?:    UUID
   dueDate?:            ISODate
   assignedToUserId?:   UUID
+  // Hierarchy: can be linked at any level — client only, client+sale, or client+sale+case.
+  // When caseId is set, saleId and clientId are auto-populated from the case hierarchy.
+  // When saleId is set (no case), clientId is auto-populated from the sale.
   clientId?:           UUID
+  saleId?:             UUID
+  caseId?:             UUID
   // Reminder
   hasReminder:         boolean
   reminderAt?:         ISODateTime
@@ -1063,8 +1066,11 @@ export const ActivityDirectionLabels: Record<ActivityDirection, string> = {
 /** Client follow-up / business interaction record (distinct from ActivityLog audit trail) */
 export interface Activity extends BaseEntity {
   userId:      UUID
+  // Hierarchy: when caseId is set, saleId and clientId are auto-populated from the case.
+  // When saleId is set (no case), clientId is auto-populated from the sale.
   clientId:    UUID
   saleId?:     UUID
+  caseId?:     UUID
   type:        ActivityType
   direction?:  ActivityDirection
   subject:     string

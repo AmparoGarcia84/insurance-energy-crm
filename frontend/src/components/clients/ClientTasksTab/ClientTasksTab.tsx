@@ -7,7 +7,6 @@ import {
   updateTask,
   deleteTask,
   TaskStatus,
-  RelatedEntityType,
   type TaskWithRelations,
   type TaskPayload,
 } from '../../../api/tasks'
@@ -18,14 +17,13 @@ import TaskTable from '../../shared/TaskTable/TaskTable'
 import TaskForm from '../../shared/TaskForm/TaskForm'
 import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
 import '../../shared/TaskTable/TaskTable.css'
-import './SaleTasksTab.css'
+import './ClientTasksTab.css'
 
 interface Props {
-  saleId:   string
   clientId: string
 }
 
-export default function SaleTasksTab({ saleId, clientId }: Props) {
+export default function ClientTasksTab({ clientId }: Props) {
   const { t }         = useTranslation()
   const { canDelete } = usePermissions()
 
@@ -39,11 +37,11 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
 
   const load = useCallback(() => {
     setLoading(true)
-    getTasks({ relatedEntityType: RelatedEntityType.SALE, relatedEntityId: saleId })
+    getTasks({ clientId })
       .then(setTasks)
       .catch(() => {/* non-critical */})
       .finally(() => setLoading(false))
-  }, [saleId])
+  }, [clientId])
 
   useEffect(() => { load() }, [load])
 
@@ -76,12 +74,7 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
   }
 
   async function handleSubmit(data: TaskPayload): Promise<TaskWithRelations> {
-    const payload: TaskPayload = {
-      ...data,
-      relatedEntityType: RelatedEntityType.SALE,
-      relatedEntityId:   saleId,
-      clientId,
-    }
+    const payload: TaskPayload = { ...data, clientId }
     if (editing) return updateTask(editing.id, payload)
     return createTask(payload)
   }
@@ -130,31 +123,33 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
   // ── Table view ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="stt-view">
+    <div className="ctt-view">
 
-      <div className="stt-toolbar">
-        <div className="stt-toolbar__left">
-          {!loading && tasks.length > 0 && (
-            <div className="table-search stt-toolbar__search">
-              <Search size={14} />
-              <input
-                type="search"
-                autoComplete="off"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('tasks.searchPlaceholder')}
-              />
-            </div>
-          )}
-        </div>
+      <div className="ctt-toolbar">
+        <span className="ctt-toolbar__count">
+          {!loading && t('tasks.count', { count: tasks.length })}
+        </span>
         <button className="btn-primary" onClick={handleNew}>
           <Plus size={15} />
           {t('tasks.newTask')}
         </button>
       </div>
 
+      {!loading && tasks.length > 0 && (
+        <div className="table-search">
+          <Search size={15} />
+          <input
+            type="search"
+            autoComplete="off"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('tasks.searchPlaceholder')}
+          />
+        </div>
+      )}
+
       {loading ? null : filtered.length === 0 ? (
-        <div className="stt-empty">
+        <div className="ctt-empty">
           <p>{search.trim() ? t('tasks.emptySearch') : t('tasks.noTasks')}</p>
         </div>
       ) : (

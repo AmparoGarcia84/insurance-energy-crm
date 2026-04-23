@@ -12,8 +12,9 @@ export async function listTasks(req: AuthRequest, res: Response): Promise<void> 
     status,
     priority,
     contextType,
-    relatedEntityType,
     clientId,
+    saleId,
+    caseId,
     dueBefore,
     dueAfter,
     overdue,
@@ -21,14 +22,15 @@ export async function listTasks(req: AuthRequest, res: Response): Promise<void> 
   } = req.query as Record<string, string | undefined>
 
   const filters: TaskFilters = {}
-  if (assignedToUserId)  filters.assignedToUserId  = assignedToUserId
-  if (status)            filters.status            = status as TaskFilters['status']
-  if (priority)          filters.priority          = priority as TaskFilters['priority']
-  if (contextType)       filters.contextType       = contextType as TaskFilters['contextType']
-  if (relatedEntityType) filters.relatedEntityType = relatedEntityType as TaskFilters['relatedEntityType']
-  if (clientId)          filters.clientId          = clientId
-  if (dueBefore)         filters.dueBefore         = dueBefore
-  if (dueAfter)          filters.dueAfter          = dueAfter
+  if (assignedToUserId) filters.assignedToUserId = assignedToUserId
+  if (status)           filters.status           = status as TaskFilters['status']
+  if (priority)         filters.priority         = priority as TaskFilters['priority']
+  if (contextType)      filters.contextType      = contextType as TaskFilters['contextType']
+  if (clientId)         filters.clientId         = clientId
+  if (saleId)           filters.saleId           = saleId
+  if (caseId)           filters.caseId           = caseId
+  if (dueBefore)        filters.dueBefore        = dueBefore
+  if (dueAfter)         filters.dueAfter         = dueAfter
   if (overdue === 'true')      filters.overdue      = true
   if (hasReminder === 'true')  filters.hasReminder  = true
   if (hasReminder === 'false') filters.hasReminder  = false
@@ -53,7 +55,6 @@ export async function getTask(req: AuthRequest, res: Response): Promise<void> {
 export async function createTask(req: AuthRequest, res: Response): Promise<void> {
   const body = req.body
 
-  // Required fields
   if (!body.subject || typeof body.subject !== 'string' || !body.subject.trim()) {
     res.status(400).json({ error: 'subject is required' })
     return
@@ -75,23 +76,16 @@ export async function createTask(req: AuthRequest, res: Response): Promise<void>
     return
   }
 
-  // Polymorphic relation must be set together
-  if (body.relatedEntityId && !body.relatedEntityType) {
-    res.status(400).json({ error: 'relatedEntityType is required when relatedEntityId is set' })
-    return
-  }
-  if (body.relatedEntityType && !body.relatedEntityId) {
-    res.status(400).json({ error: 'relatedEntityId is required when relatedEntityType is set' })
-    return
-  }
-
   try {
-    // Validate FK existence for assignedToUserId and clientId
     const task = await taskService.createTask(body)
     res.status(201).json(task)
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
       res.status(422).json({ error: 'Foreign key constraint failed', detail: err.meta?.field_name })
+      return
+    }
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      res.status(422).json({ error: 'Referenced entity not found' })
       return
     }
     res.status(500).json({ error: 'Failed to create task', detail: String(err) })
@@ -103,7 +97,6 @@ export async function createTask(req: AuthRequest, res: Response): Promise<void>
 export async function updateTask(req: AuthRequest, res: Response): Promise<void> {
   const body = req.body
 
-  // Reminder cross-field validation (only if fields are being set)
   if (body.hasReminder === true) {
     if (body.reminderAt === null || body.reminderAt === '') {
       res.status(400).json({ error: 'reminderAt is required when hasReminder is true' })
@@ -119,21 +112,12 @@ export async function updateTask(req: AuthRequest, res: Response): Promise<void>
     return
   }
 
-  // Polymorphic relation must be set together
-  if (body.relatedEntityId !== undefined && body.relatedEntityType === undefined) {
-    res.status(400).json({ error: 'relatedEntityType is required when relatedEntityId is set' })
-    return
-  }
-  if (body.relatedEntityType !== undefined && body.relatedEntityId === undefined) {
-    res.status(400).json({ error: 'relatedEntityId is required when relatedEntityType is set' })
-    return
-  }
-
   try {
     const task = await taskService.updateTask(req.params.id as string, body)
     res.json(task)
-  } catch (err: any) {
-    if (err?.code === 'P2025') {
+  } catch (err: unknown) {
+    const e = err as { code?: string }
+    if (e?.code === 'P2025') {
       res.status(404).json({ error: 'Task not found' })
       return
     }

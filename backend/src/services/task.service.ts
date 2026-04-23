@@ -4,7 +4,6 @@ import type {
   TaskStatus,
   TaskPriority,
   TaskContextType,
-  RelatedEntityType,
   ReminderChannel,
   ReminderRecurrence,
 } from '../generated/prisma/enums.js'
@@ -15,11 +14,14 @@ export interface TaskInput {
   status?:             TaskStatus
   priority?:           TaskPriority
   contextType?:        TaskContextType
-  relatedEntityType?:  RelatedEntityType
-  relatedEntityId?:    string
   dueDate?:            Date | string | null
   assignedToUserId?:   string
+  // Hierarchy: set caseId to cascade-populate saleId and clientId automatically.
+  // Set saleId (no caseId) to cascade-populate clientId automatically.
+  // Set only clientId for tasks not linked to a specific sale or case.
   clientId?:           string
+  saleId?:             string
+  caseId?:             string
   hasReminder?:        boolean
   reminderAt?:         Date | string | null
   reminderChannel?:    ReminderChannel
@@ -30,6 +32,8 @@ export interface TaskInput {
 const include = {
   assignedTo: { select: { id: true, displayName: true, email: true } },
   client:     { select: { id: true, name: true, clientNumber: true } },
+  sale:       { select: { id: true, title: true } },
+  case:       { select: { id: true, title: true } },
 } satisfies Prisma.TaskInclude
 
 const DATE_FIELDS = ['dueDate', 'reminderAt'] as const
@@ -51,34 +55,64 @@ function sanitize<T extends object>(data: T): T {
   ) as T
 }
 
+/**
+ * Resolve the client/sale/case hierarchy cascade:
+ * - caseId provided  → auto-populate saleId and clientId from the case
+ * - saleId provided (no caseId) → auto-populate clientId from the sale
+ * - only clientId provided → use as-is
+ */
+async function resolveHierarchy(input: {
+  caseId?:   string
+  saleId?:   string
+  clientId?: string
+}): Promise<{ caseId?: string; saleId?: string; clientId?: string }> {
+  if (input.caseId) {
+    const found = await prisma.case.findUniqueOrThrow({
+      where:  { id: input.caseId },
+      select: { saleId: true, clientId: true },
+    })
+    return { caseId: input.caseId, saleId: found.saleId, clientId: found.clientId }
+  }
+  if (input.saleId) {
+    const found = await prisma.sale.findUniqueOrThrow({
+      where:  { id: input.saleId },
+      select: { clientId: true },
+    })
+    return { saleId: input.saleId, clientId: found.clientId }
+  }
+  return { clientId: input.clientId }
+}
+
 // ── Filters ───────────────────────────────────────────────────────────────────
 
 export interface TaskFilters {
-  assignedToUserId?:  string
-  status?:            TaskStatus
-  priority?:          TaskPriority
-  contextType?:       TaskContextType
-  relatedEntityType?: RelatedEntityType
-  clientId?:          string
+  assignedToUserId?: string
+  status?:           TaskStatus
+  priority?:         TaskPriority
+  contextType?:      TaskContextType
+  clientId?:         string
+  saleId?:           string
+  caseId?:           string
   /** ISO date string — returns tasks with dueDate <= this value */
-  dueBefore?:         string
+  dueBefore?:        string
   /** ISO date string — returns tasks with dueDate >= this value */
-  dueAfter?:          string
+  dueAfter?:         string
   /** true → only tasks where dueDate < today */
-  overdue?:           boolean
+  overdue?:          boolean
   /** true → only tasks where hasReminder = true */
-  hasReminder?:       boolean
+  hasReminder?:      boolean
 }
 
 function buildWhere(filters: TaskFilters): Prisma.TaskWhereInput {
   const where: Prisma.TaskWhereInput = {}
 
-  if (filters.assignedToUserId)  where.assignedToUserId  = filters.assignedToUserId
-  if (filters.status)            where.status            = filters.status
-  if (filters.priority)          where.priority          = filters.priority
-  if (filters.contextType)       where.contextType       = filters.contextType
-  if (filters.relatedEntityType) where.relatedEntityType = filters.relatedEntityType
-  if (filters.clientId)          where.clientId          = filters.clientId
+  if (filters.assignedToUserId) where.assignedToUserId = filters.assignedToUserId
+  if (filters.status)           where.status           = filters.status
+  if (filters.priority)         where.priority         = filters.priority
+  if (filters.contextType)      where.contextType      = filters.contextType
+  if (filters.clientId)         where.clientId         = filters.clientId
+  if (filters.saleId)           where.saleId           = filters.saleId
+  if (filters.caseId)           where.caseId           = filters.caseId
   if (filters.hasReminder !== undefined) where.hasReminder = filters.hasReminder
 
   // dueDate range
@@ -106,13 +140,39 @@ export function getTaskById(id: string) {
   return prisma.task.findUnique({ where: { id }, include })
 }
 
-export function createTask(data: TaskInput) {
-  const createData: Prisma.TaskUncheckedCreateInput = sanitize(data) as Prisma.TaskUncheckedCreateInput
+export async function createTask(data: TaskInput) {
+  const sanitized = sanitize(data)
+  const hierarchy = await resolveHierarchy({
+    caseId:   sanitized.caseId,
+    saleId:   sanitized.saleId,
+    clientId: sanitized.clientId,
+  })
+  const createData: Prisma.TaskUncheckedCreateInput = {
+    ...sanitized,
+    ...hierarchy,
+  } as Prisma.TaskUncheckedCreateInput
   return prisma.task.create({ data: createData, include })
 }
 
-export function updateTask(id: string, data: Partial<TaskInput>) {
-  const updateData: Prisma.TaskUncheckedUpdateInput = sanitize(data) as Prisma.TaskUncheckedUpdateInput
+export async function updateTask(id: string, data: Partial<TaskInput>) {
+  const sanitized = sanitize(data)
+  // Only re-run cascade if any hierarchy field is explicitly being updated
+  const hasHierarchyChange =
+    sanitized.caseId !== undefined ||
+    sanitized.saleId !== undefined ||
+    sanitized.clientId !== undefined
+  const hierarchy = hasHierarchyChange
+    ? await resolveHierarchy({
+        caseId:   sanitized.caseId,
+        saleId:   sanitized.saleId,
+        clientId: sanitized.clientId,
+      })
+    : {}
+
+  const updateData: Prisma.TaskUncheckedUpdateInput = {
+    ...sanitized,
+    ...hierarchy,
+  } as Prisma.TaskUncheckedUpdateInput
   return prisma.task.update({ where: { id }, data: updateData, include })
 }
 
