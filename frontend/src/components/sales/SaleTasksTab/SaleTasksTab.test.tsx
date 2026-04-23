@@ -26,15 +26,6 @@ vi.mock('../../../api/users', () => ({
   getUsers: vi.fn().mockResolvedValue([]),
 }))
 
-// @dnd-kit relies on pointer events and getBoundingClientRect — stub them for jsdom
-vi.mock('@dnd-kit/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dnd-kit/core')>()
-  return {
-    ...actual,
-    DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  }
-})
-
 const mockGetTasks   = vi.mocked(tasksApi.getTasks)
 const mockUpdateTask = vi.mocked(tasksApi.updateTask)
 const mockDeleteTask = vi.mocked(tasksApi.deleteTask)
@@ -65,7 +56,7 @@ function renderTab() {
 
 beforeEach(() => vi.clearAllMocks())
 
-describe('SaleTasksTab (kanban)', () => {
+describe('SaleTasksTab', () => {
   it('loads tasks filtered by saleId and relatedEntityType', async () => {
     mockGetTasks.mockResolvedValue([])
     renderTab()
@@ -77,21 +68,7 @@ describe('SaleTasksTab (kanban)', () => {
     })
   })
 
-  it('renders all kanban columns (one per TaskStatus)', async () => {
-    mockGetTasks.mockResolvedValue([])
-    renderTab()
-    // Each status has a column header translated via i18n
-    await waitFor(() => {
-      for (const status of Object.values(TaskStatus)) {
-        // Translation key: tasks.status.<STATUS>
-        expect(
-          screen.getByText(i18n.t(`tasks.status.${status}`))
-        ).toBeInTheDocument()
-      }
-    })
-  })
-
-  it('renders task card in the correct column', async () => {
+  it('renders task row in the table', async () => {
     mockGetTasks.mockResolvedValue([STUB_TASK])
     renderTab()
     await waitFor(() => {
@@ -99,7 +76,22 @@ describe('SaleTasksTab (kanban)', () => {
     })
   })
 
-  it('filters tasks by search term across all columns', async () => {
+  it('renders status select with all TaskStatus options for each task', async () => {
+    mockGetTasks.mockResolvedValue([STUB_TASK])
+    renderTab()
+    await waitFor(() => screen.getByText('Send proposal'))
+
+    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: i18n.t('tasks.form.status') })
+    expect(select).toBeInTheDocument()
+
+    for (const status of Object.values(TaskStatus)) {
+      expect(
+        screen.getByRole('option', { name: i18n.t(`tasks.status.${status}`) })
+      ).toBeInTheDocument()
+    }
+  })
+
+  it('filters tasks by search term', async () => {
     mockGetTasks.mockResolvedValue([
       STUB_TASK,
       { ...STUB_TASK, id: 'task-002', subject: 'Follow up call', status: TaskStatus.IN_PROGRESS },
@@ -120,12 +112,11 @@ describe('SaleTasksTab (kanban)', () => {
     const newBtn = await screen.findByRole('button', { name: /nueva tarea|new task/i })
     fireEvent.click(newBtn)
 
-    // Board button gone, form subject field appears
     expect(screen.queryByRole('button', { name: /nueva tarea|new task/i })).not.toBeInTheDocument()
     expect(screen.getByLabelText(/asunto|subject/i)).toBeInTheDocument()
   })
 
-  it('returns to board when cancel is clicked in form view', async () => {
+  it('returns to table when cancel is clicked in form view', async () => {
     mockGetTasks.mockResolvedValue([])
     renderTab()
     await waitFor(() => screen.getByRole('button', { name: /nueva tarea|new task/i }))
@@ -150,13 +141,14 @@ describe('SaleTasksTab (kanban)', () => {
     expect(subjectInput.value).toBe('Send proposal')
   })
 
-  it('marks task as completed on toggle click', async () => {
+  it('calls updateTask when status is changed via the select', async () => {
     mockGetTasks.mockResolvedValue([STUB_TASK])
     mockUpdateTask.mockResolvedValue({ ...STUB_TASK, status: TaskStatus.COMPLETED })
     renderTab()
     await waitFor(() => screen.getByText('Send proposal'))
 
-    fireEvent.click(screen.getByTitle(/completar|complete/i))
+    const select = screen.getByRole('combobox', { name: i18n.t('tasks.form.status') })
+    fireEvent.change(select, { target: { value: TaskStatus.COMPLETED } })
 
     await waitFor(() => {
       expect(mockUpdateTask).toHaveBeenCalledWith('task-001', { status: TaskStatus.COMPLETED })
@@ -170,7 +162,7 @@ describe('SaleTasksTab (kanban)', () => {
     expect(screen.getByTitle(/eliminar|delete/i)).toBeInTheDocument()
   })
 
-  it('removes task from board after deletion', async () => {
+  it('removes task from table after deletion', async () => {
     mockGetTasks.mockResolvedValue([STUB_TASK])
     mockDeleteTask.mockResolvedValue(undefined)
     renderTab()
