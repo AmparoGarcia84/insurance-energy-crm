@@ -10,20 +10,22 @@ import {
   type TaskWithRelations,
   type TaskPayload,
 } from '../../../api/tasks'
+import { getClient } from '../../../api/clients'
 import { getUsers } from '../../../api/users'
 import type { AuthUser } from '../../../api/auth'
 import { usePermissions } from '../../../hooks/usePermissions'
 import TaskTable from '../../shared/TaskTable/TaskTable'
-import TaskForm from '../../shared/TaskForm/TaskForm'
+import TaskForm, { type TaskFormContext } from '../../shared/TaskForm/TaskForm'
 import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
 import '../../shared/TaskTable/TaskTable.css'
 import './ClientTasksTab.css'
 
 interface Props {
-  clientId: string
+  clientId:   string
+  clientName: string
 }
 
-export default function ClientTasksTab({ clientId }: Props) {
+export default function ClientTasksTab({ clientId, clientName }: Props) {
   const { t }         = useTranslation()
   const { canDelete } = usePermissions()
 
@@ -34,6 +36,11 @@ export default function ClientTasksTab({ clientId }: Props) {
   const [editing, setEditing]             = useState<TaskWithRelations | null>(null)
   const [showForm, setShowForm]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<TaskWithRelations | null>(null)
+
+  const context: TaskFormContext = {
+    lockedClientId:   clientId,
+    lockedClientName: clientName,
+  }
 
   const load = useCallback(() => {
     setLoading(true)
@@ -50,6 +57,13 @@ export default function ClientTasksTab({ clientId }: Props) {
       .then(setUsers)
       .catch(() => {/* non-critical */})
   }, [])
+
+  // clientName may not always be passed by legacy callers; fetch as fallback
+  useEffect(() => {
+    if (!clientName) {
+      getClient(clientId).catch(() => {/* non-critical */})
+    }
+  }, [clientId, clientName])
 
   const filtered = search.trim()
     ? tasks.filter((task) =>
@@ -74,9 +88,9 @@ export default function ClientTasksTab({ clientId }: Props) {
   }
 
   async function handleSubmit(data: TaskPayload): Promise<TaskWithRelations> {
-    const payload: TaskPayload = { ...data, clientId }
-    if (editing) return updateTask(editing.id, payload)
-    return createTask(payload)
+    // clientId, saleId, caseId are now included in the payload from the form
+    if (editing) return updateTask(editing.id, data)
+    return createTask(data)
   }
 
   function handleSaved(task: TaskWithRelations) {
@@ -113,6 +127,7 @@ export default function ClientTasksTab({ clientId }: Props) {
       <TaskForm
         initial={editing}
         users={users}
+        context={context}
         onSubmit={handleSubmit}
         onSave={handleSaved}
         onCancel={handleCancel}

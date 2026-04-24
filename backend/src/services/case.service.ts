@@ -15,8 +15,12 @@ const include = {
   sale:   { select: { id: true, title: true } },
 } as const
 
-export function listCases() {
+export function listCases(filters: { clientId?: string; saleId?: string } = {}) {
+  const where: { clientId?: string; saleId?: string } = {}
+  if (filters.clientId) where.clientId = filters.clientId
+  if (filters.saleId)   where.saleId   = filters.saleId
   return prisma.case.findMany({
+    where,
     include,
     orderBy: { updatedAt: 'desc' },
   })

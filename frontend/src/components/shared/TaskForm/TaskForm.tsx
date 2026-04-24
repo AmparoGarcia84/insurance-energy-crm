@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
 import {
@@ -10,16 +10,32 @@ import {
   type TaskPayload,
 } from '../../../api/tasks'
 import type { AuthUser } from '../../../api/auth'
+import { getClients, type Client } from '../../../api/clients'
+import { getSales } from '../../../api/sales'
+import type { Sale } from '@crm/shared'
+import { getCases, type Case } from '../../../api/cases'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
 import TextareaField from '../FormField/TextareaField'
 import './TaskForm.css'
+
+/** Context passed by parent tabs to pre-fill and optionally lock associations. */
+export interface TaskFormContext {
+  /** When set, the client is pre-selected and locked (cannot be changed). */
+  lockedClientId?:   string
+  lockedClientName?: string
+  /** When set, the sale is also pre-selected and locked. Implies lockedClientId is set too. */
+  lockedSaleId?:     string
+  lockedSaleName?:   string
+}
 
 interface Props {
   /** Task to edit; null/undefined for a new task. */
   initial?:  TaskWithRelations | null
   /** Available users for the "Assigned to" selector. */
   users:     AuthUser[]
+  /** Context from the parent tab — pre-fills and optionally locks association fields. */
+  context?:  TaskFormContext
   onSubmit:  (data: TaskPayload) => Promise<TaskWithRelations>
   onSave:    (task: TaskWithRelations) => void
   onCancel:  () => void
@@ -37,6 +53,14 @@ interface FormState {
   priority:            TaskPriority | ''
   dueDate:             string
   assignedToUserId:    string
+  // Association
+  clientId:            string
+  saleId:              string
+  caseId:              string
+  // Provider
+  providerName:        string
+  providerPhone:       string
+  // Reminder
   hasReminder:         boolean
   reminderAt:          string
   reminderChannel:     ReminderChannel | ''
@@ -50,6 +74,11 @@ const EMPTY: FormState = {
   priority:           '',
   dueDate:            '',
   assignedToUserId:   '',
+  clientId:           '',
+  saleId:             '',
+  caseId:             '',
+  providerName:       '',
+  providerPhone:      '',
   hasReminder:        false,
   reminderAt:         '',
   reminderChannel:    '',
@@ -60,7 +89,7 @@ function toDatetimeLocal(iso: string): string {
   return iso.slice(0, 16)
 }
 
-function fromTask(task: TaskWithRelations): FormState {
+function fromTask(task: TaskWithRelations, ctx?: TaskFormContext): FormState {
   return {
     subject:            task.subject,
     description:        task.description ?? '',
@@ -68,6 +97,11 @@ function fromTask(task: TaskWithRelations): FormState {
     priority:           task.priority ?? '',
     dueDate:            task.dueDate ? task.dueDate.slice(0, 10) : '',
     assignedToUserId:   task.assignedToUserId ?? '',
+    clientId:           ctx?.lockedClientId ?? task.clientId ?? '',
+    saleId:             ctx?.lockedSaleId   ?? task.saleId   ?? '',
+    caseId:             task.caseId   ?? '',
+    providerName:       task.providerName  ?? '',
+    providerPhone:      task.providerPhone ?? '',
     hasReminder:        task.hasReminder,
     reminderAt:         task.reminderAt ? toDatetimeLocal(task.reminderAt) : '',
     reminderChannel:    task.reminderChannel ?? '',
@@ -75,20 +109,93 @@ function fromTask(task: TaskWithRelations): FormState {
   }
 }
 
-export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }: Props) {
+function initialState(initial: TaskWithRelations | null | undefined, ctx?: TaskFormContext): FormState {
+  if (initial) return fromTask(initial, ctx)
+  return {
+    ...EMPTY,
+    clientId: ctx?.lockedClientId ?? '',
+    saleId:   ctx?.lockedSaleId   ?? '',
+  }
+}
+
+export default function TaskForm({ initial, users, context, onSubmit, onSave, onCancel }: Props) {
   const { t } = useTranslation()
 
-  const [form, setForm]   = useState<FormState>(initial ? fromTask(initial) : EMPTY)
+  const [form, setForm]     = useState<FormState>(() => initialState(initial, context))
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState<string | null>(null)
 
+  // Association dropdown data
+  const [clients, setClients] = useState<Client[]>([])
+  const [sales,   setSales]   = useState<Sale[]>([])
+  const [cases,   setCases]   = useState<Case[]>([])
+
+  const clientLocked = Boolean(context?.lockedClientId)
+  const saleLocked   = Boolean(context?.lockedSaleId)
+
+  // ── Load clients (only in standalone mode — no locked client) ──────────────
   useEffect(() => {
-    setForm(initial ? fromTask(initial) : EMPTY)
+    if (clientLocked) return
+    getClients()
+      .then(setClients)
+      .catch(() => {/* non-critical */})
+  }, [clientLocked])
+
+  // ── Load sales whenever clientId changes ───────────────────────────────────
+  const loadSales = useCallback((clientId: string) => {
+    if (!clientId) { setSales([]); return }
+    getSales({ clientId })
+      .then(setSales)
+      .catch(() => { setSales([]) })
+  }, [])
+
+  useEffect(() => {
+    loadSales(form.clientId)
+  }, [form.clientId, loadSales])
+
+  // ── Load cases whenever saleId changes ────────────────────────────────────
+  const loadCases = useCallback((saleId: string) => {
+    if (!saleId) { setCases([]); return }
+    getCases({ saleId })
+      .then(setCases)
+      .catch(() => { setCases([]) })
+  }, [])
+
+  useEffect(() => {
+    loadCases(form.saleId)
+  }, [form.saleId, loadCases])
+
+  // ── Reset form when initial changes ───────────────────────────────────────
+  useEffect(() => {
+    setForm(initialState(initial, context))
     setError(null)
-  }, [initial])
+  }, [initial]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function handleClientChange(newClientId: string) {
+    setForm((prev) => ({
+      ...prev,
+      clientId: newClientId,
+      saleId:   '',
+      caseId:   '',
+    }))
+  }
+
+  function handleSaleChange(newSaleId: string) {
+    setForm((prev) => ({ ...prev, saleId: newSaleId, caseId: '' }))
+  }
+
+  function handleCaseChange(newCaseId: string) {
+    // If a case is selected, auto-fill saleId from the case record
+    const found = cases.find((c) => c.id === newCaseId)
+    setForm((prev) => ({
+      ...prev,
+      caseId: newCaseId,
+      saleId: found?.saleId ?? prev.saleId,
+    }))
   }
 
   function handleReminderToggle(checked: boolean) {
@@ -104,6 +211,12 @@ export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }:
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.subject.trim()) return
+
+    // Client is required
+    if (!form.clientId) {
+      setError(t('tasks.errors.clientRequired'))
+      return
+    }
 
     // Reminder cross-field validation
     if (form.hasReminder && !form.reminderAt) {
@@ -122,6 +235,11 @@ export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }:
       priority:    form.priority  || undefined,
       dueDate:     form.dueDate   || null,
       assignedToUserId: form.assignedToUserId || undefined,
+      clientId:    form.clientId || undefined,
+      saleId:      form.saleId   || undefined,
+      caseId:      form.caseId   || undefined,
+      providerName:  form.providerName.trim()  || undefined,
+      providerPhone: form.providerPhone.trim() || undefined,
       hasReminder: form.hasReminder,
       reminderAt:         form.hasReminder && form.reminderAt
         ? new Date(form.reminderAt).toISOString()
@@ -147,6 +265,10 @@ export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }:
   }
 
   const isEditing = Boolean(initial)
+
+  // Resolve display names for locked fields
+  const lockedClientName = context?.lockedClientName
+  const lockedSaleName   = context?.lockedSaleName
 
   return (
     <div className="task-form-view">
@@ -238,6 +360,89 @@ export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }:
             </SelectField>
           )}
 
+          {/* ── Association section ── */}
+          <div className="task-form__section-divider">
+            <span className="task-form__section-label">{t('tasks.form.association')}</span>
+          </div>
+
+          {/* Client */}
+          {clientLocked ? (
+            <div className="task-form__locked-field">
+              <span className="task-form__locked-label">{t('tasks.form.client')}</span>
+              <span className="task-form__locked-value">{lockedClientName ?? form.clientId}</span>
+            </div>
+          ) : (
+            <SelectField
+              id="tf-client"
+              label={t('tasks.form.client')}
+              value={form.clientId}
+              onChange={(e) => handleClientChange(e.target.value)}
+              required
+            >
+              <option value="">— {t('tasks.form.clientNone')} —</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </SelectField>
+          )}
+
+          {/* Sale (optional) — shown when client is selected */}
+          {saleLocked ? (
+            <div className="task-form__locked-field">
+              <span className="task-form__locked-label">{t('tasks.form.sale')}</span>
+              <span className="task-form__locked-value">{lockedSaleName ?? form.saleId}</span>
+            </div>
+          ) : form.clientId ? (
+            <SelectField
+              id="tf-sale"
+              label={t('tasks.form.sale')}
+              value={form.saleId}
+              onChange={(e) => handleSaleChange(e.target.value)}
+            >
+              <option value="">— {t('tasks.form.saleNone')} —</option>
+              {sales.map((s) => (
+                <option key={s.id} value={s.id}>{s.title}</option>
+              ))}
+            </SelectField>
+          ) : null}
+
+          {/* Case (optional) — shown when sale is selected */}
+          {form.saleId ? (
+            <SelectField
+              id="tf-case"
+              label={t('tasks.form.case')}
+              value={form.caseId}
+              onChange={(e) => handleCaseChange(e.target.value)}
+            >
+              <option value="">— {t('tasks.form.caseNone')} —</option>
+              {cases.map((c) => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+            </SelectField>
+          ) : null}
+
+          {/* ── Provider section ── */}
+          <div className="task-form__section-divider">
+            <span className="task-form__section-label">{t('tasks.form.provider')}</span>
+          </div>
+
+          <div className="task-form__row task-form__row--2col">
+            <InputField
+              id="tf-providerName"
+              label={t('tasks.form.providerName')}
+              value={form.providerName}
+              onChange={(e) => set('providerName', e.target.value)}
+              maxLength={255}
+            />
+            <InputField
+              id="tf-providerPhone"
+              label={t('tasks.form.providerPhone')}
+              value={form.providerPhone}
+              onChange={(e) => set('providerPhone', e.target.value)}
+              maxLength={50}
+            />
+          </div>
+
           {/* ── Reminder section ── */}
           <div className="task-form__reminder-toggle">
             <label className="task-form__checkbox-label">
@@ -301,7 +506,7 @@ export default function TaskForm({ initial, users, onSubmit, onSave, onCancel }:
             <button
               type="submit"
               className="btn-primary"
-              disabled={saving || !form.subject.trim()}
+              disabled={saving || !form.subject.trim() || !form.clientId}
             >
               {saving ? t('tasks.form.saving') : t('tasks.form.save')}
             </button>

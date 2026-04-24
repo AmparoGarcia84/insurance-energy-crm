@@ -123,3 +123,22 @@
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* ── Email label colour tag ── */
+.cim-email-label-tag {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-right: 0.35rem;
+}
+
+.cim-card-primary {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--corp-muted);
+  font-style: italic;
+}

@@ -1,1 +1,48 @@
 /* EmailList uses .item-list* and .btn-add-item from App.css */
+
+/* ── Card layout ── */
+.email-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Fila 1: correo (3/4) · principal · eliminar */
+.email-card-row1 {
+  display: grid;
+  grid-template-columns: 3fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+/* Fila 2: etiqueta (1/2) · color (1/2) */
+.email-card-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Alinea el botón eliminar con la base de los inputs */
+.email-card-remove {
+  margin-bottom: 2px;
+}
+
+/* ── Selector de color con badge ── */
+.email-color-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.email-color-field .form-field {
+  flex: 1;
+}
+
+.email-color-badge {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--corp-beige);
+  margin-bottom: 0.4rem;
+}

@@ -26,6 +26,19 @@ vi.mock('../../../api/users', () => ({
   getUsers: vi.fn().mockResolvedValue([]),
 }))
 
+vi.mock('../../../api/clients', () => ({
+  getClient:  vi.fn().mockResolvedValue({ id: 'c-1', name: 'Acme Corp' }),
+  getClients: vi.fn().mockResolvedValue([]),
+}))
+
+vi.mock('../../../api/sales', () => ({
+  getSales: vi.fn().mockResolvedValue([]),
+}))
+
+vi.mock('../../../api/cases', () => ({
+  getCases: vi.fn().mockResolvedValue([]),
+}))
+
 const mockGetTasks   = vi.mocked(tasksApi.getTasks)
 const mockCreateTask = vi.mocked(tasksApi.createTask)
 const mockUpdateTask = vi.mocked(tasksApi.updateTask)
@@ -48,7 +61,7 @@ const STUB_TASK = {
 function renderTab() {
   return render(
     <I18nextProvider i18n={i18n}>
-      <ClientTasksTab clientId="c-1" />
+      <ClientTasksTab clientId="c-1" clientName="Acme Corp" />
     </I18nextProvider>
   )
 }

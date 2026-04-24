@@ -306,7 +306,9 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
         {tab === 'tasks' && (
           <SaleTasksTab
             saleId={sale.id}
+            saleTitle={sale.title}
             clientId={sale.clientId}
+            clientName={sale.clientName ?? ''}
           />
         )}
 

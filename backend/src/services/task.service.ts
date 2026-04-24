@@ -22,6 +22,8 @@ export interface TaskInput {
   clientId?:           string
   saleId?:             string
   caseId?:             string
+  providerName?:       string
+  providerPhone?:      string
   hasReminder?:        boolean
   reminderAt?:         Date | string | null
   reminderChannel?:    ReminderChannel

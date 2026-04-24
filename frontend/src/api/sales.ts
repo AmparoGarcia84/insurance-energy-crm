@@ -102,7 +102,12 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json()
 }
 
-export const getSales   = ()                                        => request<Sale[]>(BASE)
+export const getSales   = (filters: { clientId?: string } = {})     => {
+  const params = new URLSearchParams()
+  if (filters.clientId) params.set('clientId', filters.clientId)
+  const qs = params.toString()
+  return request<Sale[]>(qs ? `${BASE}?${qs}` : BASE)
+}
 export const createSale = (data: SaleInput)                        => request<Sale>(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
 export const updateSale = (id: string, data: Partial<SaleInput>)  => request<Sale>(`${BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
 export const deleteSale = (id: string)                             => request<void>(`${BASE}/${id}`, { method: 'DELETE' })

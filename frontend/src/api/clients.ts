@@ -7,8 +7,6 @@ import {
   ClientBankAccount,
   ClientAddressInput,
   ClientBankAccountInput,
-  EmailType,
-  EmailTypeLabels,
   ClientEmail,
   ClientEmailInput,
 } from '@crm/shared'
@@ -22,8 +20,6 @@ export {
   type ClientBankAccount,
   type ClientAddressInput,
   type ClientBankAccountInput,
-  EmailType,
-  EmailTypeLabels,
   type ClientEmail,
   type ClientEmailInput,
 }

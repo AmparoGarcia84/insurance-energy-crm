@@ -4,7 +4,7 @@ import { I18nextProvider } from 'react-i18next'
 import i18n from '../../../i18n'
 import SaleTasksTab from './SaleTasksTab'
 import * as tasksApi from '../../../api/tasks'
-import { TaskStatus, TaskPriority, RelatedEntityType } from '../../../api/tasks'
+import { TaskStatus, TaskPriority } from '../../../api/tasks'
 import * as usersApi from '../../../api/users'
 
 vi.mock('../../../auth/AuthContext', () => ({
@@ -26,30 +26,46 @@ vi.mock('../../../api/users', () => ({
   getUsers: vi.fn().mockResolvedValue([]),
 }))
 
+vi.mock('../../../api/clients', () => ({
+  getClients: vi.fn().mockResolvedValue([]),
+}))
+
+vi.mock('../../../api/sales', () => ({
+  getSales: vi.fn().mockResolvedValue([]),
+}))
+
+vi.mock('../../../api/cases', () => ({
+  getCases: vi.fn().mockResolvedValue([]),
+}))
+
 const mockGetTasks   = vi.mocked(tasksApi.getTasks)
 const mockUpdateTask = vi.mocked(tasksApi.updateTask)
 const mockDeleteTask = vi.mocked(tasksApi.deleteTask)
 
 const STUB_TASK: tasksApi.TaskWithRelations = {
-  id:                'task-001',
-  subject:           'Send proposal',
-  description:       undefined,
-  status:            TaskStatus.NOT_STARTED,
-  priority:          TaskPriority.NORMAL,
-  relatedEntityType: RelatedEntityType.SALE,
-  relatedEntityId:   's-1',
-  clientId:          'c-1',
-  dueDate:           undefined,
-  assignedToUserId:  undefined,
-  hasReminder:       false,
-  createdAt:         '2026-04-21T10:00:00.000Z',
-  updatedAt:         '2026-04-21T10:00:00.000Z',
+  id:               'task-001',
+  subject:          'Send proposal',
+  description:      undefined,
+  status:           TaskStatus.NOT_STARTED,
+  priority:         TaskPriority.NORMAL,
+  clientId:         'c-1',
+  saleId:           's-1',
+  dueDate:          undefined,
+  assignedToUserId: undefined,
+  hasReminder:      false,
+  createdAt:        '2026-04-21T10:00:00.000Z',
+  updatedAt:        '2026-04-21T10:00:00.000Z',
 }
 
 function renderTab() {
   return render(
     <I18nextProvider i18n={i18n}>
-      <SaleTasksTab saleId="s-1" clientId="c-1" />
+      <SaleTasksTab
+        saleId="s-1"
+        saleTitle="Sale A"
+        clientId="c-1"
+        clientName="Acme Corp"
+      />
     </I18nextProvider>
   )
 }
@@ -57,14 +73,11 @@ function renderTab() {
 beforeEach(() => vi.clearAllMocks())
 
 describe('SaleTasksTab', () => {
-  it('loads tasks filtered by saleId and relatedEntityType', async () => {
+  it('loads tasks filtered by saleId', async () => {
     mockGetTasks.mockResolvedValue([])
     renderTab()
     await waitFor(() => {
-      expect(mockGetTasks).toHaveBeenCalledWith({
-        relatedEntityType: RelatedEntityType.SALE,
-        relatedEntityId:   's-1',
-      })
+      expect(mockGetTasks).toHaveBeenCalledWith({ saleId: 's-1' })
     })
   })
 

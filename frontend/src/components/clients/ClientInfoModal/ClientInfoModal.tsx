@@ -11,7 +11,6 @@ import {
   ClientSectorLabels,
   AddressTypeLabels,
   AccountTypeLabels,
-  EmailTypeLabels,
 } from '@crm/shared'
 import type { Client } from '../../../api/clients'
 import './ClientInfoModal.css'
@@ -92,9 +91,12 @@ export default function ClientInfoModal({ client, onClose }: Props) {
                 {client.emails.map((em) => (
                   <div key={em.id} className="cim-card">
                     <span className="cim-card-label">
-                      {EmailTypeLabels[em.type]}
-                      {em.isPrimary && <span className="cim-card-primary"> · {t('emailAddress.isPrimary')}</span>}
-                      {em.label && <span className="cim-card-sublabel"> · {em.label}</span>}
+                      {em.label && (
+                        <span className="cim-email-label-tag" style={{ background: em.labelColor ?? '#b8a79c' }}>
+                          {em.label}
+                        </span>
+                      )}
+                      {em.isPrimary && <span className="cim-card-primary">{t('emailAddress.isPrimary')}</span>}
                     </span>
                     <p>{em.address}</p>
                   </div>

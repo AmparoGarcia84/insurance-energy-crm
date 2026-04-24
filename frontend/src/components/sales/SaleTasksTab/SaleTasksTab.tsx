@@ -7,7 +7,6 @@ import {
   updateTask,
   deleteTask,
   TaskStatus,
-  RelatedEntityType,
   type TaskWithRelations,
   type TaskPayload,
 } from '../../../api/tasks'
@@ -15,17 +14,19 @@ import { getUsers } from '../../../api/users'
 import type { AuthUser } from '../../../api/auth'
 import { usePermissions } from '../../../hooks/usePermissions'
 import TaskTable from '../../shared/TaskTable/TaskTable'
-import TaskForm from '../../shared/TaskForm/TaskForm'
+import TaskForm, { type TaskFormContext } from '../../shared/TaskForm/TaskForm'
 import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
 import '../../shared/TaskTable/TaskTable.css'
 import './SaleTasksTab.css'
 
 interface Props {
-  saleId:   string
-  clientId: string
+  saleId:      string
+  saleTitle:   string
+  clientId:    string
+  clientName:  string
 }
 
-export default function SaleTasksTab({ saleId, clientId }: Props) {
+export default function SaleTasksTab({ saleId, saleTitle, clientId, clientName }: Props) {
   const { t }         = useTranslation()
   const { canDelete } = usePermissions()
 
@@ -37,9 +38,16 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
   const [showForm, setShowForm]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<TaskWithRelations | null>(null)
 
+  const context: TaskFormContext = {
+    lockedClientId:   clientId,
+    lockedClientName: clientName,
+    lockedSaleId:     saleId,
+    lockedSaleName:   saleTitle,
+  }
+
   const load = useCallback(() => {
     setLoading(true)
-    getTasks({ relatedEntityType: RelatedEntityType.SALE, relatedEntityId: saleId })
+    getTasks({ saleId })
       .then(setTasks)
       .catch(() => {/* non-critical */})
       .finally(() => setLoading(false))
@@ -76,14 +84,9 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
   }
 
   async function handleSubmit(data: TaskPayload): Promise<TaskWithRelations> {
-    const payload: TaskPayload = {
-      ...data,
-      relatedEntityType: RelatedEntityType.SALE,
-      relatedEntityId:   saleId,
-      clientId,
-    }
-    if (editing) return updateTask(editing.id, payload)
-    return createTask(payload)
+    // clientId, saleId, caseId are now included in the payload from the form
+    if (editing) return updateTask(editing.id, data)
+    return createTask(data)
   }
 
   function handleSaved(task: TaskWithRelations) {
@@ -120,6 +123,7 @@ export default function SaleTasksTab({ saleId, clientId }: Props) {
       <TaskForm
         initial={editing}
         users={users}
+        context={context}
         onSubmit={handleSubmit}
         onSave={handleSaved}
         onCancel={handleCancel}

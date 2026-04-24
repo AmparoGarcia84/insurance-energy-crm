@@ -1,8 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
-import { EmailType } from '@crm/shared'
-import EmailList from './EmailList'
+import EmailList, { LABEL_COLORS } from './EmailList'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -18,13 +17,12 @@ describe('EmailList', () => {
     render(
       <EmailList
         value={[
-          { type: EmailType.PERSONAL, address: 'personal@example.com', isPrimary: true },
-          { type: EmailType.BUSINESS, address: 'work@company.com', isPrimary: false },
+          { address: 'personal@example.com', isPrimary: true },
+          { address: 'work@company.com', isPrimary: false },
         ]}
         onChange={vi.fn()}
       />
     )
-    expect(screen.getAllByRole('combobox')).toHaveLength(2)
     expect(screen.getByDisplayValue('personal@example.com')).toBeInTheDocument()
     expect(screen.getByDisplayValue('work@company.com')).toBeInTheDocument()
   })
@@ -34,7 +32,7 @@ describe('EmailList', () => {
     render(<EmailList value={[]} onChange={onChange} />)
     await userEvent.click(screen.getByRole('button', { name: /emailAddress\.add/i }))
     expect(onChange).toHaveBeenCalledWith([
-      { type: EmailType.PERSONAL, address: '', isPrimary: false, label: '' },
+      { address: '', isPrimary: false, label: '', labelColor: LABEL_COLORS[0].value },
     ])
   })
 
@@ -43,8 +41,8 @@ describe('EmailList', () => {
     render(
       <EmailList
         value={[
-          { type: EmailType.PERSONAL, address: 'a@a.com', isPrimary: false },
-          { type: EmailType.BUSINESS, address: 'b@b.com', isPrimary: false },
+          { address: 'a@a.com', isPrimary: false },
+          { address: 'b@b.com', isPrimary: false },
         ]}
         onChange={onChange}
       />
@@ -52,7 +50,7 @@ describe('EmailList', () => {
     const removeButtons = screen.getAllByRole('button', { name: /emailAddress\.remove/i })
     await userEvent.click(removeButtons[0])
     expect(onChange).toHaveBeenCalledWith([
-      { type: EmailType.BUSINESS, address: 'b@b.com', isPrimary: false },
+      { address: 'b@b.com', isPrimary: false },
     ])
   })
 
@@ -61,8 +59,8 @@ describe('EmailList', () => {
     render(
       <EmailList
         value={[
-          { type: EmailType.PERSONAL, address: 'a@a.com', isPrimary: true },
-          { type: EmailType.BUSINESS, address: 'b@b.com', isPrimary: false },
+          { address: 'a@a.com', isPrimary: true },
+          { address: 'b@b.com', isPrimary: false },
         ]}
         onChange={onChange}
       />
@@ -70,7 +68,7 @@ describe('EmailList', () => {
     const removeButtons = screen.getAllByRole('button', { name: /emailAddress\.remove/i })
     await userEvent.click(removeButtons[0])
     expect(onChange).toHaveBeenCalledWith([
-      { type: EmailType.BUSINESS, address: 'b@b.com', isPrimary: true },
+      { address: 'b@b.com', isPrimary: true },
     ])
   })
 
@@ -79,8 +77,8 @@ describe('EmailList', () => {
     render(
       <EmailList
         value={[
-          { type: EmailType.PERSONAL, address: 'a@a.com', isPrimary: true },
-          { type: EmailType.BUSINESS, address: 'b@b.com', isPrimary: false },
+          { address: 'a@a.com', isPrimary: true },
+          { address: 'b@b.com', isPrimary: false },
         ]}
         onChange={onChange}
       />
@@ -93,17 +91,20 @@ describe('EmailList', () => {
     ])
   })
 
-  it('calls onChange with updated type when type select changes', async () => {
+  it('calls onChange with the selected color when the color select changes', async () => {
     const onChange = vi.fn()
     render(
       <EmailList
-        value={[{ type: EmailType.PERSONAL, address: 'a@a.com', isPrimary: false }]}
+        value={[{ address: 'a@a.com', isPrimary: false, labelColor: LABEL_COLORS[0].value }]}
         onChange={onChange}
       />
     )
-    await userEvent.selectOptions(screen.getByRole('combobox'), EmailType.BUSINESS)
+    await userEvent.selectOptions(
+      screen.getByLabelText(/emailAddress\.labelColor/i),
+      LABEL_COLORS[1].value,
+    )
     expect(onChange).toHaveBeenCalledWith([
-      expect.objectContaining({ type: EmailType.BUSINESS }),
+      expect.objectContaining({ labelColor: LABEL_COLORS[1].value }),
     ])
   })
 
@@ -111,7 +112,7 @@ describe('EmailList', () => {
     const onChange = vi.fn()
     render(
       <EmailList
-        value={[{ type: EmailType.PERSONAL, address: '', isPrimary: false }]}
+        value={[{ address: '', isPrimary: false }]}
         onChange={onChange}
       />
     )
@@ -124,7 +125,7 @@ describe('EmailList', () => {
   it('shows no error for a valid email on blur', () => {
     render(
       <EmailList
-        value={[{ type: EmailType.PERSONAL, address: 'valid@example.com', isPrimary: false }]}
+        value={[{ address: 'valid@example.com', isPrimary: false }]}
         onChange={vi.fn()}
       />
     )
@@ -137,7 +138,7 @@ describe('EmailList', () => {
   it('shows error for an invalid email on blur', () => {
     render(
       <EmailList
-        value={[{ type: EmailType.PERSONAL, address: 'not-an-email', isPrimary: false }]}
+        value={[{ address: 'not-an-email', isPrimary: false }]}
         onChange={vi.fn()}
       />
     )
@@ -150,7 +151,7 @@ describe('EmailList', () => {
   it('clears error when address field is empty on blur', () => {
     render(
       <EmailList
-        value={[{ type: EmailType.PERSONAL, address: '', isPrimary: false }]}
+        value={[{ address: '', isPrimary: false }]}
         onChange={vi.fn()}
       />
     )

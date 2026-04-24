@@ -7,7 +7,6 @@ import type {
   CollectionManager,
   AddressType,
   AccountType,
-  EmailType,
 } from '../generated/prisma/enums.js'
 import {
   parseCSV,
@@ -37,10 +36,10 @@ export interface ClientBankAccountInput {
 }
 
 export interface ClientEmailInput {
-  type: EmailType
   address: string
   isPrimary: boolean
   label?: string
+  labelColor?: string
 }
 
 /**

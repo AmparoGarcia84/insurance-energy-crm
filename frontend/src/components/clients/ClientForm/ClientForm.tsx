@@ -84,7 +84,7 @@ function toFormValues(client: Client): ClientInput {
     description: client.description ?? '',
     addresses:    client.addresses?.map(({ type, street, postalCode, city, province, country }) => ({ type, street, postalCode, city, province, country })) ?? [],
     bankAccounts: client.bankAccounts?.map(({ type, iban }) => ({ type, iban })) ?? [],
-    emails:       client.emails?.map(({ type, address, isPrimary, label }) => ({ type, address, isPrimary, label })) ?? [],
+    emails:       client.emails?.map(({ address, isPrimary, label, labelColor }) => ({ address, isPrimary, label, labelColor })) ?? [],
   }
 }
 
@@ -151,10 +151,14 @@ export default function ClientForm({ client, onSave, onCancel, onEditExisting }:
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setSaving(true)
+    const payload = {
+      ...form,
+      emails: form.emails?.filter((em) => em.address.trim() !== ''),
+    }
     try {
       const saved = isNew
-        ? await createClient(form)
-        : await updateClient(client.id, form)
+        ? await createClient(payload)
+        : await updateClient(client.id, payload)
       onSave(saved)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409 && err.code === 'nif_duplicate') {

@@ -47,8 +47,11 @@ function sanitize<T>(data: T): T {
   ) as T
 }
 
-export function listSales() {
-  return prisma.sale.findMany({ orderBy: { updatedAt: 'desc' } })
+export function listSales(filters: { clientId?: string } = {}) {
+  return prisma.sale.findMany({
+    where: filters.clientId ? { clientId: filters.clientId } : undefined,
+    orderBy: { updatedAt: 'desc' },
+  })
 }
 
 export function getSaleById(id: string) {

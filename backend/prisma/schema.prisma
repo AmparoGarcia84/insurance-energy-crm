@@ -44,11 +44,6 @@ enum AccountType {
   CLIENTS
 }
 
-enum EmailType {
-  PERSONAL
-  BUSINESS
-}
-
 enum ClientType {
   INDIVIDUAL
   BUSINESS
@@ -178,13 +173,13 @@ model ClientBankAccount {
 }
 
 model ClientEmail {
-  id        String    @id @default(uuid())
-  clientId  String
-  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  type      EmailType
-  address   String
-  isPrimary Boolean   @default(false)
-  label     String?
+  id         String  @id @default(uuid())
+  clientId   String
+  client     Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  address    String
+  isPrimary  Boolean @default(false)
+  label      String?
+  labelColor String?
 }
 
 // ── Sale ──────────────────────────────────────────────────────────────────────
@@ -542,6 +537,10 @@ model Task {
 
   caseId String?
   case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  // Provider: free-text name and phone for an external provider linked to the task
+  providerName  String?
+  providerPhone String?
 
   // Reminder (stored inline — no separate table needed at this stage)
   hasReminder        Boolean            @default(false)

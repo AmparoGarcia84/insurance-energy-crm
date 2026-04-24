@@ -1,6 +1,3 @@
--- CreateEnum
-CREATE TYPE "EmailType" AS ENUM ('PERSONAL', 'BUSINESS');
-
 -- AlterTable
 ALTER TABLE "Client" DROP COLUMN "email";
 
@@ -8,10 +5,10 @@ ALTER TABLE "Client" DROP COLUMN "email";
 CREATE TABLE "ClientEmail" (
     "id" TEXT NOT NULL,
     "clientId" TEXT NOT NULL,
-    "type" "EmailType" NOT NULL,
     "address" TEXT NOT NULL,
     "isPrimary" BOOLEAN NOT NULL DEFAULT false,
     "label" TEXT,
+    "labelColor" TEXT,
 
     CONSTRAINT "ClientEmail_pkey" PRIMARY KEY ("id")
 );

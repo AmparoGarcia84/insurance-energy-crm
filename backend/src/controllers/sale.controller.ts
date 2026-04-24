@@ -2,8 +2,9 @@ import { Response } from 'express'
 import { AuthRequest } from '../middleware/auth.js'
 import * as saleService from '../services/sale.service.js'
 
-export async function listSales(_req: AuthRequest, res: Response): Promise<void> {
-  const sales = await saleService.listSales()
+export async function listSales(req: AuthRequest, res: Response): Promise<void> {
+  const { clientId } = req.query as Record<string, string | undefined>
+  const sales = await saleService.listSales({ clientId })
   res.json(sales)
 }
 

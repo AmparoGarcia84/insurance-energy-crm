@@ -82,19 +82,19 @@ async function main() {
   // ─── Client emails ─────────────────────────────────────────────────────────
   await prisma.clientEmail.createMany({
     data: [
-      { clientId: c('Carmen López Martínez').id,   type: 'PERSONAL',  address: 'carmen.lopez@gmail.com',           isPrimary: true },
-      { clientId: c('Francisco Ruiz Sánchez').id,  type: 'PERSONAL',  address: 'fran.ruiz@hotmail.com',            isPrimary: true },
-      { clientId: c('Elena Moreno Fernández').id,  type: 'PERSONAL',  address: 'elena.moreno@gmail.com',           isPrimary: true },
-      { clientId: c('Antonio García Pérez').id,    type: 'PERSONAL',  address: 'antonio.garcia@outlook.com',       isPrimary: true },
-      { clientId: c('Lucía Hernández Jiménez').id, type: 'PERSONAL',  address: 'lucia.hdz@gmail.com',              isPrimary: true },
-      { clientId: c('Roberto Díaz Torres').id,     type: 'PERSONAL',  address: 'roberto.diaz@gmail.com',           isPrimary: true },
-      { clientId: c('María Sanz Romero').id,       type: 'PERSONAL',  address: 'maria.sanz@icloud.com',            isPrimary: true },
-      { clientId: c('Pablo Navarro Gil').id,       type: 'PERSONAL',  address: 'pablo.navarro@gmail.com',          isPrimary: true },
-      { clientId: c('Sara Muñoz Delgado').id,      type: 'PERSONAL',  address: 'sara.munoz@gmail.com',             isPrimary: true },
-      { clientId: c('Talleres Rápidos S.L.').id,   type: 'BUSINESS',  address: 'info@talleresrapidos.es',          isPrimary: true },
-      { clientId: c('Restaurante El Patio').id,    type: 'BUSINESS',  address: 'reservas@restauranteelpatio.com',  isPrimary: true },
-      { clientId: c('Clínica DentalCare').id,      type: 'BUSINESS',  address: 'admin@dentalcare.es',              isPrimary: true },
-      { clientId: c('Academia Lingua').id,         type: 'BUSINESS',  address: 'info@academia-lingua.es',          isPrimary: true },
+      { clientId: c('Carmen López Martínez').id,   address: 'carmen.lopez@gmail.com',           isPrimary: true },
+      { clientId: c('Francisco Ruiz Sánchez').id,  address: 'fran.ruiz@hotmail.com',            isPrimary: true },
+      { clientId: c('Elena Moreno Fernández').id,  address: 'elena.moreno@gmail.com',           isPrimary: true },
+      { clientId: c('Antonio García Pérez').id,    address: 'antonio.garcia@outlook.com',       isPrimary: true },
+      { clientId: c('Lucía Hernández Jiménez').id, address: 'lucia.hdz@gmail.com',              isPrimary: true },
+      { clientId: c('Roberto Díaz Torres').id,     address: 'roberto.diaz@gmail.com',           isPrimary: true },
+      { clientId: c('María Sanz Romero').id,       address: 'maria.sanz@icloud.com',            isPrimary: true },
+      { clientId: c('Pablo Navarro Gil').id,       address: 'pablo.navarro@gmail.com',          isPrimary: true },
+      { clientId: c('Sara Muñoz Delgado').id,      address: 'sara.munoz@gmail.com',             isPrimary: true },
+      { clientId: c('Talleres Rápidos S.L.').id,   address: 'info@talleresrapidos.es',          isPrimary: true },
+      { clientId: c('Restaurante El Patio').id,    address: 'reservas@restauranteelpatio.com',  isPrimary: true },
+      { clientId: c('Clínica DentalCare').id,      address: 'admin@dentalcare.es',              isPrimary: true },
+      { clientId: c('Academia Lingua').id,         address: 'info@academia-lingua.es',          isPrimary: true },
     ],
   })
 

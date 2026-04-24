@@ -1,20 +1,28 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
-import { EmailType, EmailTypeLabels, type ClientEmailInput } from '@crm/shared'
+import { type ClientEmailInput } from '@crm/shared'
 import { isValidEmail } from '../../../utils/validation'
-import SelectField from '../FormField/SelectField'
 import InputField from '../FormField/InputField'
+import SelectField from '../FormField/SelectField'
 import CheckboxField from '../FormField/CheckboxField'
 import './EmailList.css'
 
-const EMAIL_TYPES = Object.values(EmailType)
+export const LABEL_COLORS = [
+  { value: '#a8d5a2', key: 'green'  },
+  { value: '#a8c8e8', key: 'blue'   },
+  { value: '#f0e08c', key: 'yellow' },
+  { value: '#e8a8a8', key: 'red'    },
+  { value: '#d0d0d0', key: 'grey'   },
+] as const
+
+const DEFAULT_COLOR = LABEL_COLORS[0].value
 
 const EMPTY_EMAIL: ClientEmailInput = {
-  type: EmailType.PERSONAL,
   address: '',
   isPrimary: false,
   label: '',
+  labelColor: DEFAULT_COLOR,
 }
 
 interface EmailListProps {
@@ -65,54 +73,70 @@ export default function EmailList({ value, onChange }: EmailListProps) {
   return (
     <div className="item-list">
       {value.map((entry, index) => (
-        <div key={index} className="section-card item-list-item">
-          <div className="item-list-item-header">
-            <SelectField
-              id={`email-type-${index}`}
-              label={t('emailAddress.type')}
-              name={`emailType-${index}`}
-              value={entry.type}
-              onChange={(e) => update(index, { type: e.target.value as EmailType })}
-            >
-              {EMAIL_TYPES.map((v) => (
-                <option key={v} value={v}>{EmailTypeLabels[v]}</option>
-              ))}
-            </SelectField>
+        <div key={index} className="section-card item-list-item email-card">
+
+          {/* ── Fila 1: dirección (3/4) + principal + eliminar ── */}
+          <div className="email-card-row1">
+            <InputField
+              id={`email-address-${index}`}
+              label={t('emailAddress.address')}
+              name={`emailAddress-${index}`}
+              type="email"
+              autoComplete="off"
+              value={entry.address}
+              onChange={(e) => update(index, { address: e.target.value })}
+              onBlur={(e) => setError(index, isValidEmail(e.target.value) ? '' : t('validation.email'))}
+              error={errors[index]}
+            />
+            <CheckboxField
+              id={`email-isPrimary-${index}`}
+              label={t('emailAddress.isPrimary')}
+              checked={entry.isPrimary}
+              onChange={(e) => update(index, { isPrimary: e.target.checked })}
+            />
             <button
               type="button"
-              className="icon-btn icon-btn-danger"
+              className="icon-btn icon-btn-danger email-card-remove"
               onClick={() => remove(index)}
               aria-label={t('emailAddress.remove')}
             >
               <Trash2 size={15} />
             </button>
           </div>
-          <InputField
-            id={`email-address-${index}`}
-            label={t('emailAddress.address')}
-            name={`emailAddress-${index}`}
-            type="email"
-            autoComplete="off"
-            value={entry.address}
-            onChange={(e) => update(index, { address: e.target.value })}
-            onBlur={(e) => setError(index, isValidEmail(e.target.value) ? '' : t('validation.email'))}
-            error={errors[index]}
-          />
-          <InputField
-            id={`email-label-${index}`}
-            label={t('emailAddress.label')}
-            name={`emailLabel-${index}`}
-            type="text"
-            autoComplete="off"
-            value={entry.label ?? ''}
-            onChange={(e) => update(index, { label: e.target.value || undefined })}
-          />
-          <CheckboxField
-            id={`email-isPrimary-${index}`}
-            label={t('emailAddress.isPrimary')}
-            checked={entry.isPrimary}
-            onChange={(e) => update(index, { isPrimary: e.target.checked })}
-          />
+
+          {/* ── Fila 2: etiqueta (1/2) + color (1/2) ── */}
+          <div className="email-card-row2">
+            <InputField
+              id={`email-label-${index}`}
+              label={t('emailAddress.label')}
+              name={`emailLabel-${index}`}
+              type="text"
+              autoComplete="off"
+              value={entry.label ?? ''}
+              onChange={(e) => update(index, { label: e.target.value || undefined })}
+            />
+            <div className="email-color-field">
+              <SelectField
+                id={`email-labelColor-${index}`}
+                label={t('emailAddress.labelColor')}
+                name={`emailLabelColor-${index}`}
+                value={entry.labelColor ?? DEFAULT_COLOR}
+                onChange={(e) => update(index, { labelColor: e.target.value })}
+              >
+                {LABEL_COLORS.map(({ value: hex, key }) => (
+                  <option key={hex} value={hex}>
+                    {t(`emailAddress.colors.${key}`)}
+                  </option>
+                ))}
+              </SelectField>
+              <span
+                className="email-color-badge"
+                style={{ background: entry.labelColor ?? DEFAULT_COLOR }}
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+
         </div>
       ))}
 

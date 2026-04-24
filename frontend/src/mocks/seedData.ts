@@ -11,7 +11,7 @@
 import type { AuthUser } from '../api/auth'
 import type { Client } from '../api/clients'
 import {
-  ClientType, ClientStatus, EmailType,
+  ClientType, ClientStatus,
 } from '../api/clients'
 import type { Sale } from '../api/sales'
 import {
@@ -69,7 +69,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     name: 'Carmen López Martínez',
     nif: '12345678A', mobilePhone: '612 345 678',
-    emails: [{ id: 'em-carmen-1', type: EmailType.PERSONAL, address: 'carmen.lopez@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-carmen-1', address: 'carmen.lopez@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -77,7 +77,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     name: 'Francisco Ruiz Sánchez',
     nif: '87654321B', mobilePhone: '623 456 789',
-    emails: [{ id: 'em-francisco-1', type: EmailType.PERSONAL, address: 'fran.ruiz@hotmail.com', isPrimary: true }],
+    emails: [{ id: 'em-francisco-1', address: 'fran.ruiz@hotmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -85,7 +85,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     name: 'Elena Moreno Fernández',
     nif: '11223344C', mobilePhone: '634 567 890',
-    emails: [{ id: 'em-elena-1', type: EmailType.PERSONAL, address: 'elena.moreno@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-elena-1', address: 'elena.moreno@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -93,7 +93,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     name: 'Antonio García Pérez',
     nif: '44332211D', mobilePhone: '645 678 901',
-    emails: [{ id: 'em-antonio-1', type: EmailType.PERSONAL, address: 'antonio.garcia@outlook.com', isPrimary: true }],
+    emails: [{ id: 'em-antonio-1', address: 'antonio.garcia@outlook.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -101,7 +101,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.ACTIVE,
     name: 'Lucía Hernández Jiménez',
     nif: '55667788E', mobilePhone: '656 789 012',
-    emails: [{ id: 'em-lucia-1', type: EmailType.PERSONAL, address: 'lucia.hdz@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-lucia-1', address: 'lucia.hdz@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -109,7 +109,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.LEAD,
     name: 'Roberto Díaz Torres',
     mobilePhone: '667 890 123',
-    emails: [{ id: 'em-roberto-1', type: EmailType.PERSONAL, address: 'roberto.diaz@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-roberto-1', address: 'roberto.diaz@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -117,7 +117,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.LEAD,
     name: 'María Sanz Romero',
     mobilePhone: '678 901 234',
-    emails: [{ id: 'em-maria-1', type: EmailType.PERSONAL, address: 'maria.sanz@icloud.com', isPrimary: true }],
+    emails: [{ id: 'em-maria-1', address: 'maria.sanz@icloud.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -125,7 +125,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.INACTIVE,
     name: 'Pablo Navarro Gil',
     nif: '99887766F', mobilePhone: '689 012 345',
-    emails: [{ id: 'em-pablo-1', type: EmailType.PERSONAL, address: 'pablo.navarro@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-pablo-1', address: 'pablo.navarro@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -133,7 +133,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.INDIVIDUAL, status: ClientStatus.LOST,
     name: 'Sara Muñoz Delgado',
     mobilePhone: '690 123 456',
-    emails: [{ id: 'em-sara-1', type: EmailType.PERSONAL, address: 'sara.munoz@gmail.com', isPrimary: true }],
+    emails: [{ id: 'em-sara-1', address: 'sara.munoz@gmail.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -141,7 +141,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.BUSINESS, status: ClientStatus.ACTIVE,
     name: 'Talleres Rápidos S.L.',
     nif: 'B12345678', mobilePhone: '91 234 56 78',
-    emails: [{ id: 'em-talleres-1', type: EmailType.BUSINESS, address: 'info@talleresrapidos.es', isPrimary: true }],
+    emails: [{ id: 'em-talleres-1', address: 'info@talleresrapidos.es', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -149,7 +149,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.BUSINESS, status: ClientStatus.ACTIVE,
     name: 'Restaurante El Patio',
     nif: 'B87654321', mobilePhone: '95 678 12 34',
-    emails: [{ id: 'em-restaurante-1', type: EmailType.BUSINESS, address: 'reservas@restauranteelpatio.com', isPrimary: true }],
+    emails: [{ id: 'em-restaurante-1', address: 'reservas@restauranteelpatio.com', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -157,7 +157,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.BUSINESS, status: ClientStatus.ACTIVE,
     name: 'Clínica DentalCare',
     nif: 'B11223344', mobilePhone: '93 456 78 90',
-    emails: [{ id: 'em-clinica-1', type: EmailType.BUSINESS, address: 'admin@dentalcare.es', isPrimary: true }],
+    emails: [{ id: 'em-clinica-1', address: 'admin@dentalcare.es', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {
@@ -165,7 +165,7 @@ export const DEMO_CLIENTS: Client[] = [
     type: ClientType.BUSINESS, status: ClientStatus.LEAD,
     name: 'Academia Lingua',
     nif: 'J44332211', mobilePhone: '96 789 01 23',
-    emails: [{ id: 'em-academia-1', type: EmailType.BUSINESS, address: 'info@academia-lingua.es', isPrimary: true }],
+    emails: [{ id: 'em-academia-1', address: 'info@academia-lingua.es', isPrimary: true }],
     createdAt: NOW, updatedAt: NOW,
   },
   {

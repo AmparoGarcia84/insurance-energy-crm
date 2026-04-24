@@ -46,10 +46,57 @@
   gap: 0.75rem;
 }
 
+.task-form__row--2col {
+  grid-template-columns: 1fr 1fr;
+}
+
 @media (max-width: 640px) {
   .task-form__row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Section dividers ────────────────────────────────────────────────────── */
+
+.task-form__section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.125rem;
+  border-top: 1px solid var(--corp-muted-bg);
+}
+
+.task-form__section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--corp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ── Locked field display ────────────────────────────────────────────────── */
+
+.task-form__locked-field {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.task-form__locked-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--corp-muted);
+  min-width: 6rem;
+}
+
+.task-form__locked-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--corp-black);
+  padding: 0.25rem 0.625rem;
+  background: var(--corp-muted-bg);
+  border-radius: 4px;
 }
 
 /* ── Reminder ────────────────────────────────────────────────────────────── */

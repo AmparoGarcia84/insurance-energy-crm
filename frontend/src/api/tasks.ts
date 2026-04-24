@@ -8,6 +8,8 @@ import type { TaskStatus, TaskPriority, RelatedEntityType, ReminderChannel, Remi
 export interface TaskWithRelations extends Task {
   assignedTo?: { id: string; displayName: string; email: string } | null
   client?:     { id: string; name: string; clientNumber?: string | null } | null
+  sale?:       { id: string; title: string } | null
+  case?:       { id: string; title: string } | null
 }
 
 export interface TaskFilters {
@@ -30,6 +32,10 @@ export interface TaskPayload {
   dueDate?:             string | null
   assignedToUserId?:    string
   clientId?:            string
+  saleId?:              string
+  caseId?:              string
+  providerName?:        string
+  providerPhone?:       string
   hasReminder?:         boolean
   reminderAt?:          string | null
   reminderChannel?:     ReminderChannel

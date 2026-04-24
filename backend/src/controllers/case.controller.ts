@@ -2,8 +2,9 @@ import { Response } from 'express'
 import { AuthRequest } from '../middleware/auth.js'
 import * as caseService from '../services/case.service.js'
 
-export async function listCases(_req: AuthRequest, res: Response): Promise<void> {
-  const cases = await caseService.listCases()
+export async function listCases(req: AuthRequest, res: Response): Promise<void> {
+  const { clientId, saleId } = req.query as Record<string, string | undefined>
+  const cases = await caseService.listCases({ clientId, saleId })
   res.json(cases)
 }
 

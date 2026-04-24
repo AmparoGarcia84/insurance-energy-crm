@@ -238,6 +238,21 @@ export default {
     add: 'Add account',
     remove: 'Remove account',
   },
+  emailAddress: {
+    address: 'Email address',
+    label: 'Label (optional)',
+    labelColor: 'Label colour',
+    isPrimary: 'Primary',
+    add: 'Add email',
+    remove: 'Remove email',
+    colors: {
+      green:  'Green',
+      blue:   'Blue',
+      yellow: 'Yellow',
+      red:    'Red',
+      grey:   'Grey',
+    },
+  },
   myAccount: {
     title: 'My Account',
     photo: {
@@ -643,6 +658,16 @@ export default {
       dueDate:           'Due date',
       assignedTo:        'Assigned to',
       assignedToNone:    '— Unassigned —',
+      association:       'Association',
+      client:            'Client',
+      clientNone:        'Select a client',
+      sale:              'Sale',
+      saleNone:          'No sale',
+      case:              'Case',
+      caseNone:          'No case',
+      provider:          'Provider',
+      providerName:      'Provider name',
+      providerPhone:     'Provider phone',
       reminder:          'Reminder',
       reminderAt:        'Reminder date',
       reminderChannel:   'Reminder channel',
@@ -686,6 +711,7 @@ export default {
     errors: {
       reminderAtRequired:      'Reminder date is required',
       reminderChannelRequired: 'Reminder channel is required',
+      clientRequired:          'A client is required',
     },
   },
 }

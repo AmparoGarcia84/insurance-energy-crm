@@ -71,21 +71,11 @@ export interface ClientBankAccount extends ClientBankAccountInput {
   id: string
 }
 
-export enum EmailType {
-  PERSONAL = "PERSONAL",
-  BUSINESS = "BUSINESS",
-}
-
-export const EmailTypeLabels: Record<EmailType, string> = {
-  [EmailType.PERSONAL]: "Personal",
-  [EmailType.BUSINESS]: "Empresa",
-}
-
 export interface ClientEmailInput {
-  type: EmailType
   address: string
   isPrimary: boolean
   label?: string
+  labelColor?: string
 }
 
 export interface ClientEmail extends ClientEmailInput {
@@ -791,6 +781,9 @@ export interface Task extends BaseEntity {
   clientId?:           UUID
   saleId?:             UUID
   caseId?:             UUID
+  // Provider: free-text name and phone for an external provider linked to the task
+  providerName?:       string
+  providerPhone?:      string
   // Reminder
   hasReminder:         boolean
   reminderAt?:         ISODateTime

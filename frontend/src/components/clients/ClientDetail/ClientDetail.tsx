@@ -129,7 +129,7 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
         {tab === 'summary' ? (
           <ClientSummaryTab clientId={client.id} onViewSale={onViewSale} />
         ) : tab === 'tasks' ? (
-          <ClientTasksTab clientId={client.id} />
+          <ClientTasksTab clientId={client.id} clientName={client.name} />
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (
