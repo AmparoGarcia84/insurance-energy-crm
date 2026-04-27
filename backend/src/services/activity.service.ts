@@ -21,7 +21,7 @@ export interface ActivityInput {
 
 const include = {
   user: { select: { id: true, displayName: true } },
-  case: { select: { id: true, title: true } },
+  case: { select: { id: true, name: true } },
 } satisfies Prisma.ActivityInclude
 
 const DATE_FIELDS = ['activityAt'] as const
@@ -54,7 +54,7 @@ async function resolveHierarchy(input: {
       where:  { id: input.caseId },
       select: { saleId: true, clientId: true },
     })
-    return { caseId: input.caseId, saleId: found.saleId, clientId: found.clientId }
+    return { caseId: input.caseId, saleId: found.saleId ?? undefined, clientId: found.clientId }
   }
   if (input.saleId) {
     const found = await prisma.sale.findUniqueOrThrow({

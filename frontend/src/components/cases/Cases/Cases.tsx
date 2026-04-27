@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Search, Plus, Pencil } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
 import { useCases } from '../../../context/DataContext'
-import { deleteCase, type Case, type CaseStatus } from '../../../api/cases'
+import { deleteCase, type Case, type CaseStatus, type CasePriority } from '../../../api/cases'
 import { usePermissions } from '../../../hooks/usePermissions'
 import CaseForm from '../CaseForm/CaseForm'
 import './Cases.css'
@@ -14,13 +14,20 @@ type View =
   | { kind: 'list' }
   | { kind: 'form'; case: Case | null }
 
-// ── Status colours ─────────────────────────────────────────────────────────────
+// ── Badge maps ────────────────────────────────────────────────────────────────
 
 const STATUS_CLASS: Record<CaseStatus, string> = {
-  OPEN:        'badge-case-open',
+  NEW:         'badge-case-new',
+  ON_HOLD:     'badge-case-on-hold',
+  FORWARDED:   'badge-case-forwarded',
   IN_PROGRESS: 'badge-case-in-progress',
-  RESOLVED:    'badge-case-resolved',
   CLOSED:      'badge-case-closed',
+}
+
+const PRIORITY_CLASS: Record<CasePriority, string> = {
+  HIGH:   'badge-priority-high',
+  NORMAL: 'badge-priority-normal',
+  LOW:    'badge-priority-low',
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -46,7 +53,9 @@ export default function Cases() {
         case={current.case}
         onSave={(saved) => { upsertCase(saved); pop() }}
         onCancel={pop}
-        onDelete={canDelete ? async (id) => { await deleteCase(id); removeCase(id); setStack([{ kind: 'list' }]) } : undefined}
+        onDelete={canDelete
+          ? async (id) => { await deleteCase(id); removeCase(id); setStack([{ kind: 'list' }]) }
+          : undefined}
       />
     )
   }
@@ -57,7 +66,7 @@ export default function Cases() {
     ? []
     : cases.filter((c) =>
         normalizeSearch(c.client.name).includes(q) ||
-        normalizeSearch(c.title).includes(q) ||
+        normalizeSearch(c.name).includes(q) ||
         normalizeSearch(c.description ?? '').includes(q)
       )
 
@@ -92,9 +101,10 @@ export default function Cases() {
             <thead>
               <tr>
                 <th>{t('cases.columns.client')}</th>
-                <th>{t('cases.columns.title')}</th>
-                <th>{t('cases.columns.description')}</th>
+                <th>{t('cases.columns.name')}</th>
                 <th>{t('cases.columns.status')}</th>
+                <th>{t('cases.columns.priority')}</th>
+                <th>{t('cases.columns.occurrenceAt')}</th>
                 <th>{t('cases.columns.updatedAt')}</th>
                 <th />
               </tr>
@@ -103,16 +113,24 @@ export default function Cases() {
               {filtered.map((c) => (
                 <tr key={c.id} className="cases__row" onClick={() => push({ kind: 'form', case: c })}>
                   <td className="cases__client">{c.client.name}</td>
-                  <td className="cases__title">{c.title}</td>
-                  <td className="cases__description">
-                    {c.description ? (
-                      <span className="cases__desc-text">{c.description}</span>
-                    ) : '—'}
-                  </td>
+                  <td className="cases__name">{c.name}</td>
                   <td>
                     <span className={`badge ${STATUS_CLASS[c.status]}`}>
                       {t(`cases.status.${c.status}`)}
                     </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${PRIORITY_CLASS[c.priority]}`}>
+                      {t(`cases.priority.${c.priority}`)}
+                    </span>
+                  </td>
+                  <td className="cases__date">
+                    {c.occurrenceAt
+                      ? new Date(c.occurrenceAt).toLocaleString('es-ES', {
+                          day: '2-digit', month: '2-digit', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit',
+                        })
+                      : '—'}
                   </td>
                   <td className="cases__date">
                     {new Date(c.updatedAt).toLocaleDateString('es-ES')}

@@ -1,18 +1,32 @@
-export type CaseStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+export type CaseStatus   = 'NEW' | 'ON_HOLD' | 'FORWARDED' | 'IN_PROGRESS' | 'CLOSED'
+export type CasePriority = 'HIGH' | 'NORMAL' | 'LOW'
+export type CaseType     =
+  | 'CLAIM'
+  | 'WRONG_SETTLEMENT'
+  | 'COVERAGE_DENIAL'
+  | 'DATA_CHANGE'
+  | 'QUERY'
+  | 'OTHER'
 
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/cases`
 
 export interface Case {
-  id: string
-  clientId: string
-  saleId: string
-  client: { id: string; name: string }
-  sale?: { id: string; title: string }
-  title: string
-  description?: string
-  status: CaseStatus
-  createdAt: string
-  updatedAt: string
+  id:           string
+  clientId:     string
+  client:       { id: string; name: string }
+  saleId?:      string | null
+  sale?:        { id: string; title: string } | null
+  name:         string
+  occurrenceAt?: string | null
+  description?:  string | null
+  cause?:        string | null
+  type?:         CaseType | null
+  status:        CaseStatus
+  priority:      CasePriority
+  supplierId?:   string | null
+  supplier?:     { id: string; name: string } | null
+  createdAt:     string
+  updatedAt:     string
 }
 
 export interface CaseFilters {
@@ -21,10 +35,16 @@ export interface CaseFilters {
 }
 
 export interface CaseInput {
-  clientId: string
-  title: string
-  description?: string
-  status?: CaseStatus
+  clientId:     string
+  saleId?:      string | null
+  name:         string
+  occurrenceAt?: string | null
+  description?:  string | null
+  cause?:        string | null
+  type?:         CaseType | null
+  status?:       CaseStatus
+  priority?:     CasePriority
+  supplierId?:   string | null
 }
 
 export async function getCases(filters: CaseFilters = {}): Promise<Case[]> {

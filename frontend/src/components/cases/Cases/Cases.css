@@ -30,28 +30,12 @@
   white-space: nowrap;
 }
 
-/* ── Title cell ──────────────────────────────────────────────────────────── */
+/* ── Name cell ───────────────────────────────────────────────────────────── */
 
-.cases__title {
+.cases__name {
   font-size: 0.875rem;
   color: var(--corp-black);
-  white-space: nowrap;
-}
-
-/* ── Description cell ────────────────────────────────────────────────────── */
-
-.cases__description {
-  max-width: 28rem;
-}
-
-.cases__desc-text {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 0.82rem;
-  color: var(--corp-muted);
-  line-height: 1.4;
+  max-width: 22rem;
 }
 
 /* ── Date cell ───────────────────────────────────────────────────────────── */
@@ -65,7 +49,14 @@
 
 /* ── Status badges ───────────────────────────────────────────────────────── */
 
-.badge-case-open        { background: #ddeeff; color: #1a5a8a; }
-.badge-case-in-progress { background: #fff4d6; color: #a07800; }
-.badge-case-resolved    { background: #d6f0e0; color: #1a7a3e; }
+.badge-case-new         { background: #e8f4ff; color: #1a5a8a; }
+.badge-case-on-hold     { background: #fff4d6; color: #a07800; }
+.badge-case-forwarded   { background: #f0e8ff; color: #6633cc; }
+.badge-case-in-progress { background: #fff0e0; color: #c05000; }
 .badge-case-closed      { background: #e8e4df; color: var(--corp-muted); }
+
+/* ── Priority badges ─────────────────────────────────────────────────────── */
+
+.badge-priority-high   { background: #fde8e8; color: #b91c1c; }
+.badge-priority-normal { background: #e8f0ff; color: #1e40af; }
+.badge-priority-low    { background: #f0f9f0; color: #2d6a2d; }

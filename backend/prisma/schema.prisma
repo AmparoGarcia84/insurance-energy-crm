@@ -352,32 +352,60 @@ model EnergyContract {
 // ── Case ──────────────────────────────────────────────────────────────────────
 
 enum CaseStatus {
-  OPEN
+  NEW
+  ON_HOLD
+  FORWARDED
   IN_PROGRESS
-  RESOLVED
   CLOSED
 }
 
+enum CasePriority {
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum CaseType {
+  CLAIM
+  WRONG_SETTLEMENT
+  COVERAGE_DENIAL
+  DATA_CHANGE
+  QUERY
+  OTHER
+}
+
 model Case {
-  id          String     @id @default(uuid())
+  id          String       @id @default(uuid())
 
-  // Every case must belong to a sale; clientId is denormalized for direct querying
-  saleId    String
-  sale      Sale     @relation(fields: [saleId], references: [id])
-  clientId  String
-  client    Client   @relation(fields: [clientId], references: [id])
+  clientId    String
+  client      Client       @relation(fields: [clientId], references: [id])
 
-  title       String
-  description String?
-  status      CaseStatus @default(OPEN)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  // Sale is optional; when set, clientId is derived from sale.clientId
+  saleId      String?
+  sale        Sale?        @relation(fields: [saleId], references: [id])
+
+  name         String      // max 200 — enforced at app layer
+  occurrenceAt DateTime?
+  description  String?     // max 2000
+  cause        String?     // max 1000
+
+  type         CaseType?
+  status       CaseStatus   @default(NEW)
+  priority     CasePriority @default(NORMAL)
+
+  // Assigned supplier — only relevant when type = WRONG_SETTLEMENT
+  supplierId   String?
+  supplier     Supplier?    @relation(fields: [supplierId], references: [id])
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   tasks      Task[]
   activities Activity[]
 
   @@index([clientId])
   @@index([saleId])
+  @@index([supplierId])
 }
 
 // ── Supplier ──────────────────────────────────────────────────────────────────
@@ -395,6 +423,7 @@ model Supplier {
   emails        SupplierEmail[]
   tasks         Task[] @relation("TaskSupplierAssoc")
   providerTasks Task[] @relation("TaskProviderSupplier")
+  cases         Case[]
 }
 
 model SupplierAddress {

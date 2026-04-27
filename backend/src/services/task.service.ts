@@ -35,7 +35,7 @@ const include = {
   assignedTo: { select: { id: true, displayName: true, email: true } },
   client:     { select: { id: true, name: true, clientNumber: true } },
   sale:       { select: { id: true, title: true } },
-  case:       { select: { id: true, title: true } },
+  case:       { select: { id: true, name: true } },
   supplier:         { select: { id: true, name: true } },
   providerSupplier: { select: { id: true, name: true, cif: true } },
 } satisfies Prisma.TaskInclude
@@ -75,7 +75,7 @@ async function resolveHierarchy(input: {
       where:  { id: input.caseId },
       select: { saleId: true, clientId: true },
     })
-    return { caseId: input.caseId, saleId: found.saleId, clientId: found.clientId }
+    return { caseId: input.caseId, saleId: found.saleId ?? undefined, clientId: found.clientId }
   }
   if (input.saleId) {
     const found = await prisma.sale.findUniqueOrThrow({

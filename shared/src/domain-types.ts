@@ -648,69 +648,59 @@ export interface Sale extends BaseEntity {
 }
 
 // ----------------------------------------------------
-// Case (Caso / Incident / Claim)
+// Case (Caso / Gestión)
 // ----------------------------------------------------
 
 export enum CaseStatus {
-  NEW = "NEW",
-  ON_HOLD = "ON_HOLD",
-  FORWARDED = "FORWARDED",
-  CLOSED = "CLOSED",
+  NEW         = "NEW",         // Nuevo
+  ON_HOLD     = "ON_HOLD",     // En espera
+  FORWARDED   = "FORWARDED",   // Derivado
+  IN_PROGRESS = "IN_PROGRESS", // En trámite
+  CLOSED      = "CLOSED",      // Cerrado
 }
 
 export enum CasePriority {
-  HIGH = "HIGH",
-  MEDIUM = "MEDIUM",
-  LOW = "LOW",
-}
-
-export enum CaseOrigin {
-  CLAIMS = "CLAIMS",                   // SINIESTROS
-  DATA_CHANGE = "DATA_CHANGE",         // CAMBIO DE DATOS
-  GAS_DISTRIBUTION = "GAS_DISTRIBUTION", // DISTRIBUCIÓN GAS
-  ACTIVATIONS = "ACTIVATIONS",         // ACTIVACIONES
-  POWER_DISTRIBUTION = "POWER_DISTRIBUTION", // DISTRIBUCIÓN LUZ
-  POWER_CHANGE = "POWER_CHANGE",       // POTENCIA
-  VIRTUAL_BATTERY = "VIRTUAL_BATTERY", // BATERÍA VIRTUAL
-  BROKER_CHANGE = "BROKER_CHANGE",     // CAMBIO DE MEDIADOR
-  SELF_CONSUMPTION = "SELF_CONSUMPTION", // AUTOCONSUMO
-  HIGH_BILL = "HIGH_BILL",             // FACTURA ELEVADA
+  HIGH   = "HIGH",   // Alta
+  NORMAL = "NORMAL", // Normal
+  LOW    = "LOW",    // Baja
 }
 
 export enum CaseType {
-  ISSUE = "ISSUE",                         // Problema
-  FEATURE_REQUEST = "FEATURE_REQUEST",     // Solicitud de característica
-  QUESTION = "QUESTION",                   // Pregunta
+  CLAIM            = "CLAIM",            // Siniestro
+  WRONG_SETTLEMENT = "WRONG_SETTLEMENT", // Liquidación errónea
+  COVERAGE_DENIAL  = "COVERAGE_DENIAL",  // Denegación de cobertura
+  DATA_CHANGE      = "DATA_CHANGE",      // Cambio de datos
+  QUERY            = "QUERY",            // Consulta
+  OTHER            = "OTHER",            // Otro
 }
 
 export interface Case extends BaseEntity {
-  /** Human readable case id, e.g. CAS-SEG-001. */
-  caseNumber: string
-
   clientId: UUID
-  /** Every case must belong to a sale. clientId is denormalized for direct querying. */
-  saleId: UUID
+  client?:  { id: string; name: string }
 
-  status: CaseStatus
-  priority: CasePriority
-  origin: CaseOrigin
-  type: CaseType
+  /** Sale is optional; when set, clientId is derived from sale. */
+  saleId?:  UUID
+  sale?:    { id: string; title: string }
 
-  /** People involved. */
-  ownerUserId: UUID       // Case owner (propietario de caso)
-  reportedByName?: string // Informado por
-  reportedByPhone?: string
-  reportedByEmail?: string
+  /** Name / title of the case. Max 200 chars. */
+  name: string
 
-  /** High level information. */
-  subject: string        // Asunto
-  productName?: string   // Nombre de producto
-  saleName?: string      // Nombre de venta
+  /** Date and time when the incident occurred. */
+  occurrenceAt?: string // ISO 8601
 
-  /** Narrative fields. */
+  /** Free-text description of the case. Max 2000 chars. */
   description?: string
-  internalComments?: string
-  resolution?: string
+
+  /** Root cause or reason. Max 1000 chars. */
+  cause?: string
+
+  type?:     CaseType
+  status:    CaseStatus
+  priority:  CasePriority
+
+  /** Supplier assigned — only relevant when type = WRONG_SETTLEMENT. */
+  supplierId?: UUID
+  supplier?:   { id: string; name: string }
 }
 
 // ----------------------------------------------------

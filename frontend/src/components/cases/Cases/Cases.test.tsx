@@ -10,31 +10,38 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'cases.title':               'Casos',
-        'cases.search':              'Buscar...',
-        'cases.empty':               'No hay casos',
-        'cases.emptySearch':         'Sin resultados',
-        'cases.columns.client':      'Cliente',
-        'cases.columns.title':       'Asunto',
-        'cases.columns.description': 'Descripción',
-        'cases.columns.status':      'Estado',
-        'cases.columns.updatedAt':   'Última actualización',
-        'cases.status.OPEN':         'Abierto',
-        'cases.status.IN_PROGRESS':  'En curso',
-        'cases.status.RESOLVED':     'Resuelto',
-        'cases.status.CLOSED':       'Cerrado',
+        'cases.title':                'Casos',
+        'cases.new':                  'Nuevo caso',
+        'cases.search':               'Buscar...',
+        'cases.empty':                'No hay casos',
+        'cases.emptySearch':          'Sin resultados',
+        'cases.columns.client':       'Cliente',
+        'cases.columns.name':         'Nombre del caso',
+        'cases.columns.status':       'Fase',
+        'cases.columns.priority':     'Prioridad',
+        'cases.columns.occurrenceAt': 'Fecha de ocurrencia',
+        'cases.columns.updatedAt':    'Última actualización',
+        'cases.status.NEW':           'Nuevo',
+        'cases.status.ON_HOLD':       'En espera',
+        'cases.status.FORWARDED':     'Derivado',
+        'cases.status.IN_PROGRESS':   'En trámite',
+        'cases.status.CLOSED':        'Cerrado',
+        'cases.priority.HIGH':        'Alta',
+        'cases.priority.NORMAL':      'Normal',
+        'cases.priority.LOW':         'Baja',
+        'cases.edit':                 'Editar',
       }
       return map[key] ?? key
     },
   }),
 }))
 
-let mockCases: Case[] = []
-let mockLoading = false
-
 vi.mock('../../../hooks/usePermissions', () => ({
   usePermissions: () => ({ canDelete: false }),
 }))
+
+let mockCases: Case[] = []
+let mockLoading = false
 
 vi.mock('../../../context/DataContext', () => ({
   useCases: () => ({
@@ -52,9 +59,17 @@ function makeCase(id: string, overrides?: Partial<Case>): Case {
     id,
     clientId:    'c-carmen',
     client:      { id: 'c-carmen', name: 'Carmen López' },
-    title:       `Caso ${id}`,
+    saleId:      's-001',
+    sale:        { id: 's-001', title: 'Seguro de hogar' },
+    name:        `Caso ${id}`,
+    occurrenceAt: '2024-03-10T09:30:00.000Z',
     description: `Descripción del caso ${id}`,
-    status:      'OPEN',
+    cause:       'Causa del caso',
+    type:        'CLAIM',
+    status:      'NEW',
+    priority:    'NORMAL',
+    supplierId:  null,
+    supplier:    null,
     createdAt:   '2024-01-10T10:00:00Z',
     updatedAt:   '2024-01-15T10:00:00Z',
     ...overrides,
@@ -63,7 +78,7 @@ function makeCase(id: string, overrides?: Partial<Case>): Case {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('Cases', () => {
+describe('Cases list', () => {
   beforeEach(() => {
     mockCases = []
     mockLoading = false
@@ -79,7 +94,7 @@ describe('Cases', () => {
     expect(screen.getByRole('searchbox')).toBeInTheDocument()
   })
 
-  it('shows empty state when no cases exist', () => {
+  it('shows empty state when no cases', () => {
     render(<Cases />)
     expect(screen.getByText('No hay casos')).toBeInTheDocument()
   })
@@ -88,50 +103,48 @@ describe('Cases', () => {
     mockCases = [makeCase('1')]
     render(<Cases />)
     expect(screen.getByText('Cliente')).toBeInTheDocument()
-    expect(screen.getByText('Asunto')).toBeInTheDocument()
-    expect(screen.getByText('Descripción')).toBeInTheDocument()
-    expect(screen.getByText('Estado')).toBeInTheDocument()
+    expect(screen.getByText('Nombre del caso')).toBeInTheDocument()
+    expect(screen.getByText('Fase')).toBeInTheDocument()
+    expect(screen.getByText('Prioridad')).toBeInTheDocument()
+    expect(screen.getByText('Fecha de ocurrencia')).toBeInTheDocument()
     expect(screen.getByText('Última actualización')).toBeInTheDocument()
   })
 
-  it('renders client name, title and status badge', () => {
-    mockCases = [makeCase('1', { status: 'IN_PROGRESS' })]
+  it('renders client name, case name, status and priority badges', () => {
+    mockCases = [makeCase('1', { status: 'IN_PROGRESS', priority: 'HIGH' })]
     render(<Cases />)
     expect(screen.getByText('Carmen López')).toBeInTheDocument()
     expect(screen.getByText('Caso 1')).toBeInTheDocument()
-    expect(screen.getByText('En curso')).toBeInTheDocument()
+    expect(screen.getByText('En trámite')).toBeInTheDocument()
+    expect(screen.getByText('Alta')).toBeInTheDocument()
   })
 
   it('renders all status values correctly', () => {
     mockCases = [
-      makeCase('a', { status: 'OPEN' }),
-      makeCase('b', { status: 'IN_PROGRESS' }),
-      makeCase('c', { status: 'RESOLVED' }),
-      makeCase('d', { status: 'CLOSED' }),
+      makeCase('a', { status: 'NEW' }),
+      makeCase('b', { status: 'ON_HOLD' }),
+      makeCase('c', { status: 'FORWARDED' }),
+      makeCase('d', { status: 'IN_PROGRESS' }),
+      makeCase('e', { status: 'CLOSED' }),
     ]
     render(<Cases />)
-    expect(screen.getByText('Abierto')).toBeInTheDocument()
-    expect(screen.getByText('En curso')).toBeInTheDocument()
-    expect(screen.getByText('Resuelto')).toBeInTheDocument()
+    expect(screen.getByText('Nuevo')).toBeInTheDocument()
+    expect(screen.getByText('En espera')).toBeInTheDocument()
+    expect(screen.getByText('Derivado')).toBeInTheDocument()
+    expect(screen.getByText('En trámite')).toBeInTheDocument()
     expect(screen.getByText('Cerrado')).toBeInTheDocument()
   })
 
-  it('renders description text', () => {
-    mockCases = [makeCase('1', { description: 'Rotura de tubería' })]
-    render(<Cases />)
-    expect(screen.getByText('Rotura de tubería')).toBeInTheDocument()
-  })
-
-  it('renders — when description is absent', () => {
-    mockCases = [makeCase('1', { description: undefined })]
+  it('renders — when occurrenceAt is absent', () => {
+    mockCases = [makeCase('1', { occurrenceAt: null })]
     render(<Cases />)
     expect(screen.getByText('—')).toBeInTheDocument()
   })
 
   it('filters by client name', async () => {
     mockCases = [
-      makeCase('1', { client: { id: 'c-1', name: 'Carmen López' }, title: 'Caso agua' }),
-      makeCase('2', { client: { id: 'c-2', name: 'Antonio García' }, title: 'Caso tráfico' }),
+      makeCase('1', { client: { id: 'c-1', name: 'Carmen López' }, name: 'Caso agua' }),
+      makeCase('2', { client: { id: 'c-2', name: 'Antonio García' }, name: 'Caso tráfico' }),
     ]
     render(<Cases />)
     await userEvent.type(screen.getByRole('searchbox'), 'antonio')
@@ -139,10 +152,10 @@ describe('Cases', () => {
     expect(screen.getByText('Caso tráfico')).toBeInTheDocument()
   })
 
-  it('filters by title', async () => {
+  it('filters by case name', async () => {
     mockCases = [
-      makeCase('1', { title: 'Siniestro agua' }),
-      makeCase('2', { title: 'Accidente tráfico' }),
+      makeCase('1', { name: 'Siniestro agua' }),
+      makeCase('2', { name: 'Accidente tráfico' }),
     ]
     render(<Cases />)
     await userEvent.type(screen.getByRole('searchbox'), 'agua')

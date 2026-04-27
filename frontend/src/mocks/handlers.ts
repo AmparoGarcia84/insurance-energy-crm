@@ -549,11 +549,15 @@ const dashboardHandlers = [
 // ── Cases ─────────────────────────────────────────────────────────────────────
 
 const casesHandlers = [
-  http.get(`${API}/cases`, () =>
-    HttpResponse.json(
-      [...store.cases].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    ),
-  ),
+  http.get(`${API}/cases`, ({ request }) => {
+    const url = new URL(request.url)
+    const clientId = url.searchParams.get('clientId')
+    const saleId   = url.searchParams.get('saleId')
+    let list = [...store.cases]
+    if (clientId) list = list.filter(c => c.clientId === clientId)
+    if (saleId)   list = list.filter(c => c.saleId   === saleId)
+    return HttpResponse.json(list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)))
+  }),
 
   http.get(`${API}/cases/:id`, ({ params }) => {
     const found = store.cases.find(c => c.id === params.id)
@@ -563,17 +567,27 @@ const casesHandlers = [
 
   http.post(`${API}/cases`, async ({ request }) => {
     const data = await request.json() as CaseInput
-    const now = new Date().toISOString()
-    const client = store.clients.find(c => c.id === data.clientId)
+    const now  = new Date().toISOString()
+    const client   = store.clients.find(c => c.id === data.clientId)
+    const sale     = data.saleId ? store.sales?.find((s: { id: string; title: string }) => s.id === data.saleId) : null
+    const supplier = data.supplierId ? { id: data.supplierId, name: data.supplierId } : null
     const newCase: Case = {
-      id:          `case-new-${Date.now()}`,
-      clientId:    data.clientId,
-      client:      { id: data.clientId, name: client?.name ?? '' },
-      title:       data.title,
-      description: data.description,
-      status:      data.status ?? 'OPEN',
-      createdAt:   now,
-      updatedAt:   now,
+      id:           `case-new-${Date.now()}`,
+      clientId:     data.clientId,
+      client:       { id: data.clientId, name: client?.name ?? '' },
+      saleId:       data.saleId ?? null,
+      sale:         sale ? { id: sale.id, title: sale.title } : null,
+      name:         data.name,
+      occurrenceAt: data.occurrenceAt ?? null,
+      description:  data.description  ?? null,
+      cause:        data.cause        ?? null,
+      type:         data.type         ?? null,
+      status:       data.status       ?? 'NEW',
+      priority:     data.priority     ?? 'NORMAL',
+      supplierId:   data.supplierId   ?? null,
+      supplier,
+      createdAt:    now,
+      updatedAt:    now,
     }
     store.cases.unshift(newCase)
     return HttpResponse.json(newCase, { status: 201 })

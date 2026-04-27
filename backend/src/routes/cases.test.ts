@@ -32,16 +32,22 @@ const OWNER_COOKIE    = makeAuthCookie('u-owner', 'OWNER')
 const EMPLOYEE_COOKIE = makeAuthCookie('u-emp',   'EMPLOYEE')
 
 const STUB_CASE = {
-  id:          'case-001',
-  saleId:      's-001',
-  sale:        { id: 's-001', title: 'Seguro de hogar multirriesgo' },
-  clientId:    'c-carmen',
-  client:      { id: 'c-carmen', name: 'Carmen López' },
-  title:       'Siniestro agua en vivienda',
-  description: 'Rotura de tubería en baño principal.',
-  status:      'IN_PROGRESS',
-  createdAt:   new Date('2024-01-10').toISOString(),
-  updatedAt:   new Date('2024-01-15').toISOString(),
+  id:           'case-001',
+  clientId:     'c-carmen',
+  client:       { id: 'c-carmen', name: 'Carmen López' },
+  saleId:       's-001',
+  sale:         { id: 's-001', title: 'Seguro de hogar multirriesgo' },
+  name:         'Siniestro agua en vivienda',
+  occurrenceAt: '2024-03-10T09:00:00.000Z',
+  description:  'Rotura de tubería en baño principal.',
+  cause:        'Envejecimiento de tuberías',
+  type:         'CLAIM',
+  status:       'IN_PROGRESS',
+  priority:     'NORMAL',
+  supplierId:   null,
+  supplier:     null,
+  createdAt:    new Date('2024-01-10').toISOString(),
+  updatedAt:    new Date('2024-01-15').toISOString(),
 }
 
 beforeEach(() => vi.clearAllMocks())
@@ -59,7 +65,7 @@ describe('GET /cases', () => {
     const res = await request(app).get('/cases').set('Cookie', OWNER_COOKIE)
     expect(res.status).toBe(200)
     expect(Array.isArray(res.body)).toBe(true)
-    expect(res.body[0].title).toBe('Siniestro agua en vivienda')
+    expect(res.body[0].name).toBe('Siniestro agua en vivienda')
   })
 
   it('works for EMPLOYEE role', async () => {
@@ -95,40 +101,81 @@ describe('GET /cases/:id', () => {
 
 describe('POST /cases', () => {
   it('returns 401 when not authenticated', async () => {
-    const res = await request(app).post('/cases').send({ saleId: 's-1', title: 'Test' })
+    const res = await request(app).post('/cases').send({ clientId: 'c-1', name: 'Test' })
     expect(res.status).toBe(401)
   })
 
-  it('returns 400 when saleId is missing', async () => {
+  it('returns 400 when clientId is missing', async () => {
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ title: 'Sin venta' })
+      .send({ name: 'Sin cliente' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/saleId/)
+    expect(res.body.error).toMatch(/clientId/)
   })
 
-  it('returns 400 when title is missing', async () => {
+  it('returns 400 when name is missing', async () => {
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ saleId: 's-1' })
+      .send({ clientId: 'c-1' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/title/)
+    expect(res.body.error).toMatch(/name/)
   })
 
-  it('returns 201 and the created case on success', async () => {
+  it('returns 400 when name exceeds 200 characters', async () => {
+    const res = await request(app)
+      .post('/cases').set('Cookie', OWNER_COOKIE)
+      .send({ clientId: 'c-1', name: 'a'.repeat(201) })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/name/)
+  })
+
+  it('returns 400 when description exceeds 2000 characters', async () => {
+    const res = await request(app)
+      .post('/cases').set('Cookie', OWNER_COOKIE)
+      .send({ clientId: 'c-1', name: 'Test', description: 'x'.repeat(2001) })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/description/)
+  })
+
+  it('returns 400 when cause exceeds 1000 characters', async () => {
+    const res = await request(app)
+      .post('/cases').set('Cookie', OWNER_COOKIE)
+      .send({ clientId: 'c-1', name: 'Test', cause: 'x'.repeat(1001) })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/cause/)
+  })
+
+  it('returns 201 on valid create with all new fields', async () => {
     mockCreate.mockResolvedValue(STUB_CASE as never)
     const res = await request(app)
       .post('/cases').set('Cookie', OWNER_COOKIE)
-      .send({ saleId: 's-001', title: 'Siniestro agua en vivienda' })
+      .send({
+        clientId:     'c-carmen',
+        saleId:       's-001',
+        name:         'Siniestro agua en vivienda',
+        occurrenceAt: '2024-03-10T09:00:00Z',
+        description:  'Rotura de tubería',
+        cause:        'Envejecimiento de tuberías',
+        type:         'CLAIM',
+        priority:     'NORMAL',
+      })
     expect(res.status).toBe(201)
-    expect(res.body.title).toBe('Siniestro agua en vivienda')
+    expect(res.body.name).toBe('Siniestro agua en vivienda')
+  })
+
+  it('returns 201 without saleId (optional)', async () => {
+    mockCreate.mockResolvedValue({ ...STUB_CASE, saleId: null, sale: null } as never)
+    const res = await request(app)
+      .post('/cases').set('Cookie', OWNER_COOKIE)
+      .send({ clientId: 'c-carmen', name: 'Caso sin venta' })
+    expect(res.status).toBe(201)
   })
 
   it('EMPLOYEE can create a case', async () => {
     mockCreate.mockResolvedValue(STUB_CASE as never)
     const res = await request(app)
       .post('/cases').set('Cookie', EMPLOYEE_COOKIE)
-      .send({ saleId: 's-001', title: 'Nuevo caso' })
+      .send({ clientId: 'c-carmen', name: 'Nuevo caso' })
     expect(res.status).toBe(201)
   })
 })
@@ -137,25 +184,35 @@ describe('POST /cases', () => {
 
 describe('PUT /cases/:id', () => {
   it('returns 401 when not authenticated', async () => {
-    const res = await request(app).put('/cases/case-001').send({ title: 'Updated' })
+    const res = await request(app).put('/cases/case-001').send({ name: 'Updated' })
     expect(res.status).toBe(401)
   })
 
   it('returns 200 with the updated case on success', async () => {
-    const updated = { ...STUB_CASE, title: 'Updated title' }
+    const updated = { ...STUB_CASE, name: 'Nombre actualizado', status: 'ON_HOLD', priority: 'HIGH' }
     mockUpdate.mockResolvedValue(updated as never)
     const res = await request(app)
       .put('/cases/case-001').set('Cookie', OWNER_COOKIE)
-      .send({ title: 'Updated title' })
+      .send({ name: 'Nombre actualizado', status: 'ON_HOLD', priority: 'HIGH' })
     expect(res.status).toBe(200)
-    expect(res.body.title).toBe('Updated title')
+    expect(res.body.name).toBe('Nombre actualizado')
+    expect(res.body.status).toBe('ON_HOLD')
+    expect(res.body.priority).toBe('HIGH')
+  })
+
+  it('returns 400 when name is an empty string', async () => {
+    const res = await request(app)
+      .put('/cases/case-001').set('Cookie', OWNER_COOKIE)
+      .send({ name: '' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/name/)
   })
 
   it('returns 404 when the case does not exist', async () => {
     mockUpdate.mockRejectedValue(Object.assign(new Error('Not found'), { code: 'P2025' }))
     const res = await request(app)
       .put('/cases/nonexistent').set('Cookie', OWNER_COOKIE)
-      .send({ title: 'X' })
+      .send({ name: 'X' })
     expect(res.status).toBe(404)
   })
 })
