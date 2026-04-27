@@ -635,10 +635,17 @@ model Task {
 // ── Activity ──────────────────────────────────────────────────────────────────
 
 enum ActivityType {
+  // User-facing interaction types
   CALL
   EMAIL
   WHATSAPP_NOTE
   MEETING
+  // System event types (audit trail / ActivityLog)
+  STAGE_CHANGED
+  DOC_UPLOADED
+  EXPORT
+  CREATED
+  UPDATED
 }
 
 enum ActivityDirection {
