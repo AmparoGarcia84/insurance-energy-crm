@@ -366,12 +366,10 @@ enum CasePriority {
 }
 
 enum CaseType {
-  CLAIM
-  WRONG_SETTLEMENT
-  COVERAGE_DENIAL
-  DATA_CHANGE
-  QUERY
-  OTHER
+  CLAIM            // Siniestro           (seguros)
+  FAULT            // Avería              (energía)
+  ACTIVATION       // Activación          (energía)
+  WRONG_SETTLEMENT // Liquidación errónea (ambos)
 }
 
 model Case {

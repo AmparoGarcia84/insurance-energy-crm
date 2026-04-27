@@ -666,12 +666,10 @@ export enum CasePriority {
 }
 
 export enum CaseType {
-  CLAIM            = "CLAIM",            // Siniestro
-  WRONG_SETTLEMENT = "WRONG_SETTLEMENT", // Liquidación errónea
-  COVERAGE_DENIAL  = "COVERAGE_DENIAL",  // Denegación de cobertura
-  DATA_CHANGE      = "DATA_CHANGE",      // Cambio de datos
-  QUERY            = "QUERY",            // Consulta
-  OTHER            = "OTHER",            // Otro
+  CLAIM            = "CLAIM",            // Siniestro          (seguros)
+  FAULT            = "FAULT",            // Avería             (energía)
+  ACTIVATION       = "ACTIVATION",       // Activación         (energía)
+  WRONG_SETTLEMENT = "WRONG_SETTLEMENT", // Liquidación errónea (ambos)
 }
 
 export interface Case extends BaseEntity {

@@ -1,12 +1,10 @@
 export type CaseStatus   = 'NEW' | 'ON_HOLD' | 'FORWARDED' | 'IN_PROGRESS' | 'CLOSED'
 export type CasePriority = 'HIGH' | 'NORMAL' | 'LOW'
 export type CaseType     =
-  | 'CLAIM'
-  | 'WRONG_SETTLEMENT'
-  | 'COVERAGE_DENIAL'
-  | 'DATA_CHANGE'
-  | 'QUERY'
-  | 'OTHER'
+  | 'CLAIM'            // Siniestro           (seguros)
+  | 'FAULT'            // Avería              (energía)
+  | 'ACTIVATION'       // Activación          (energía)
+  | 'WRONG_SETTLEMENT' // Liquidación errónea (ambos)
 
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/cases`
 

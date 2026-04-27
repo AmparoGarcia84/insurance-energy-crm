@@ -480,11 +480,9 @@ export default {
     },
     type: {
       CLAIM:            'Siniestro',
+      FAULT:            'Avería',
+      ACTIVATION:       'Activación',
       WRONG_SETTLEMENT: 'Liquidación errónea',
-      COVERAGE_DENIAL:  'Denegación de cobertura',
-      DATA_CHANGE:      'Cambio de datos',
-      QUERY:            'Consulta',
-      OTHER:            'Otro',
     },
     sections: {
       main:        'Datos del caso',
@@ -680,6 +678,11 @@ export default {
       EMAIL:         'Email',
       WHATSAPP_NOTE: 'WhatsApp / Nota',
       MEETING:       'Reunión',
+      STAGE_CHANGED: 'Etapa cambiada',
+      DOC_UPLOADED:  'Documento subido',
+      EXPORT:        'Exportación',
+      CREATED:       'Creado',
+      UPDATED:       'Actualizado',
     },
     direction: {
       INBOUND:  'Entrante',

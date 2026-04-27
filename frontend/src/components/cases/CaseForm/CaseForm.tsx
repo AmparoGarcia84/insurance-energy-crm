@@ -23,9 +23,7 @@ import './CaseForm.css'
 
 const STATUSES:   CaseStatus[]   = ['NEW', 'ON_HOLD', 'FORWARDED', 'IN_PROGRESS', 'CLOSED']
 const PRIORITIES: CasePriority[] = ['HIGH', 'NORMAL', 'LOW']
-const TYPES:      CaseType[]     = [
-  'CLAIM', 'WRONG_SETTLEMENT', 'COVERAGE_DENIAL', 'DATA_CHANGE', 'QUERY', 'OTHER',
-]
+const TYPES: CaseType[] = ['CLAIM', 'FAULT', 'ACTIVATION', 'WRONG_SETTLEMENT']
 
 const NAME_MAX  = 200
 const DESC_MAX  = 2000
