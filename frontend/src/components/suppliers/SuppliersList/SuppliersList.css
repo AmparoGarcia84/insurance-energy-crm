@@ -1,0 +1,77 @@
+.suppliers-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.suppliers-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--corp-beige);
+}
+
+.suppliers-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--corp-card);
+  font-size: 0.9rem;
+}
+
+.suppliers-table th {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--corp-muted);
+  background: var(--corp-muted-bg);
+  border-bottom: 1px solid var(--corp-beige);
+}
+
+.suppliers-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--corp-muted-bg);
+  color: var(--corp-black);
+  vertical-align: middle;
+}
+
+.suppliers-table tr:last-child td {
+  border-bottom: none;
+}
+
+.suppliers-table tbody tr:hover {
+  background: var(--corp-muted-bg);
+}
+
+.suppliers-name {
+  font-weight: 500;
+}
+
+.suppliers-cif {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--corp-muted);
+}
+
+.suppliers-address {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--corp-muted);
+  font-size: 0.875rem;
+}
+
+.suppliers-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.suppliers-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--corp-muted);
+  font-size: 0.95rem;
+}

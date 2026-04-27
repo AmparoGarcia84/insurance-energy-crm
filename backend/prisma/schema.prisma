@@ -380,6 +380,45 @@ model Case {
   @@index([saleId])
 }
 
+// ── Supplier ──────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id             String            @id @default(uuid())
+  name           String
+  cif            String?           @unique
+  phone          String?
+  secondaryPhone String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  addresses     SupplierAddress[]
+  emails        SupplierEmail[]
+  tasks         Task[] @relation("TaskSupplierAssoc")
+  providerTasks Task[] @relation("TaskProviderSupplier")
+}
+
+model SupplierAddress {
+  id         String      @id @default(uuid())
+  supplierId String
+  supplier   Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  type       AddressType @default(FISCAL)
+  street     String?
+  postalCode String?
+  city       String?
+  province   String?
+  country    String?
+}
+
+model SupplierEmail {
+  id         String   @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  address    String
+  isPrimary  Boolean  @default(false)
+  label      String?
+  labelColor String?
+}
+
 // ── Collaborator ──────────────────────────────────────────────────────────────
 
 model Collaborator {
@@ -538,9 +577,13 @@ model Task {
   caseId String?
   case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
 
-  // Provider: free-text name and phone for an external provider linked to the task
-  providerName  String?
-  providerPhone String?
+  // Supplier: optional FK to a Supplier record (for tasks owned by a supplier)
+  supplierId String?
+  supplier   Supplier? @relation("TaskSupplierAssoc", fields: [supplierId], references: [id], onDelete: SetNull)
+
+  // Provider: registered supplier that will execute this task
+  providerSupplierId String?
+  providerSupplier   Supplier? @relation("TaskProviderSupplier", fields: [providerSupplierId], references: [id], onDelete: SetNull)
 
   // Reminder (stored inline — no separate table needed at this stage)
   hasReminder        Boolean            @default(false)
@@ -555,6 +598,8 @@ model Task {
   @@index([clientId])
   @@index([saleId])
   @@index([caseId])
+  @@index([supplierId])
+  @@index([providerSupplierId])
   @@index([dueDate])
 }
 

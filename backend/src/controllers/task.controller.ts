@@ -15,6 +15,7 @@ export async function listTasks(req: AuthRequest, res: Response): Promise<void> 
     clientId,
     saleId,
     caseId,
+    supplierId,
     dueBefore,
     dueAfter,
     overdue,
@@ -29,6 +30,7 @@ export async function listTasks(req: AuthRequest, res: Response): Promise<void> 
   if (clientId)         filters.clientId         = clientId
   if (saleId)           filters.saleId           = saleId
   if (caseId)           filters.caseId           = caseId
+  if (supplierId)       filters.supplierId       = supplierId
   if (dueBefore)        filters.dueBefore        = dueBefore
   if (dueAfter)         filters.dueAfter         = dueAfter
   if (overdue === 'true')      filters.overdue      = true

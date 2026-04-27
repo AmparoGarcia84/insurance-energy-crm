@@ -24,6 +24,7 @@ import {
   LogOut,
   UserCog,
   Handshake,
+  Building2,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import logo from '../../../assets/logo.jpeg'
@@ -37,7 +38,7 @@ import './Sidebar.css'
  * Icons are lucide-react components passed as references (not JSX) so they
  * can be instantiated with custom props inside the map.
  */
-export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'tasks' | 'timeTracking' | 'collaborators' | 'userManagement' | 'myAccount'
+export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'tasks' | 'timeTracking' | 'collaborators' | 'suppliers' | 'userManagement' | 'myAccount'
 
 const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'home',          key: 'nav.home',          icon: LayoutDashboard },
@@ -48,6 +49,7 @@ const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
   { section: 'cases',         key: 'nav.cases',         icon: AlertCircle },
   { section: 'tasks',         key: 'nav.tasks',         icon: ClipboardList },
   { section: 'collaborators', key: 'nav.collaborators', icon: Handshake },
+  { section: 'suppliers',    key: 'nav.suppliers',    icon: Building2 },
 ]
 
 interface SidebarProps {

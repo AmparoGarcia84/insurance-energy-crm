@@ -1,0 +1,25 @@
+.supplier-form-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.supplier-form {
+  max-width: 780px;
+}
+
+.supplier-form-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: #fdf2f2;
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
+}
+
+.supplier-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

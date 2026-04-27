@@ -22,8 +22,8 @@ export interface TaskInput {
   clientId?:           string
   saleId?:             string
   caseId?:             string
-  providerName?:       string
-  providerPhone?:      string
+  supplierId?:           string
+  providerSupplierId?:   string
   hasReminder?:        boolean
   reminderAt?:         Date | string | null
   reminderChannel?:    ReminderChannel
@@ -36,6 +36,8 @@ const include = {
   client:     { select: { id: true, name: true, clientNumber: true } },
   sale:       { select: { id: true, title: true } },
   case:       { select: { id: true, title: true } },
+  supplier:         { select: { id: true, name: true } },
+  providerSupplier: { select: { id: true, name: true, cif: true } },
 } satisfies Prisma.TaskInclude
 
 const DATE_FIELDS = ['dueDate', 'reminderAt'] as const
@@ -95,6 +97,7 @@ export interface TaskFilters {
   clientId?:         string
   saleId?:           string
   caseId?:           string
+  supplierId?:       string
   /** ISO date string — returns tasks with dueDate <= this value */
   dueBefore?:        string
   /** ISO date string — returns tasks with dueDate >= this value */
@@ -115,6 +118,7 @@ function buildWhere(filters: TaskFilters): Prisma.TaskWhereInput {
   if (filters.clientId)         where.clientId         = filters.clientId
   if (filters.saleId)           where.saleId           = filters.saleId
   if (filters.caseId)           where.caseId           = filters.caseId
+  if (filters.supplierId)       where.supplierId       = filters.supplierId
   if (filters.hasReminder !== undefined) where.hasReminder = filters.hasReminder
 
   // dueDate range

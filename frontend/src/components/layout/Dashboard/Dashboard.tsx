@@ -12,6 +12,7 @@ import MyAccount from '../../settings/MyAccount/MyAccount'
 import Collaborators from '../../settings/Collaborators/Collaborators'
 import Cases from '../../cases/Cases/Cases'
 import Tasks from '../../tasks/Tasks/Tasks'
+import Suppliers from '../../suppliers/Suppliers/Suppliers'
 
 export default function Dashboard() {
   const { t } = useTranslation()
@@ -33,6 +34,7 @@ export default function Dashboard() {
       case 'cases':          return <Cases />
       case 'tasks':          return <Tasks />
       case 'collaborators':  return <Collaborators />
+      case 'suppliers':      return <Suppliers />
       case 'userManagement': return <UserManagement />
       case 'myAccount':      return <MyAccount />
       default:               return <div className="page-header"><h1 className="page-title">{t(`nav.${activeSection}`)}</h1></div>

@@ -1418,6 +1418,79 @@ async function main() {
 
   console.log('  ✓ Activities (8)')
 
+  // ─── Suppliers ────────────────────────────────────────────────────────────
+  await prisma.supplier.createMany({
+    data: [
+      {
+        name:           'Mapfre España S.A.',
+        cif:            'A11111110',
+        phone:          '91 581 91 00',
+        secondaryPhone: '900 100 128',
+      },
+      {
+        name:  'Endesa Energía S.A.U.',
+        cif:   'B22222220',
+        phone: '900 760 760',
+      },
+      {
+        name:  'Línea Directa Aseguradora S.A.',
+        cif:   'C33333330',
+        phone: '91 547 49 00',
+      },
+    ],
+  })
+
+  const suppliers = await prisma.supplier.findMany()
+  const sup = (name: string) => suppliers.find(s => s.name === name)!
+
+  await prisma.supplierAddress.createMany({
+    data: [
+      {
+        supplierId: sup('Mapfre España S.A.').id,
+        type: 'FISCAL',
+        street: 'Carretera de Pozuelo, 52',
+        postalCode: '28222',
+        city: 'Majadahonda',
+        province: 'Madrid',
+        country: 'España',
+      },
+      {
+        supplierId: sup('Endesa Energía S.A.U.').id,
+        type: 'FISCAL',
+        street: 'Ribera del Loira, 60',
+        postalCode: '28042',
+        city: 'Madrid',
+        province: 'Madrid',
+        country: 'España',
+      },
+    ],
+  })
+
+  await prisma.supplierEmail.createMany({
+    data: [
+      {
+        supplierId: sup('Mapfre España S.A.').id,
+        address:   'mediadores@mapfre.com',
+        isPrimary: true,
+        label:     'Mediadores',
+      },
+      {
+        supplierId: sup('Endesa Energía S.A.U.').id,
+        address:   'canales@endesa.com',
+        isPrimary: true,
+        label:     'Canales',
+      },
+      {
+        supplierId: sup('Línea Directa Aseguradora S.A.').id,
+        address:   'mediadores@lineadirecta.com',
+        isPrimary: true,
+        label:     'Mediadores',
+      },
+    ],
+  })
+
+  console.log(`  ✓ Suppliers (${suppliers.length})`)
+
   console.log('Database provisioning complete.')
 }
 

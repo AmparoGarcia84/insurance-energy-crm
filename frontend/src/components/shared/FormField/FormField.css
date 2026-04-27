@@ -169,6 +169,12 @@
   font-weight: 500;
 }
 
+.searchable-select__control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--corp-muted-bg);
+}
+
 .searchable-select__no-results {
   padding: 0.6rem 0.7rem;
   font-size: 0.88rem;

@@ -781,9 +781,10 @@ export interface Task extends BaseEntity {
   clientId?:           UUID
   saleId?:             UUID
   caseId?:             UUID
-  // Provider: free-text name and phone for an external provider linked to the task
-  providerName?:       string
-  providerPhone?:      string
+  // Supplier FK (optional — links to a Supplier record for tasks owned by a supplier)
+  supplierId?:           UUID
+  // Provider: registered supplier that will execute this task
+  providerSupplierId?:   UUID
   // Reminder
   hasReminder:         boolean
   reminderAt?:         ISODateTime
@@ -1071,6 +1072,52 @@ export interface Activity extends BaseEntity {
   outcome?:    string
   nextStep?:   string
   activityAt:  ISODateTime
+}
+
+// ----------------------------------------------------
+// Supplier (Proveedor)
+// ----------------------------------------------------
+
+export interface SupplierAddressInput {
+  type: AddressType
+  street?: string
+  postalCode?: string
+  city?: string
+  province?: string
+  country?: string
+}
+
+export interface SupplierAddress extends SupplierAddressInput {
+  id: string
+}
+
+export interface SupplierEmailInput {
+  address: string
+  isPrimary: boolean
+  label?: string
+  labelColor?: string
+}
+
+export interface SupplierEmail extends SupplierEmailInput {
+  id: string
+}
+
+export interface Supplier extends BaseEntity {
+  name: string
+  cif?: string
+  phone?: string
+  secondaryPhone?: string
+  addresses?: SupplierAddress[]
+  emails?: SupplierEmail[]
+}
+
+export interface SupplierInput {
+  name: string
+  cif?: string
+  phone?: string
+  secondaryPhone?: string
+  addresses?: SupplierAddressInput[]
+  emails?: SupplierEmailInput[]
 }
 
 // ----------------------------------------------------

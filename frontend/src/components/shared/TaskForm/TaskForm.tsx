@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
 import {
@@ -14,19 +15,24 @@ import { getClients, type Client } from '../../../api/clients'
 import { getSales } from '../../../api/sales'
 import type { Sale } from '@crm/shared'
 import { getCases, type Case } from '../../../api/cases'
+import { getSuppliers, type Supplier } from '../../../api/suppliers'
 import InputField from '../FormField/InputField'
 import SelectField from '../FormField/SelectField'
+import SearchableSelectField from '../FormField/SearchableSelectField'
 import TextareaField from '../FormField/TextareaField'
 import './TaskForm.css'
 
 /** Context passed by parent tabs to pre-fill and optionally lock associations. */
 export interface TaskFormContext {
   /** When set, the client is pre-selected and locked (cannot be changed). */
-  lockedClientId?:   string
-  lockedClientName?: string
+  lockedClientId?:    string
+  lockedClientName?:  string
   /** When set, the sale is also pre-selected and locked. Implies lockedClientId is set too. */
-  lockedSaleId?:     string
-  lockedSaleName?:   string
+  lockedSaleId?:      string
+  lockedSaleName?:    string
+  /** When set, the task is linked to a supplier (mutually exclusive with client context). */
+  lockedSupplierId?:  string
+  lockedSupplierName?: string
 }
 
 interface Props {
@@ -57,9 +63,9 @@ interface FormState {
   clientId:            string
   saleId:              string
   caseId:              string
+  supplierId:          string
   // Provider
-  providerName:        string
-  providerPhone:       string
+  providerSupplierId:  string
   // Reminder
   hasReminder:         boolean
   reminderAt:          string
@@ -77,8 +83,8 @@ const EMPTY: FormState = {
   clientId:           '',
   saleId:             '',
   caseId:             '',
-  providerName:       '',
-  providerPhone:      '',
+  supplierId:         '',
+  providerSupplierId: '',
   hasReminder:        false,
   reminderAt:         '',
   reminderChannel:    '',
@@ -97,11 +103,11 @@ function fromTask(task: TaskWithRelations, ctx?: TaskFormContext): FormState {
     priority:           task.priority ?? '',
     dueDate:            task.dueDate ? task.dueDate.slice(0, 10) : '',
     assignedToUserId:   task.assignedToUserId ?? '',
-    clientId:           ctx?.lockedClientId ?? task.clientId ?? '',
-    saleId:             ctx?.lockedSaleId   ?? task.saleId   ?? '',
-    caseId:             task.caseId   ?? '',
-    providerName:       task.providerName  ?? '',
-    providerPhone:      task.providerPhone ?? '',
+    clientId:           ctx?.lockedClientId   ?? task.clientId   ?? '',
+    saleId:             ctx?.lockedSaleId     ?? task.saleId     ?? '',
+    caseId:             task.caseId           ?? '',
+    supplierId:         ctx?.lockedSupplierId ?? task.supplierId ?? '',
+    providerSupplierId: task.providerSupplierId ?? '',
     hasReminder:        task.hasReminder,
     reminderAt:         task.reminderAt ? toDatetimeLocal(task.reminderAt) : '',
     reminderChannel:    task.reminderChannel ?? '',
@@ -113,10 +119,44 @@ function initialState(initial: TaskWithRelations | null | undefined, ctx?: TaskF
   if (initial) return fromTask(initial, ctx)
   return {
     ...EMPTY,
-    clientId: ctx?.lockedClientId ?? '',
-    saleId:   ctx?.lockedSaleId   ?? '',
+    clientId:   ctx?.lockedClientId   ?? '',
+    saleId:     ctx?.lockedSaleId     ?? '',
+    supplierId: ctx?.lockedSupplierId ?? '',
   }
 }
+
+// ── Client option helpers ─────────────────────────────────────────────────────
+
+function formatClientOption(client: { name: string; clientNumber?: string; nif?: string }): string {
+  const suffix = [client.clientNumber ? `#${client.clientNumber}` : '', client.nif ?? '']
+    .filter(Boolean)
+    .join(' · ')
+  return suffix ? `${client.name} (${suffix})` : client.name
+}
+
+function formatSupplierOption(supplier: { name: string; cif?: string }): string {
+  return supplier.cif ? `${supplier.name} (${supplier.cif})` : supplier.name
+}
+
+function renderHighlighted(text: string, query: string): ReactNode {
+  const trimmed = query.trim()
+  if (!trimmed) return text
+  const lower  = text.toLowerCase()
+  const lowerQ = trimmed.toLowerCase()
+  const idx = lower.indexOf(lowerQ)
+  if (idx === -1) return text
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="task-form__client-highlight">
+        {text.slice(idx, idx + trimmed.length)}
+      </mark>
+      {text.slice(idx + trimmed.length)}
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function TaskForm({ initial, users, context, onSubmit, onSave, onCancel }: Props) {
   const { t } = useTranslation()
@@ -126,14 +166,24 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
   const [error, setError]   = useState<string | null>(null)
 
   // Association dropdown data
-  const [clients, setClients] = useState<Client[]>([])
-  const [sales,   setSales]   = useState<Sale[]>([])
-  const [cases,   setCases]   = useState<Case[]>([])
+  const [clients,   setClients]   = useState<Client[]>([])
+  const [sales,     setSales]     = useState<Sale[]>([])
+  const [cases,     setCases]     = useState<Case[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
 
-  const clientLocked = Boolean(context?.lockedClientId)
-  const saleLocked   = Boolean(context?.lockedSaleId)
+  // Client combobox state
+  const [clientQuery, setClientQuery]             = useState<string>(context?.lockedClientName ?? '')
+  const [showClientOptions, setShowClientOptions] = useState(false)
 
-  // ── Load clients (only in standalone mode — no locked client) ──────────────
+  // Provider supplier combobox state
+  const [providerQuery, setProviderQuery]               = useState<string>('')
+  const [showProviderOptions, setShowProviderOptions]   = useState(false)
+
+  const clientLocked   = Boolean(context?.lockedClientId)
+  const saleLocked     = Boolean(context?.lockedSaleId)
+  const supplierLocked = Boolean(context?.lockedSupplierId)
+
+  // ── Load clients (only when not locked) ──────────────────────────────────
   useEffect(() => {
     if (clientLocked) return
     getClients()
@@ -141,7 +191,54 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
       .catch(() => {/* non-critical */})
   }, [clientLocked])
 
-  // ── Load sales whenever clientId changes ───────────────────────────────────
+  // When editing an existing task, initialise the client query once the list loads
+  useEffect(() => {
+    if (clientLocked || clientQuery || !form.clientId) return
+    const found = clients.find((c) => c.id === form.clientId)
+    if (found) setClientQuery(found.name)
+  }, [clients]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Filtered clients for the combobox ─────────────────────────────────────
+  const filteredClients = useMemo(() => {
+    const query = clientQuery.trim().toLowerCase()
+    if (!query) return clients.slice(0, 20)
+    return clients
+      .filter((client) => {
+        const searchable = [client.name, client.clientNumber ?? '', client.nif ?? '']
+          .join(' ')
+          .toLowerCase()
+        return searchable.includes(query)
+      })
+      .slice(0, 20)
+  }, [clients, clientQuery])
+
+  // ── Load all suppliers for the provider combobox ──────────────────────────
+  useEffect(() => {
+    getSuppliers()
+      .then(setSuppliers)
+      .catch(() => {/* non-critical */})
+  }, [])
+
+  // When editing a task with providerSupplierId, initialise the provider query once list loads
+  useEffect(() => {
+    if (providerQuery || !form.providerSupplierId) return
+    const found = suppliers.find((s) => s.id === form.providerSupplierId)
+    if (found) setProviderQuery(found.name)
+  }, [suppliers]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Filtered suppliers for the provider combobox ─────────────────────────
+  const filteredProviders = useMemo(() => {
+    const query = providerQuery.trim().toLowerCase()
+    if (!query) return suppliers.slice(0, 20)
+    return suppliers
+      .filter((s) => {
+        const searchable = [s.name, s.cif ?? ''].join(' ').toLowerCase()
+        return searchable.includes(query)
+      })
+      .slice(0, 20)
+  }, [suppliers, providerQuery])
+
+  // ── Load sales whenever clientId changes ──────────────────────────────────
   const loadSales = useCallback((clientId: string) => {
     if (!clientId) { setSales([]); return }
     getSales({ clientId })
@@ -165,23 +262,20 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
     loadCases(form.saleId)
   }, [form.saleId, loadCases])
 
-  // ── Reset form when initial changes ───────────────────────────────────────
+  // ── Reset form when initial changes ──────────────────────────────────────
   useEffect(() => {
     setForm(initialState(initial, context))
     setError(null)
   }, [initial]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   function handleClientChange(newClientId: string) {
-    setForm((prev) => ({
-      ...prev,
-      clientId: newClientId,
-      saleId:   '',
-      caseId:   '',
-    }))
+    setForm((prev) => ({ ...prev, clientId: newClientId, saleId: '', caseId: '' }))
   }
 
   function handleSaleChange(newSaleId: string) {
@@ -189,13 +283,28 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
   }
 
   function handleCaseChange(newCaseId: string) {
-    // If a case is selected, auto-fill saleId from the case record
     const found = cases.find((c) => c.id === newCaseId)
     setForm((prev) => ({
       ...prev,
       caseId: newCaseId,
       saleId: found?.saleId ?? prev.saleId,
     }))
+  }
+
+  function selectClient(clientId: string) {
+    const selected = clients.find((c) => c.id === clientId)
+    if (!selected) return
+    handleClientChange(clientId)
+    setClientQuery(selected.name)
+    setShowClientOptions(false)
+  }
+
+  function selectProvider(supplierId: string) {
+    const selected = suppliers.find((s) => s.id === supplierId)
+    if (!selected) return
+    set('providerSupplierId', supplierId)
+    setProviderQuery(selected.name)
+    setShowProviderOptions(false)
   }
 
   function handleReminderToggle(checked: boolean) {
@@ -212,13 +321,11 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
     e.preventDefault()
     if (!form.subject.trim()) return
 
-    // Client is required
-    if (!form.clientId) {
+    if (!form.clientId && !form.supplierId) {
       setError(t('tasks.errors.clientRequired'))
       return
     }
 
-    // Reminder cross-field validation
     if (form.hasReminder && !form.reminderAt) {
       setError(t('tasks.errors.reminderAtRequired'))
       return
@@ -235,11 +342,11 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
       priority:    form.priority  || undefined,
       dueDate:     form.dueDate   || null,
       assignedToUserId: form.assignedToUserId || undefined,
-      clientId:    form.clientId || undefined,
-      saleId:      form.saleId   || undefined,
-      caseId:      form.caseId   || undefined,
-      providerName:  form.providerName.trim()  || undefined,
-      providerPhone: form.providerPhone.trim() || undefined,
+      clientId:           form.clientId           || undefined,
+      saleId:             form.saleId             || undefined,
+      caseId:             form.caseId             || undefined,
+      supplierId:         form.supplierId         || undefined,
+      providerSupplierId: form.providerSupplierId || undefined,
       hasReminder: form.hasReminder,
       reminderAt:         form.hasReminder && form.reminderAt
         ? new Date(form.reminderAt).toISOString()
@@ -264,11 +371,13 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
     }
   }
 
-  const isEditing = Boolean(initial)
+  const isEditing          = Boolean(initial)
+  const lockedClientName   = context?.lockedClientName
+  const lockedSaleName     = context?.lockedSaleName
+  const lockedSupplierName = context?.lockedSupplierName
 
-  // Resolve display names for locked fields
-  const lockedClientName = context?.lockedClientName
-  const lockedSaleName   = context?.lockedSaleName
+  const saleOptions = sales.map((s) => ({ value: s.id, label: s.title }))
+  const caseOptions = cases.map((c) => ({ value: c.id, label: c.title }))
 
   return (
     <div className="task-form-view">
@@ -365,82 +474,155 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
             <span className="task-form__section-label">{t('tasks.form.association')}</span>
           </div>
 
-          {/* Client */}
-          {clientLocked ? (
+          {/* Supplier locked */}
+          {supplierLocked && (
             <div className="task-form__locked-field">
-              <span className="task-form__locked-label">{t('tasks.form.client')}</span>
-              <span className="task-form__locked-value">{lockedClientName ?? form.clientId}</span>
+              <span className="task-form__locked-label">{t('nav.suppliers')}</span>
+              <span className="task-form__locked-value">{lockedSupplierName ?? form.supplierId}</span>
             </div>
-          ) : (
-            <SelectField
-              id="tf-client"
-              label={t('tasks.form.client')}
-              value={form.clientId}
-              onChange={(e) => handleClientChange(e.target.value)}
-              required
-            >
-              <option value="">— {t('tasks.form.clientNone')} —</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </SelectField>
           )}
 
-          {/* Sale (optional) — shown when client is selected */}
-          {saleLocked ? (
-            <div className="task-form__locked-field">
-              <span className="task-form__locked-label">{t('tasks.form.sale')}</span>
-              <span className="task-form__locked-value">{lockedSaleName ?? form.saleId}</span>
-            </div>
-          ) : form.clientId ? (
-            <SelectField
-              id="tf-sale"
-              label={t('tasks.form.sale')}
-              value={form.saleId}
-              onChange={(e) => handleSaleChange(e.target.value)}
-            >
-              <option value="">— {t('tasks.form.saleNone')} —</option>
-              {sales.map((s) => (
-                <option key={s.id} value={s.id}>{s.title}</option>
-              ))}
-            </SelectField>
-          ) : null}
+          {/* Client / Sale / Case — always in the same 3-column row */}
+          {!supplierLocked && (
+            <div className="task-form__row">
 
-          {/* Case (optional) — shown when sale is selected */}
-          {form.saleId ? (
-            <SelectField
-              id="tf-case"
-              label={t('tasks.form.case')}
-              value={form.caseId}
-              onChange={(e) => handleCaseChange(e.target.value)}
-            >
-              <option value="">— {t('tasks.form.caseNone')} —</option>
-              {cases.map((c) => (
-                <option key={c.id} value={c.id}>{c.title}</option>
-              ))}
-            </SelectField>
-          ) : null}
+              {/* ── Client ── */}
+              {clientLocked ? (
+                <InputField
+                  id="tf-client-locked"
+                  label={t('tasks.form.client')}
+                  value={lockedClientName ?? form.clientId}
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <div className="form-field task-form__client-field">
+                  <label htmlFor="tf-client-query">{t('tasks.form.client')}</label>
+                  <input
+                    id="tf-client-query"
+                    type="text"
+                    autoComplete="off"
+                    value={clientQuery}
+                    placeholder={t('common.searchOptions')}
+                    onFocus={() => setShowClientOptions(true)}
+                    onBlur={() => setTimeout(() => setShowClientOptions(false), 150)}
+                    onChange={(e) => {
+                      setClientQuery(e.target.value)
+                      if (form.clientId) handleClientChange('')
+                      setShowClientOptions(true)
+                    }}
+                  />
+                  {showClientOptions && clients.length > 0 && (
+                    <div className="task-form__client-options">
+                      {filteredClients.length === 0 ? (
+                        <div className="task-form__client-option task-form__client-option--status">
+                          {t('common.noResults')}
+                        </div>
+                      ) : (
+                        filteredClients.map((client) => (
+                          <button
+                            key={client.id}
+                            type="button"
+                            className="task-form__client-option"
+                            onMouseDown={(e) => {
+                              e.preventDefault()
+                              selectClient(client.id)
+                            }}
+                          >
+                            {renderHighlighted(formatClientOption(client), clientQuery)}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Sale ── */}
+              {saleLocked ? (
+                <InputField
+                  id="tf-sale-locked"
+                  label={t('tasks.form.sale')}
+                  value={lockedSaleName ?? form.saleId}
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <SearchableSelectField
+                  id="tf-sale"
+                  label={t('tasks.form.sale')}
+                  name="tf-sale"
+                  value={form.saleId}
+                  options={saleOptions}
+                  emptyLabel={`— ${t('tasks.form.saleNone')} —`}
+                  searchPlaceholder={t('common.searchOptions')}
+                  noResultsLabel={t('common.noResults')}
+                  onChange={handleSaleChange}
+                  disabled={!form.clientId}
+                />
+              )}
+
+              {/* ── Case ── */}
+              <SearchableSelectField
+                id="tf-case"
+                label={t('tasks.form.case')}
+                name="tf-case"
+                value={form.caseId}
+                options={caseOptions}
+                emptyLabel={`— ${t('tasks.form.caseNone')} —`}
+                searchPlaceholder={t('common.searchOptions')}
+                noResultsLabel={t('common.noResults')}
+                onChange={handleCaseChange}
+                disabled={!form.saleId}
+              />
+
+            </div>
+          )}
 
           {/* ── Provider section ── */}
           <div className="task-form__section-divider">
             <span className="task-form__section-label">{t('tasks.form.provider')}</span>
           </div>
 
-          <div className="task-form__row task-form__row--2col">
-            <InputField
-              id="tf-providerName"
-              label={t('tasks.form.providerName')}
-              value={form.providerName}
-              onChange={(e) => set('providerName', e.target.value)}
-              maxLength={255}
+          <div className="form-field task-form__client-field">
+            <label htmlFor="tf-provider-query">{t('tasks.form.providerSupplier')}</label>
+            <input
+              id="tf-provider-query"
+              type="text"
+              autoComplete="off"
+              value={providerQuery}
+              placeholder={t('common.searchOptions')}
+              onFocus={() => setShowProviderOptions(true)}
+              onBlur={() => setTimeout(() => setShowProviderOptions(false), 150)}
+              onChange={(e) => {
+                setProviderQuery(e.target.value)
+                if (form.providerSupplierId) set('providerSupplierId', '')
+                setShowProviderOptions(true)
+              }}
             />
-            <InputField
-              id="tf-providerPhone"
-              label={t('tasks.form.providerPhone')}
-              value={form.providerPhone}
-              onChange={(e) => set('providerPhone', e.target.value)}
-              maxLength={50}
-            />
+            {showProviderOptions && suppliers.length > 0 && (
+              <div className="task-form__client-options">
+                {filteredProviders.length === 0 ? (
+                  <div className="task-form__client-option task-form__client-option--status">
+                    {t('common.noResults')}
+                  </div>
+                ) : (
+                  filteredProviders.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="task-form__client-option"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        selectProvider(s.id)
+                      }}
+                    >
+                      {renderHighlighted(formatSupplierOption(s), providerQuery)}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── Reminder section ── */}
@@ -506,7 +688,7 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
             <button
               type="submit"
               className="btn-primary"
-              disabled={saving || !form.subject.trim() || !form.clientId}
+              disabled={saving || !form.subject.trim() || (!form.clientId && !form.supplierId)}
             >
               {saving ? t('tasks.form.saving') : t('tasks.form.save')}
             </button>

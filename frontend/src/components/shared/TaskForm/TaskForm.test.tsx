@@ -16,6 +16,13 @@ vi.mock('../../../api/clients', () => ({
   ]),
 }))
 
+vi.mock('../../../api/suppliers', () => ({
+  getSuppliers: vi.fn().mockResolvedValue([
+    { id: 'sup-1', name: 'ACME Insurance',   cif: 'B12345678' },
+    { id: 'sup-2', name: 'Global Re',         cif: 'B87654321' },
+  ]),
+}))
+
 vi.mock('../../../api/sales', () => ({
   getSales: vi.fn().mockResolvedValue([
     { id: 's-1', title: 'Sale A', clientId: 'c-1' },
@@ -140,16 +147,14 @@ describe('TaskForm', () => {
 
   it('shows locked client name when context.lockedClientId is provided', () => {
     renderForm({ context: LOCKED_CLIENT })
-    expect(screen.getByText('Acme Corp')).toBeInTheDocument()
-    // No client dropdown
-    expect(screen.queryByLabelText(/^cliente|^client/i)).not.toBeInTheDocument()
+    expect(screen.getByDisplayValue('Acme Corp')).toBeInTheDocument()
+    // No client combobox search input (client is locked)
+    expect(document.getElementById('tf-client-query')).not.toBeInTheDocument()
   })
 
   it('shows locked sale name when context.lockedSaleId is provided', () => {
     renderForm({ context: LOCKED_SALE })
-    expect(screen.getByText('Sale A')).toBeInTheDocument()
-    // No sale dropdown
-    expect(screen.queryByLabelText(/^venta|^sale/i)).not.toBeInTheDocument()
+    expect(screen.getByDisplayValue('Sale A')).toBeInTheDocument()
   })
 
   // ── Association section in standalone mode ────────────────────────────────────
@@ -163,33 +168,30 @@ describe('TaskForm', () => {
 
   // ── Provider section ──────────────────────────────────────────────────────────
 
-  it('renders provider name and phone fields', () => {
+  it('renders the provider supplier search input', () => {
     renderForm()
-    expect(screen.getByLabelText(/nombre del proveedor|provider name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/teléfono del proveedor|provider phone/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/proveedor|provider supplier/i)).toBeInTheDocument()
   })
 
-  it('pre-fills provider fields from initial task', () => {
-    const taskWithProvider = { ...STUB_TASK, providerName: 'ACME Insurance', providerPhone: '600123456' }
-    renderForm({ initial: taskWithProvider })
-    const nameInput  = screen.getByLabelText<HTMLInputElement>(/nombre del proveedor|provider name/i)
-    const phoneInput = screen.getByLabelText<HTMLInputElement>(/teléfono del proveedor|provider phone/i)
-    expect(nameInput.value).toBe('ACME Insurance')
-    expect(phoneInput.value).toBe('600123456')
-  })
-
-  it('includes providerName and providerPhone in payload on submit', async () => {
+  it('includes providerSupplierId in payload when a supplier is selected', async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ...STUB_TASK, id: 'new-1' })
     renderForm({ onSubmit, context: LOCKED_CLIENT })
 
     fireEvent.change(screen.getByLabelText(/asunto|subject/i), { target: { value: 'My task' } })
-    fireEvent.change(screen.getByLabelText(/nombre del proveedor|provider name/i), { target: { value: 'ACME' } })
-    fireEvent.change(screen.getByLabelText(/teléfono del proveedor|provider phone/i), { target: { value: '600000000' } })
+
+    // Open provider combobox and pick first option
+    const providerInput = screen.getByLabelText(/proveedor|provider supplier/i)
+    fireEvent.focus(providerInput)
+    await waitFor(() =>
+      expect(screen.getByText(/ACME Insurance \(B12345678\)/)).toBeInTheDocument()
+    )
+    fireEvent.mouseDown(screen.getByText(/ACME Insurance \(B12345678\)/))
+
     fireEvent.click(screen.getByRole('button', { name: /guardar|save/i }))
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ providerName: 'ACME', providerPhone: '600000000' })
+        expect.objectContaining({ providerSupplierId: 'sup-1' })
       )
     })
   })

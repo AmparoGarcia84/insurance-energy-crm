@@ -18,6 +18,7 @@ interface Props {
   noResultsLabel?: string
   onChange: (value: string) => void
   className?: string
+  disabled?: boolean
 }
 
 export default function SearchableSelectField({
@@ -31,6 +32,7 @@ export default function SearchableSelectField({
   noResultsLabel = 'No results',
   onChange,
   className,
+  disabled,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -82,6 +84,7 @@ export default function SearchableSelectField({
         className={`searchable-select__control${open ? ' open' : ''}`}
         aria-haspopup="listbox"
         aria-expanded={open}
+        disabled={disabled}
         onClick={() => { setOpen((o) => !o); setSearch('') }}
         onKeyDown={handleKeyDown}
       >
