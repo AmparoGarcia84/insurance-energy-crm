@@ -241,6 +241,8 @@ const tasksHandlers = [
     let tasks: TaskWithRelations[] = store.tasks
 
     const clientId          = url.searchParams.get('clientId')
+    const saleId            = url.searchParams.get('saleId')
+    const caseId            = url.searchParams.get('caseId')
     const status            = url.searchParams.get('status')
     const assignedTo        = url.searchParams.get('assignedToUserId')
     const overdue           = url.searchParams.get('overdue')
@@ -249,6 +251,8 @@ const tasksHandlers = [
     const relatedEntityId   = url.searchParams.get('relatedEntityId')
 
     if (clientId)             tasks = tasks.filter(t => t.clientId === clientId)
+    if (saleId)               tasks = tasks.filter(t => t.saleId   === saleId)
+    if (caseId)               tasks = tasks.filter(t => t.caseId   === caseId)
     if (status)               tasks = tasks.filter(t => t.status === status)
     if (assignedTo)           tasks = tasks.filter(t => t.assignedToUserId === assignedTo)
     if (hasReminder !== null) tasks = tasks.filter(t => t.hasReminder === (hasReminder === 'true'))
@@ -372,10 +376,12 @@ const activityHandlers = [
     const url    = new URL(request.url)
     const clientId = url.searchParams.get('clientId')
     const saleId   = url.searchParams.get('saleId')
+    const caseId   = url.searchParams.get('caseId')
     const type     = url.searchParams.get('type')
     let results = store.activities
     if (clientId) results = results.filter(a => a.clientId === clientId)
     if (saleId)   results = results.filter(a => a.saleId   === saleId)
+    if (caseId)   results = results.filter(a => a.caseId === caseId)
     if (type)     results = results.filter(a => a.type     === type)
     const sorted = [...results].sort(
       (a, b) => new Date(b.activityAt).getTime() - new Date(a.activityAt).getTime()
@@ -398,6 +404,7 @@ const activityHandlers = [
       userId:      store.currentUser.id,
       clientId:    body.clientId ?? '',
       saleId:      body.saleId,
+      caseId:      body.caseId,
       type:        body.type!,
       direction:   body.direction,
       subject:     body.subject ?? '',

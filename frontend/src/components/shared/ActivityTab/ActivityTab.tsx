@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import BasicSearch from '../BasicSearch/BasicSearch'
 import type { ActivityWithRelations, ActivityPayload } from '../../../api/activities'
 import {
   getActivities,
@@ -9,21 +10,25 @@ import {
   deleteActivity,
 } from '../../../api/activities'
 import { usePermissions } from '../../../hooks/usePermissions'
-import ActivityForm from '../../shared/ActivityForm/ActivityForm'
-import ActivityCard from '../../shared/ActivityCard/ActivityCard'
-import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
-import './SaleActivityTab.css'
+import ActivityForm from '../ActivityForm/ActivityForm'
+import ActivityCard from '../ActivityCard/ActivityCard'
+import ConfirmModal from '../ConfirmModal/ConfirmModal'
+import './ActivityTab.css'
 
 interface Props {
-  saleId:   string
-  clientId: string
-  /** When true the new-activity form opens on first render (e.g. from header button). */
+  /** Always required — passed to ActivityForm so it can load the client context. */
+  clientId:         string
+  /** When provided, activities are filtered by saleId and new activities are linked to it. */
+  saleId?:          string
+  /** When provided, activities are filtered by caseId and new activities are linked to it. */
+  caseId?:          string
+  /** Open the new-activity form on first render (e.g. triggered from a header button). */
   openFormOnMount?: boolean
 }
 
-export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: Props) {
-  const { t } = useTranslation()
-  const { canDelete } = usePermissions()
+export default function ActivityTab({ clientId, saleId, caseId, openFormOnMount }: Props) {
+  const { t }          = useTranslation()
+  const { canDelete }  = usePermissions()
 
   const [activities, setActivities]       = useState<ActivityWithRelations[]>([])
   const [loading, setLoading]             = useState(true)
@@ -32,13 +37,15 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
   const [editing, setEditing]             = useState<ActivityWithRelations | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<ActivityWithRelations | null>(null)
 
+  // Derive the most-specific filter: case > sale > client
   const load = useCallback(() => {
     setLoading(true)
-    getActivities({ saleId })
+    const filters = caseId ? { caseId } : saleId ? { saleId } : { clientId }
+    getActivities(filters)
       .then(setActivities)
       .catch(() => {/* non-critical */})
       .finally(() => setLoading(false))
-  }, [saleId])
+  }, [clientId, saleId, caseId])
 
   useEffect(() => { load() }, [load])
 
@@ -76,8 +83,12 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
   }
 
   async function handleSubmit(data: ActivityPayload): Promise<ActivityWithRelations> {
-    // Always link the activity to this sale
-    const payload: ActivityPayload = { ...data, saleId }
+    // Always inject the contextual IDs so activities are correctly linked
+    const payload: ActivityPayload = {
+      ...data,
+      ...(saleId ? { saleId } : {}),
+      ...(caseId ? { caseId } : {}),
+    }
     if (editing) return updateActivity(editing.id, payload)
     return createActivity(payload)
   }
@@ -90,11 +101,10 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
   }
 
   return (
-    <div className="sat-view">
+    <div className="activity-tab">
 
-      {/* Toolbar */}
-      <div className="sat-toolbar">
-        <span className="sat-toolbar__count">
+      <div className="activity-tab__toolbar">
+        <span className="activity-tab__count">
           {!loading && t('activities.recentCount', { count: activities.length })}
         </span>
         <button className="btn-primary" onClick={handleNew}>
@@ -103,24 +113,17 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
         </button>
       </div>
 
-      {/* Search */}
       {!loading && activities.length > 0 && (
-        <div className="table-search">
-          <Search size={15} />
-          <input
-            type="search"
-            autoComplete="off"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('activities.searchPlaceholder')}
-          />
-        </div>
+        <BasicSearch
+          value={search}
+          onChange={setSearch}
+          placeholder={t('activities.searchPlaceholder')}
+        />
       )}
 
-      {/* Form panel */}
       {showForm && (
-        <div className="sat-form-panel section-card">
-          <h3 className="sat-form-title">
+        <div className="activity-tab__form-panel section-card">
+          <h3 className="activity-tab__form-title">
             {editing ? t('activities.form.titleEdit') : t('activities.form.titleNew')}
           </h3>
           <ActivityForm
@@ -133,13 +136,12 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
         </div>
       )}
 
-      {/* Activity list */}
       {loading ? null : filtered.length === 0 ? (
-        <div className="sat-empty">
+        <div className="activity-tab__empty">
           <p>{search.trim() ? t('activities.emptySearch') : t('activities.noActivities')}</p>
         </div>
       ) : (
-        <ul className="sat-list">
+        <ul className="activity-tab__list">
           {filtered.map((activity) => (
             <ActivityCard
               key={activity.id}
@@ -158,8 +160,8 @@ export default function SaleActivityTab({ saleId, clientId, openFormOnMount }: P
           message={`"${confirmDelete.subject}"`}
           onClose={() => setConfirmDelete(null)}
           actions={[
-            { label: t('common.cancel'), onClick: () => setConfirmDelete(null), variant: 'secondary' },
-            { label: t('activities.actions.delete'), onClick: handleDelete, variant: 'primary' },
+            { label: t('common.cancel'),               onClick: () => setConfirmDelete(null), variant: 'secondary' },
+            { label: t('activities.actions.delete'),   onClick: handleDelete,                 variant: 'primary'   },
           ]}
         />
       )}

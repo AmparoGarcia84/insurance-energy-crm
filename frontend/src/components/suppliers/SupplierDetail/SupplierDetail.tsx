@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Pencil, Phone, Mail, MapPin, Plus, Search } from 'lucide-react'
+import { ArrowLeft, Pencil, Phone, Mail, MapPin, Plus } from 'lucide-react'
 import { AddressTypeLabels } from '@crm/shared'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import type { Supplier } from '../../../api/suppliers'
 import {
   getTasks,
@@ -304,16 +305,11 @@ export default function SupplierDetail({ supplier, onBack, onEdit }: Props) {
           </div>
 
           {!loadingTasks && tasks.length > 0 && (
-            <div className="table-search">
-              <Search size={15} />
-              <input
-                type="search"
-                autoComplete="off"
-                value={taskSearch}
-                onChange={(e) => setTaskSearch(e.target.value)}
-                placeholder={t('tasks.searchPlaceholder')}
-              />
-            </div>
+            <BasicSearch
+              value={taskSearch}
+              onChange={setTaskSearch}
+              placeholder={t('tasks.searchPlaceholder')}
+            />
           )}
 
           {loadingTasks ? null : filteredTasks.length === 0 ? (

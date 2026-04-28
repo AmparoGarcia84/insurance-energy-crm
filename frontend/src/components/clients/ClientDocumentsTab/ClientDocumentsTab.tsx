@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, ExternalLink, Trash2, Search } from 'lucide-react'
+import { Plus, ExternalLink, Trash2 } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import {
   getDocuments,
   deleteDocument,
@@ -89,16 +90,11 @@ export default function ClientDocumentsTab({ clientId, clientName }: Props) {
 
       {/* ── Search ── */}
       {!loading && docs.length > 0 && (
-        <div className="table-search">
-          <Search size={15} />
-          <input
-            type="search"
-            autoComplete="off"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('documents.table.search')}
-          />
-        </div>
+        <BasicSearch
+          value={search}
+          onChange={setSearch}
+          placeholder={t('documents.table.search')}
+        />
       )}
 
       {/* ── Table / empty ── */}

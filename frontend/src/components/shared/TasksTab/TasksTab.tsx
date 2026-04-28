@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import BasicSearch from '../BasicSearch/BasicSearch'
 import {
   getTasks,
   createTask,
@@ -10,24 +11,29 @@ import {
   type TaskWithRelations,
   type TaskPayload,
 } from '../../../api/tasks'
-import { getClient } from '../../../api/clients'
 import { getUsers } from '../../../api/users'
 import type { AuthUser } from '../../../api/auth'
 import { usePermissions } from '../../../hooks/usePermissions'
-import TaskTable from '../../shared/TaskTable/TaskTable'
-import TaskForm, { type TaskFormContext } from '../../shared/TaskForm/TaskForm'
-import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
-import '../../shared/TaskTable/TaskTable.css'
-import './ClientTasksTab.css'
+import TaskTable from '../TaskTable/TaskTable'
+import TaskForm, { type TaskFormContext } from '../TaskForm/TaskForm'
+import ConfirmModal from '../ConfirmModal/ConfirmModal'
+import '../TaskTable/TaskTable.css'
+import './TasksTab.css'
 
 interface Props {
-  clientId:   string
-  clientName: string
+  /**
+   * Pre-fills and locks association fields in the task form.
+   * Also drives which filter is used to load tasks:
+   *   lockedCaseId  → filter by caseId
+   *   lockedSaleId  → filter by saleId  (when no caseId)
+   *   lockedClientId→ filter by clientId (when no sale or case)
+   */
+  context: TaskFormContext
 }
 
-export default function ClientTasksTab({ clientId, clientName }: Props) {
-  const { t }         = useTranslation()
-  const { canDelete } = usePermissions()
+export default function TasksTab({ context }: Props) {
+  const { t }          = useTranslation()
+  const { canDelete }  = usePermissions()
 
   const [tasks, setTasks]                 = useState<TaskWithRelations[]>([])
   const [users, setUsers]                 = useState<AuthUser[]>([])
@@ -37,18 +43,19 @@ export default function ClientTasksTab({ clientId, clientName }: Props) {
   const [showForm, setShowForm]           = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<TaskWithRelations | null>(null)
 
-  const context: TaskFormContext = {
-    lockedClientId:   clientId,
-    lockedClientName: clientName,
-  }
-
+  // Derive the most-specific filter from context: case > sale > client
   const load = useCallback(() => {
     setLoading(true)
-    getTasks({ clientId })
+    const filters = context.lockedCaseId
+      ? { caseId:   context.lockedCaseId }
+      : context.lockedSaleId
+        ? { saleId:  context.lockedSaleId }
+        : { clientId: context.lockedClientId }
+    getTasks(filters)
       .then(setTasks)
       .catch(() => {/* non-critical */})
       .finally(() => setLoading(false))
-  }, [clientId])
+  }, [context.lockedClientId, context.lockedSaleId, context.lockedCaseId])
 
   useEffect(() => { load() }, [load])
 
@@ -58,37 +65,18 @@ export default function ClientTasksTab({ clientId, clientName }: Props) {
       .catch(() => {/* non-critical */})
   }, [])
 
-  // clientName may not always be passed by legacy callers; fetch as fallback
-  useEffect(() => {
-    if (!clientName) {
-      getClient(clientId).catch(() => {/* non-critical */})
-    }
-  }, [clientId, clientName])
-
   const filtered = search.trim()
-    ? tasks.filter((task) =>
-        task.subject.toLowerCase().includes(search.toLowerCase()) ||
-        task.description?.toLowerCase().includes(search.toLowerCase())
+    ? tasks.filter((t) =>
+        t.subject.toLowerCase().includes(search.toLowerCase()) ||
+        t.description?.toLowerCase().includes(search.toLowerCase())
       )
     : tasks
 
-  function handleNew() {
-    setEditing(null)
-    setShowForm(true)
-  }
-
-  function handleEdit(task: TaskWithRelations) {
-    setEditing(task)
-    setShowForm(true)
-  }
-
-  function handleCancel() {
-    setShowForm(false)
-    setEditing(null)
-  }
+  function handleNew()  { setEditing(null); setShowForm(true) }
+  function handleEdit(task: TaskWithRelations) { setEditing(task); setShowForm(true) }
+  function handleCancel() { setShowForm(false); setEditing(null) }
 
   async function handleSubmit(data: TaskPayload): Promise<TaskWithRelations> {
-    // clientId, saleId, caseId are now included in the payload from the form
     if (editing) return updateTask(editing.id, data)
     return createTask(data)
   }
@@ -138,10 +126,10 @@ export default function ClientTasksTab({ clientId, clientName }: Props) {
   // ── Table view ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="ctt-view">
+    <div className="tasks-tab">
 
-      <div className="ctt-toolbar">
-        <span className="ctt-toolbar__count">
+      <div className="tasks-tab__toolbar">
+        <span className="tasks-tab__count">
           {!loading && t('tasks.count', { count: tasks.length })}
         </span>
         <button className="btn-primary" onClick={handleNew}>
@@ -151,20 +139,15 @@ export default function ClientTasksTab({ clientId, clientName }: Props) {
       </div>
 
       {!loading && tasks.length > 0 && (
-        <div className="table-search">
-          <Search size={15} />
-          <input
-            type="search"
-            autoComplete="off"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('tasks.searchPlaceholder')}
-          />
-        </div>
+        <BasicSearch
+          value={search}
+          onChange={setSearch}
+          placeholder={t('tasks.searchPlaceholder')}
+        />
       )}
 
       {loading ? null : filtered.length === 0 ? (
-        <div className="ctt-empty">
+        <div className="tasks-tab__empty">
           <p>{search.trim() ? t('tasks.emptySearch') : t('tasks.noTasks')}</p>
         </div>
       ) : (

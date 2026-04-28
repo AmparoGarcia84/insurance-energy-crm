@@ -23,6 +23,7 @@ export default {
     myAccount: 'Mi cuenta',
     cropTitle: 'Ajustar foto de perfil',
     cropZoom: 'Zoom',
+    searchEmpty: 'Sin resultados',
   },
   common: {
     cancel: 'Cancelar',
@@ -188,6 +189,7 @@ export default {
       tasks:     'Tareas',
       activity:  'Actividad',
       sales:     'Ventas',
+      cases:     'Casos',
       mail:      'Correo',
       documents: 'Documentos',
     },
@@ -418,6 +420,7 @@ export default {
         information: 'Información',
         activity:    'Actividad',
         tasks:       'Tareas',
+        cases:       'Casos',
         documents:   'Documentos',
       },
     },
@@ -507,11 +510,30 @@ export default {
       supplierPlaceholder: '— Seleccionar proveedor —',
       supplierLoading:   'Cargando proveedores...',
     },
+    detail: {
+      back: 'Volver',
+      edit: 'Editar',
+      tabs: {
+        activity: 'Actividad',
+        tasks:    'Tareas',
+      },
+      cards: {
+        info:       'Información del caso',
+        client:     'Cliente',
+        viewClient: 'Ver ficha cliente',
+        viewSale:   'Ver venta',
+      },
+    },
     actions: {
       save:   'Guardar',
       saving: 'Guardando...',
       cancel: 'Cancelar',
       delete: 'Eliminar caso',
+    },
+    casesTab: {
+      noCases:     'Sin casos aún',
+      emptySearch: 'Sin resultados para tu búsqueda',
+      new:         'Nuevo caso',
     },
   },
   suppliers: {

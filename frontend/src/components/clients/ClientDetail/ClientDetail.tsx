@@ -11,8 +11,9 @@ import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
 import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
 import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
 import ClientDocumentsTab from '../ClientDocumentsTab/ClientDocumentsTab'
-import ClientActivityTab from '../ClientActivityTab/ClientActivityTab'
-import ClientTasksTab from '../ClientTasksTab/ClientTasksTab'
+import ActivityTab from '../../shared/ActivityTab/ActivityTab'
+import TasksTab from '../../shared/TasksTab/TasksTab'
+import CasesTab from '../../shared/CasesTab/CasesTab'
 import './ClientDetail.css'
 
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
   onViewSale: (sale: Sale) => void
 }
 
-type Tab = 'summary' | 'tasks' | 'activity' | 'sales' | 'mail' | 'documents'
+type Tab = 'summary' | 'tasks' | 'cases' | 'activity' | 'sales' | 'mail' | 'documents'
 
 function initials(name: string): string {
   return name
@@ -41,6 +42,7 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
   const tabs: { id: Tab; label: string }[] = [
     { id: 'summary',   label: t('clients.tabs.summary') },
     { id: 'tasks',     label: t('clients.tabs.tasks') },
+    { id: 'cases',     label: t('clients.tabs.cases') },
     { id: 'activity',  label: t('clients.tabs.activity') },
     { id: 'sales',     label: t('clients.tabs.sales') },
     { id: 'mail',      label: t('clients.tabs.mail') },
@@ -129,13 +131,15 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
         {tab === 'summary' ? (
           <ClientSummaryTab clientId={client.id} onViewSale={onViewSale} />
         ) : tab === 'tasks' ? (
-          <ClientTasksTab clientId={client.id} clientName={client.name} />
+          <TasksTab context={{ lockedClientId: client.id, lockedClientName: client.name }} />
+        ) : tab === 'cases' ? (
+          <CasesTab clientId={client.id} clientName={client.name} />
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (
           <ClientDocumentsTab clientId={client.id} clientName={client.name} />
         ) : tab === 'activity' ? (
-          <ClientActivityTab clientId={client.id} />
+          <ActivityTab clientId={client.id} />
         ) : (
           <div className="cd-placeholder">
             <p>{t('clients.detail.comingSoon')}</p>

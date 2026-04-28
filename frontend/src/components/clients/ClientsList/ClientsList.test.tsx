@@ -107,4 +107,22 @@ describe('ClientsList', () => {
     fireEvent.click(screen.getAllByTitle('clients.edit')[0])
     expect(onView).not.toHaveBeenCalled()
   })
+
+  it('filters by mobile phone number', () => {
+    render(<ClientsList {...defaultProps} />)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: '600111222' } })
+    expect(screen.getByText('Ana García')).toBeInTheDocument()
+    expect(screen.queryByText('Blas López')).not.toBeInTheDocument()
+  })
+
+  it('filters by secondary phone number', () => {
+    const clientsWithSecondary: Client[] = [
+      { ...clients[0], secondaryPhone: '910333444' },
+      clients[1],
+    ]
+    render(<ClientsList {...defaultProps} clients={clientsWithSecondary} />)
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: '910333444' } })
+    expect(screen.getByText('Ana García')).toBeInTheDocument()
+    expect(screen.queryByText('Blas López')).not.toBeInTheDocument()
+  })
 })

@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Search, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload } from 'lucide-react'
 import { usePermissions } from '../../../hooks/usePermissions'
 import { ClientTypeLabels, ClientStatusLabels } from '@crm/shared'
 import type { Client, ImportResult } from '../../../api/clients'
 import { normalizeSearch } from '../../../utils/search'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import './ClientsList.css'
 
 interface Props {
@@ -56,7 +57,9 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
       normalizeSearch(c.name).includes(q) ||
       emailMatch ||
       (c.nif ? normalizeSearch(c.nif).includes(q) : false) ||
-      (c.clientNumber ? normalizeSearch(c.clientNumber).includes(q) : false)
+      (c.clientNumber ? normalizeSearch(c.clientNumber).includes(q) : false) ||
+      (c.mobilePhone ? normalizeSearch(c.mobilePhone).includes(q) : false) ||
+      (c.secondaryPhone ? normalizeSearch(c.secondaryPhone).includes(q) : false)
     )
   })
 
@@ -99,14 +102,13 @@ export default function ClientsList({ clients, loading, onNew, onView, onEdit, o
         </div>
       )}
 
-      <div className="table-search">
-        <Search size={16} />
-        <input
-          id="clients-search" name="clients-search" type="search" autoComplete="off"
-          value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('clients.search')}
-        />
-      </div>
+      <BasicSearch
+        id="clients-search"
+        name="clients-search"
+        value={search}
+        onChange={setSearch}
+        placeholder={t('clients.search')}
+      />
 
       {loading ? null : filtered.length === 0 ? (
         <p className="clients-empty">

@@ -8,20 +8,24 @@
  * Clicking the user name or avatar navigates to the My Account section
  * where the user can change their photo, email and password.
  */
-import { Search, Mail, Bell } from 'lucide-react'
+import { Mail, Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../auth/AuthContext'
 import { type Section } from '../Sidebar/Sidebar'
 import Avatar from '../../shared/Avatar/Avatar'
+import GlobalSearch from '../GlobalSearch/GlobalSearch'
 import './TopBar.css'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 interface TopBarProps {
-  onNavigate: (section: Section) => void
+  onNavigate:   (section: Section) => void
+  onOpenClient: (clientId: string) => void
+  onOpenSale:   (saleId: string)   => void
+  onOpenCase:   (caseId: string)   => void
 }
 
-export default function TopBar({ onNavigate }: TopBarProps) {
+export default function TopBar({ onNavigate, onOpenClient, onOpenSale, onOpenCase }: TopBarProps) {
   const { t } = useTranslation()
   const { user } = useAuth()
 
@@ -31,10 +35,11 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
   return (
     <header className="topbar">
-      <div className="topbar-search">
-        <Search size={16} />
-        <input type="search" id="global-search" name="q" autoComplete="off" placeholder={t('topbar.searchPlaceholder')} />
-      </div>
+      <GlobalSearch
+        onOpenClient={onOpenClient}
+        onOpenSale={onOpenSale}
+        onOpenCase={onOpenCase}
+      />
 
       <div className="topbar-actions">
         <button aria-label={t('topbar.mail')}>

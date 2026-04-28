@@ -12,7 +12,8 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Plus, Search, Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react'
+import { Plus, Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import {
   getTasks,
   createTask,
@@ -348,16 +349,12 @@ export default function Tasks() {
         </button>
       </div>
 
-      <div className="table-search tasks-search">
-        <Search size={14} />
-        <input
-          type="search"
-          autoComplete="off"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('tasks.searchPlaceholder')}
-        />
-      </div>
+      <BasicSearch
+        className="tasks-search"
+        value={search}
+        onChange={setSearch}
+        placeholder={t('tasks.searchPlaceholder')}
+      />
 
       {!loading && (
         <DndContext

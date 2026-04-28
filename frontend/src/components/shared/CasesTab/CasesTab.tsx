@@ -1,21 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Pencil } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
 import { useCases } from '../../../context/DataContext'
 import { deleteCase, type Case, type CaseStatus, type CasePriority } from '../../../api/cases'
 import { usePermissions } from '../../../hooks/usePermissions'
-import CaseForm from '../CaseForm/CaseForm'
-import CaseDetail from '../CaseDetail/CaseDetail'
-import BasicSearch from '../../shared/BasicSearch/BasicSearch'
-import './Cases.css'
-
-// ── Navigation stack ──────────────────────────────────────────────────────────
-
-type View =
-  | { kind: 'list' }
-  | { kind: 'detail'; case: Case }
-  | { kind: 'form';   case: Case | null }
+import BasicSearch from '../BasicSearch/BasicSearch'
+import CaseForm from '../../cases/CaseForm/CaseForm'
+import CaseDetail from '../../cases/CaseDetail/CaseDetail'
+import './CasesTab.css'
 
 // ── Badge maps ────────────────────────────────────────────────────────────────
 
@@ -33,47 +26,46 @@ const PRIORITY_CLASS: Record<CasePriority, string> = {
   LOW:    'badge-priority-low',
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  initialCaseId?: string
-  onCaseOpened?:  () => void
+  clientId:   string
+  clientName: string
+  /** If provided, cases are filtered by saleId instead of clientId. */
+  saleId?:    string
+  saleName?:  string
 }
 
-export default function Cases({ initialCaseId, onCaseOpened }: Props) {
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+type View =
+  | { kind: 'list' }
+  | { kind: 'detail'; case: Case }
+  | { kind: 'form';   case: Case | null }
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function CasesTab({ clientId, clientName, saleId, saleName }: Props) {
   const { t } = useTranslation()
   const { cases, loading, upsertCase, removeCase } = useCases()
   const { canDelete } = usePermissions()
 
-  const [stack, setStack] = useState<View[]>(() =>
-    initialCaseId ? [] : [{ kind: 'list' }]
-  )
-
-  useEffect(() => {
-    if (!initialCaseId || loading) return
-    const found = cases.find((c) => c.id === initialCaseId)
-    if (found) {
-      setStack([{ kind: 'detail', case: found }])
-    } else {
-      setStack([{ kind: 'list' }])
-    }
-    onCaseOpened?.()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCaseId, loading])
+  const [stack, setStack] = useState<View[]>([{ kind: 'list' }])
+  const [search, setSearch] = useState('')
 
   const push = (v: View) => setStack((s) => [...s, v])
   const pop  = ()        => setStack((s) => s.length > 1 ? s.slice(0, -1) : s)
 
-  const [search, setSearch] = useState('')
-
   const current = stack[stack.length - 1]
 
-  // ── Form view ───────────────────────────────────────────────────────────────
-  if (current?.kind === 'form') {
+  // ── Form view ────────────────────────────────────────────────────────────────
+  if (current.kind === 'form') {
     return (
       <CaseForm
         key={current.case?.id ?? 'new'}
         case={current.case}
+        initialClientId={current.case === null ? (saleId ? undefined : clientId) : undefined}
+        initialSaleId={current.case === null ? saleId : undefined}
         onSave={(saved) => { upsertCase(saved); pop() }}
         onCancel={pop}
         onDelete={canDelete
@@ -83,8 +75,8 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
     )
   }
 
-  // ── Detail view ─────────────────────────────────────────────────────────────
-  if (current?.kind === 'detail') {
+  // ── Detail view ──────────────────────────────────────────────────────────────
+  if (current.kind === 'detail') {
     return (
       <CaseDetail
         case={current.case}
@@ -94,42 +86,51 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
     )
   }
 
-  // ── List view ────────────────────────────────────────────────────────────────
-  const q = normalizeSearch(search)
-  const filtered = loading
+  // ── List view ─────────────────────────────────────────────────────────────────
+  const tabCases = loading
     ? []
-    : cases.filter((c) =>
-        normalizeSearch(c.client.name).includes(q) ||
-        normalizeSearch(c.name).includes(q) ||
-        normalizeSearch(c.description ?? '').includes(q)
-      )
+    : cases
+        .filter((c) => saleId ? c.saleId === saleId : c.clientId === clientId)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+  const q = normalizeSearch(search)
+  const filtered = tabCases.filter((c) =>
+    normalizeSearch(c.name).includes(q) ||
+    normalizeSearch(c.description ?? '').includes(q)
+  )
 
   return (
-    <div className="cases">
-      <div className="page-header">
-        <h1 className="page-title">{t('cases.title')}</h1>
-        <button className="btn-primary" onClick={() => push({ kind: 'form', case: null })}>
-          <Plus size={16} />
-          {t('cases.new')}
+    <div className="cases-tab">
+      <div className="cases-tab__toolbar">
+        <span className="cases-tab__count">
+          {tabCases.length > 0 ? tabCases.length : ''}
+        </span>
+        <button
+          className="btn-primary"
+          onClick={() => push({ kind: 'form', case: null })}
+        >
+          <Plus size={15} />
+          {t('cases.casesTab.new')}
         </button>
       </div>
 
-      <BasicSearch
-        value={search}
-        onChange={setSearch}
-        placeholder={t('cases.search')}
-      />
+      {tabCases.length > 0 && (
+        <BasicSearch
+          value={search}
+          onChange={setSearch}
+          placeholder={t('cases.search')}
+        />
+      )}
 
       {loading ? null : filtered.length === 0 ? (
-        <div className="cases__empty">
-          <p>{search ? t('cases.emptySearch') : t('cases.empty')}</p>
+        <div className="cases-tab__empty">
+          <p>{search ? t('cases.casesTab.emptySearch') : t('cases.casesTab.noCases')}</p>
         </div>
       ) : (
         <div className="data-table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>{t('cases.columns.client')}</th>
                 <th>{t('cases.columns.name')}</th>
                 <th>{t('cases.columns.status')}</th>
                 <th>{t('cases.columns.priority')}</th>
@@ -140,9 +141,12 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
             </thead>
             <tbody>
               {filtered.map((c) => (
-                <tr key={c.id} className="cases__row" onClick={() => push({ kind: 'detail', case: c })}>
-                  <td className="cases__client">{c.client.name}</td>
-                  <td className="cases__name">{c.name}</td>
+                <tr
+                  key={c.id}
+                  className="cases-tab__row"
+                  onClick={() => push({ kind: 'detail', case: c })}
+                >
+                  <td className="cases-tab__name">{c.name}</td>
                   <td>
                     <span className={`badge ${STATUS_CLASS[c.status]}`}>
                       {t(`cases.status.${c.status}`)}
@@ -153,7 +157,7 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
                       {t(`cases.priority.${c.priority}`)}
                     </span>
                   </td>
-                  <td className="cases__date">
+                  <td className="cases-tab__date">
                     {c.occurrenceAt
                       ? new Date(c.occurrenceAt).toLocaleString('es-ES', {
                           day: '2-digit', month: '2-digit', year: 'numeric',
@@ -161,10 +165,10 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
                         })
                       : '—'}
                   </td>
-                  <td className="cases__date">
+                  <td className="cases-tab__date">
                     {new Date(c.updatedAt).toLocaleDateString('es-ES')}
                   </td>
-                  <td className="cases__actions">
+                  <td className="cases-tab__actions">
                     <button
                       className="icon-btn"
                       onClick={(e) => { e.stopPropagation(); push({ kind: 'form', case: c }) }}

@@ -17,6 +17,11 @@ vi.mock('../../home/Home/Home', () => ({
   default: () => <div data-testid="home-section">Inicio</div>,
 }))
 
+// GlobalSearch uses DataContext hooks — stub it so Dashboard tests don't need a DataProvider
+vi.mock('../GlobalSearch/GlobalSearch', () => ({
+  default: () => <input type="search" aria-label="global-search" />,
+}))
+
 function renderDashboard() {
   return render(<AuthProvider><Dashboard /></AuthProvider>)
 }

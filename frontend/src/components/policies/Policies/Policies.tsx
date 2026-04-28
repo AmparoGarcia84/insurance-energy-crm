@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, Pencil } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import { useAuth } from '../../../auth/AuthContext'
 import { useSales } from '../../../context/DataContext'
 import SaleDetail from '../../sales/SaleDetail/SaleDetail'
@@ -102,16 +103,11 @@ export default function Policies({ onNavigateToClient }: Props) {
         <h1 className="page-title">{t('policies.title')}</h1>
       </div>
 
-      <div className="table-search">
-        <Search size={15} />
-        <input
-          type="search"
-          autoComplete="off"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={t('policies.search')}
-        />
-      </div>
+      <BasicSearch
+        value={search}
+        onChange={setSearch}
+        placeholder={t('policies.search')}
+      />
 
       {loading ? null : filtered.length === 0 ? (
         <div className="policies__empty">

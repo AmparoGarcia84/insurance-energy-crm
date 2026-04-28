@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import {
@@ -41,6 +41,8 @@ type SalesView =
 
 interface Props {
   onNavigateToClient?: (clientId: string) => void
+  initialSaleId?: string
+  onSaleOpened?: () => void
 }
 
 // ── Draggable sale card wrapper ────────────────────────────────────────────────
@@ -123,7 +125,7 @@ function SalesColumn({ stage, color, label, sales, total, totalLabel, ownerName,
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function Sales({ onNavigateToClient }: Props) {
+export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened }: Props) {
   const { t }      = useTranslation()
   const { user }   = useAuth()
   const ownerName  = user?.displayName ?? ''
@@ -132,7 +134,21 @@ export default function Sales({ onNavigateToClient }: Props) {
   const { sales, loading: salesLoading, upsertSale, removeSale } = useSales()
   const displaySales = salesLoading ? [] : sales
 
-  const [stack, setStack]     = useState<SalesView[]>([{ kind: 'board' }])
+  const [stack, setStack] = useState<SalesView[]>(() =>
+    initialSaleId ? [] : [{ kind: 'board' }]
+  )
+
+  useEffect(() => {
+    if (!initialSaleId || salesLoading) return
+    const sale = sales.find((s) => s.id === initialSaleId)
+    if (sale) {
+      setStack([{ kind: 'saleDetail', sale }])
+    } else {
+      setStack([{ kind: 'board' }])
+    }
+    onSaleOpened?.()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSaleId, salesLoading])
   const push      = (v: SalesView) => setStack(s => [...s, v])
   const pop       = ()             => setStack(s => s.length > 1 ? s.slice(0, -1) : s)
   const goToBoard = ()             => setStack([{ kind: 'board' }])

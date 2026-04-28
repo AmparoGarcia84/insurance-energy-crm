@@ -30,6 +30,9 @@ export interface TaskFormContext {
   /** When set, the sale is also pre-selected and locked. Implies lockedClientId is set too. */
   lockedSaleId?:      string
   lockedSaleName?:    string
+  /** When set, the case is pre-selected and locked. */
+  lockedCaseId?:      string
+  lockedCaseName?:    string
   /** When set, the task is linked to a supplier (mutually exclusive with client context). */
   lockedSupplierId?:  string
   lockedSupplierName?: string
@@ -121,6 +124,7 @@ function initialState(initial: TaskWithRelations | null | undefined, ctx?: TaskF
     ...EMPTY,
     clientId:   ctx?.lockedClientId   ?? '',
     saleId:     ctx?.lockedSaleId     ?? '',
+    caseId:     ctx?.lockedCaseId     ?? '',
     supplierId: ctx?.lockedSupplierId ?? '',
   }
 }
@@ -374,7 +378,9 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
   const isEditing          = Boolean(initial)
   const lockedClientName   = context?.lockedClientName
   const lockedSaleName     = context?.lockedSaleName
+  const lockedCaseName     = context?.lockedCaseName
   const lockedSupplierName = context?.lockedSupplierName
+  const caseLocked         = Boolean(context?.lockedCaseId)
 
   const saleOptions = sales.map((s) => ({ value: s.id, label: s.title }))
   const caseOptions = cases.map((c) => ({ value: c.id, label: c.title }))
@@ -563,18 +569,28 @@ export default function TaskForm({ initial, users, context, onSubmit, onSave, on
               )}
 
               {/* ── Case ── */}
-              <SearchableSelectField
-                id="tf-case"
-                label={t('tasks.form.case')}
-                name="tf-case"
-                value={form.caseId}
-                options={caseOptions}
-                emptyLabel={`— ${t('tasks.form.caseNone')} —`}
-                searchPlaceholder={t('common.searchOptions')}
-                noResultsLabel={t('common.noResults')}
-                onChange={handleCaseChange}
-                disabled={!form.saleId}
-              />
+              {caseLocked ? (
+                <InputField
+                  id="tf-case-locked"
+                  label={t('tasks.form.case')}
+                  value={lockedCaseName ?? form.caseId}
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <SearchableSelectField
+                  id="tf-case"
+                  label={t('tasks.form.case')}
+                  name="tf-case"
+                  value={form.caseId}
+                  options={caseOptions}
+                  emptyLabel={`— ${t('tasks.form.caseNone')} —`}
+                  searchPlaceholder={t('common.searchOptions')}
+                  noResultsLabel={t('common.noResults')}
+                  onChange={handleCaseChange}
+                  disabled={!form.saleId}
+                />
+              )}
 
             </div>
           )}

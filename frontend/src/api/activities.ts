@@ -19,19 +19,21 @@ export interface ActivityWithRelations extends Activity {
 export interface ActivityFilters {
   clientId?: string
   saleId?:   string
+  caseId?:   string
   type?:     ActivityType
 }
 
 export interface ActivityPayload {
-  clientId:    string
-  saleId?:     string
-  type:        ActivityType
-  direction?:  ActivityDirectionEnum
-  subject:     string
+  clientId:     string
+  saleId?:      string
+  caseId?:      string
+  type:         ActivityType
+  direction?:   ActivityDirectionEnum
+  subject:      string
   description?: string
-  outcome?:    string
-  nextStep?:   string
-  activityAt:  string
+  outcome?:     string
+  nextStep?:    string
+  activityAt:   string
 }
 
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/activities`
@@ -47,6 +49,7 @@ export function getActivities(filters: ActivityFilters = {}): Promise<ActivityWi
   const params = new URLSearchParams()
   if (filters.clientId) params.set('clientId', filters.clientId)
   if (filters.saleId)   params.set('saleId',   filters.saleId)
+  if (filters.caseId)   params.set('caseId',   filters.caseId)
   if (filters.type)     params.set('type',      filters.type)
   const qs = params.toString()
   return request<ActivityWithRelations[]>(qs ? `${BASE}?${qs}` : BASE)

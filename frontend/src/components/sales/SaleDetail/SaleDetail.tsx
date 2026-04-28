@@ -8,8 +8,9 @@ import {
   ENERGY_STAGE_COLORS,
 } from '../../../api/sales'
 import { useClients } from '../../../context/DataContext'
-import SaleActivityTab from '../SaleActivityTab/SaleActivityTab'
-import SaleTasksTab from '../SaleTasksTab/SaleTasksTab'
+import ActivityTab from '../../shared/ActivityTab/ActivityTab'
+import TasksTab from '../../shared/TasksTab/TasksTab'
+import CasesTab from '../../shared/CasesTab/CasesTab'
 import SaleDocumentsTab from '../SaleDocumentsTab/SaleDocumentsTab'
 import './SaleDetail.css'
 
@@ -20,7 +21,7 @@ interface Props {
   onViewClient?: (clientId: string) => void
 }
 
-type Tab = 'information' | 'activity' | 'tasks' | 'documents'
+type Tab = 'information' | 'activity' | 'tasks' | 'cases' | 'documents'
 
 function branchBadgeClass(branch: string): string {
   const b = branch.toLowerCase()
@@ -80,6 +81,7 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
     { id: 'information', label: t('sales.detail.tabs.information') },
     { id: 'activity',    label: t('sales.detail.tabs.activity') },
     { id: 'tasks',       label: t('sales.detail.tabs.tasks') },
+    { id: 'cases',       label: t('sales.detail.tabs.cases') },
     { id: 'documents',   label: t('sales.detail.tabs.documents') },
   ]
 
@@ -295,20 +297,31 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
         )}
 
         {tab === 'activity' && (
-          <SaleActivityTab
-            saleId={sale.id}
+          <ActivityTab
             clientId={sale.clientId}
+            saleId={sale.id}
             openFormOnMount={activityFormOpen}
             key={`activity-${activityFormOpen}`}
           />
         )}
 
         {tab === 'tasks' && (
-          <SaleTasksTab
-            saleId={sale.id}
-            saleTitle={sale.title}
+          <TasksTab
+            context={{
+              lockedClientId:   sale.clientId,
+              lockedClientName: sale.clientName ?? '',
+              lockedSaleId:     sale.id,
+              lockedSaleName:   sale.title,
+            }}
+          />
+        )}
+
+        {tab === 'cases' && (
+          <CasesTab
             clientId={sale.clientId}
             clientName={sale.clientName ?? ''}
+            saleId={sale.id}
+            saleName={sale.title}
           />
         )}
 

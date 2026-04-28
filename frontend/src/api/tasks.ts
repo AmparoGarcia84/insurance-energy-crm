@@ -16,6 +16,8 @@ export interface TaskWithRelations extends Task {
 
 export interface TaskFilters {
   clientId?:          string
+  saleId?:            string
+  caseId?:            string
   supplierId?:        string
   status?:            TaskStatus
   assignedToUserId?:  string
@@ -57,6 +59,8 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 export function getTasks(filters: TaskFilters = {}): Promise<TaskWithRelations[]> {
   const params = new URLSearchParams()
   if (filters.clientId)          params.set('clientId',          filters.clientId)
+  if (filters.saleId)            params.set('saleId',            filters.saleId)
+  if (filters.caseId)            params.set('caseId',            filters.caseId)
   if (filters.supplierId)        params.set('supplierId',        filters.supplierId)
   if (filters.status)            params.set('status',            filters.status)
   if (filters.assignedToUserId)  params.set('assignedToUserId',  filters.assignedToUserId)

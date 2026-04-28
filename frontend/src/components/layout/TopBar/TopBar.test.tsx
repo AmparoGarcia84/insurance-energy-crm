@@ -15,8 +15,21 @@ vi.mock('../../../auth/AuthContext', () => ({
   useAuth: () => ({ user: { displayName: 'Mila García', role: 'OWNER' }, setUser: vi.fn() }),
 }))
 
-function renderTopBar(onNavigate = vi.fn()) {
-  return { onNavigate, ...render(<TopBar onNavigate={onNavigate} />) }
+// GlobalSearch uses DataContext hooks — stub it out in TopBar tests.
+// GlobalSearch has its own test file for full interaction coverage.
+vi.mock('../GlobalSearch/GlobalSearch', () => ({
+  default: () => <input type="search" aria-label="global-search" />,
+}))
+
+function renderTopBar(overrides: Partial<Parameters<typeof TopBar>[0]> = {}) {
+  const props = {
+    onNavigate:   vi.fn(),
+    onOpenClient: vi.fn(),
+    onOpenSale:   vi.fn(),
+    onOpenCase:   vi.fn(),
+    ...overrides,
+  }
+  return { ...props, ...render(<TopBar {...props} />) }
 }
 
 describe('TopBar', () => {

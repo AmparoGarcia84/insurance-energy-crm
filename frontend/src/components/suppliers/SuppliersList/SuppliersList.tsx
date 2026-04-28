@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { usePermissions } from '../../../hooks/usePermissions'
 import { normalizeSearch } from '../../../utils/search'
 import type { Supplier } from '../../../api/suppliers'
+import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import './SuppliersList.css'
 
 interface Props {
@@ -45,18 +46,13 @@ export default function SuppliersList({ suppliers, loading, onNew, onView, onEdi
         </button>
       </div>
 
-      <div className="table-search">
-        <Search size={16} />
-        <input
-          id="suppliers-search"
-          name="suppliers-search"
-          type="search"
-          autoComplete="off"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('suppliers.search')}
-        />
-      </div>
+      <BasicSearch
+        id="suppliers-search"
+        name="suppliers-search"
+        value={search}
+        onChange={setSearch}
+        placeholder={t('suppliers.search')}
+      />
 
       {loading ? null : filtered.length === 0 ? (
         <p className="suppliers-empty">

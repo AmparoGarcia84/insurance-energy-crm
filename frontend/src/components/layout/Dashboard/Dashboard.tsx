@@ -18,20 +18,32 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const [activeSection, setActiveSection] = useState<Section>('home')
   const [pendingClientId, setPendingClientId] = useState<string | null>(null)
+  const [pendingSaleId,   setPendingSaleId]   = useState<string | null>(null)
+  const [pendingCaseId,   setPendingCaseId]   = useState<string | null>(null)
 
   function navigateToClient(clientId: string) {
     setPendingClientId(clientId)
     setActiveSection('clients')
   }
 
+  function navigateToSale(saleId: string) {
+    setPendingSaleId(saleId)
+    setActiveSection('sales')
+  }
+
+  function navigateToCase(caseId: string) {
+    setPendingCaseId(caseId)
+    setActiveSection('cases')
+  }
+
   function renderSection() {
     switch (activeSection) {
       case 'home':           return <Home />
       case 'clients':        return <Clients initialClientId={pendingClientId ?? undefined} onClientOpened={() => setPendingClientId(null)} />
-      case 'sales':          return <Sales onNavigateToClient={navigateToClient} />
+      case 'sales':          return <Sales onNavigateToClient={navigateToClient} initialSaleId={pendingSaleId ?? undefined} onSaleOpened={() => setPendingSaleId(null)} />
       case 'policies':       return <Policies onNavigateToClient={navigateToClient} />
       case 'energy':         return <Energy onNavigateToClient={navigateToClient} />
-      case 'cases':          return <Cases />
+      case 'cases':          return <Cases initialCaseId={pendingCaseId ?? undefined} onCaseOpened={() => setPendingCaseId(null)} />
       case 'tasks':          return <Tasks />
       case 'collaborators':  return <Collaborators />
       case 'suppliers':      return <Suppliers />
@@ -45,7 +57,12 @@ export default function Dashboard() {
     <div className="dashboard">
       <Sidebar activeSection={activeSection} onNavigate={setActiveSection} />
       <div className="dashboard-main">
-        <TopBar onNavigate={setActiveSection} />
+        <TopBar
+          onNavigate={setActiveSection}
+          onOpenClient={navigateToClient}
+          onOpenSale={navigateToSale}
+          onOpenCase={navigateToCase}
+        />
         <main className="dashboard-content">
           {renderSection()}
         </main>

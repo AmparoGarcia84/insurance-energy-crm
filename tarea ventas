@@ -1,0 +1,202 @@
+Vamos a definir el rediseño de ventas (Sales ya implementado):
+Antes de desarrollar nada, quiero ver cómo es la mejor forma de hacerlo teniendo en cuenta los campos y cómo se comportan para el usuario.
+Hay que tener en cuenta que se mostrarán las ventas en kanban separadas seguro y energía, tienen las mismas fases excepto una (ya implementado)
+La idea de separar dos mundos de fases me parece bien pero teniendo en cuenta que ya separamos seguros y energía, ¿Cómo mostraríamos esta parte del proyecto, qué vistas podremos poner? ahora hay vista kanban, formulario de crear/editar y vista detalle de la venta.
+
+Campos de venta de SEGUROS:
+- Propietario de venta: (agente que gestiona dicha venta a elegir entre usuarios y colaboradores)
+- Nombre de la venta: texto libre con límite de caracteres
+- Cliente: un cliente existente con filtro por nombre dni, numero de cliente (tal y como está ahora).
+- compañía: ENUM -> será una tabla con compañía y comisión correduría dependiendo del ramo
+- Ramo: hogar, auto… (ENUM)
+- Tipo: nuevo negocio o negocio existente
+- Fuente del proyecto: ENUM
+- Fuente de campaña: Texto libre
+- Número de Póliza: código con números y letras con caracter especial
+- Importe total: El importe total que pagará el cliente
+- Ingresos esperados: El calculado con los datos de cálculo
+    - para los cálculos de facturación: (prima neta X comisión correduría X comisión GG)/ recurrencia  = lo que cobro este mes)
+        - prima neta: en euros
+        - prima total: en euros (prima neta + impuestos) 
+        - comisión correduría % (tabla compañia -ramo )
+        - comisión grupo galena % (70% sobre comisión correduría) -> calculo sobre cartera (suma total de prima neta de esta compañía de todas las pólizas)
+- cuenta bancaria: que se pueda elegir una de las cuentas bancarias del cliente o añadir una diferente.
+- Fecha de cierre: (esto me sirve para tener controlado cuánto tiempo lleva en trámite la gestión) 
+- Fecha de emisión/activación: Fecha en la que se formaliza el contrato.
+- Fecha de facturación: Se calcula según ->fecha de emisión -> último día del mismo mes 
+- Fecha de cobro: Se calcula según ->fecha de emisión -> se recibe en banco del 15 al 20 del mes siguiente
+- Forma de pago: ENUM
+    - no (caso seguro temporal)
+    - mensual (cobro 12 veces este importe)
+    - trimestral (cobro 4 veces este importe)
+    - semestral (cobro 2 veces este importe)
+    - anual (cobro 1 vez este importe)
+    - aplazado (cada 45 días 3 veces)
+- Fase: -> si cobrado, paso a cobro al siguiente ciclo. (mismas fases que hay ahora en sales)
+- Probabilidad: Se calcula según la fase en la que esté ?? 
+    - cotización proyecto estudio = 10%
+    - pendiente respuesta = 20%
+    - pendiente doc = 40%
+    - pendiente firma = 80%
+    - firmado, pendiente de emisión, activación = 90%
+    - cobro este mes = 99%
+    - recibo recurrente = 98%
+    - erroneo = 99%
+    - cobrado y facturado = 100%
+- Descripción del riesgo: dirección si es ramo hogar, nombre si es salud, matricula si es auto…
+- Nº de recibo -> recibo de cobro del cliente con fecha y poder añadir nuevos cada cobro.
+- Descripción: Texto libre con límite de caracteres.
+
+Campos de venta de ENERGÍA:
+
+- Propietario de venta: (agente que gestiona dicha venta a elegir entre usuarios y colaboradores)
+- Nombre de la venta: texto libre con límite de caracteres)
+- Cliente: un cliente existente con filtro por nombre dni, numero de cliente.
+- compañía: ENUM de compañias de energía (iberdrola, naturgy...)
+- Tipo: nuevo negocio o negocio existente
+- Fuente del proyecto: (Enum que hay ya en el proyecto)
+- Fuente de campaña: 
+- ID contrato: 
+- Producto: ENUM (Luz o gas)
+- Tarifa: ENUM según producto
+    - TARIFAS LUZ: 2.0TD, 3.0TD, 6.1TD
+    - TARIFAS GAS: RL1, RL2, RL3 Y RL4
+- Tipo de tarifa: ENUM (indexado, fijo, variable)
+- Importe: lo que se va a cobrar. Para los cálculos de facturación: Que se pueda subir un csv con datos (falta definir)
+- cuenta bancaria: que se pueda elegir una de las cuentas bancarias del cliente o añadir una diferente.
+- Fecha de cierre: cuando el cliente dice SI (fecha que cambia el usuario una vez creada la venta)
+- Fecha de emisión/activación: cuando se formaliza el contrato (fecha que cambia el usuario una vez creada la venta)
+- Forma de pago: ENUM (inicial, carterizado, renovación inicial, renovación carterizada).
+- Fecurrencia: 
+    - Carterizada (mensual)
+    - inicial (al principio de la activación del contrato - anual, cobro 1 vez este importe)
+- Fase: -> si cobrado, paso a cobro siguiente ciclo (las fases que ya están en Sales)
+- Fecha de cobro: Se calcula según ->Condición de cobro: a mes vencido todas excepto naturgy que es 
+    - Del 1 al 15 -> cobro el 5 del mes siguiente (solo si es Naturgy)
+    - Del 16 al fin -> cobro el 24 del mes siguiente (solo si es Naturgy)
+- Probabilidad: igual que en SEGUROS
+- Descripción: Texto libre con límite de caracteres.
+
+RESPUESTAS A LAS PREGUNTAS DE CLAUDE:
+1- se borran ambos canal y contactName
+2- Hay una entidad separada de colaboradores, el propietario de la venta puede ser uno de ellos o un usuario (normalmente un usuario)
+3- En SEGUROS la comisión depende de la compañía y dentro de cada compañía depende del ramo, en ENERGÍA solamente será un enum de los valores posibles de compañías de energía que no necesariamente coincidirán con las compañías de seguros. Hay que separar compañías de seguros y compañías de energía.
+4- Conectar al ramo correcto del enum. 
+5- La frecuencia de los pagos depende de si es Seguros o energía, yo lo nombraría como frecuenciaPagoSeguros y frecuenciaPagoEnergía (en inglés y el orden que sea más adecuado para que sea acorde con todo el proyecto)
+6- la comisión de grupo galena depende de una tabla de ventas que tienen ellos, que ahora está en 70% que cambiará si venden más, depende de la suma de primas netas de dicha compañía. falta definir esta tabla, de momento dejemos en 70% editable, teniendo en cuenta que en futuro puede añadirse la tabla que defina en qué rangos de prima neta total de la compañia corresponda a cada porcentaje. 
+(netPremium × brokerCommission% × galenaCommission%) / recurrencia -> La recurrencia en esta ecuación sería: si es anual lo divido entre 1, si es semestral lo divido entre 2, si es mensual lo divido entre 12... 
+7- Fechas de cobro en seguros: fecha de facturación es el día que se emite la factura, la fecha que pondrá en la factura, pero no llega al banco hasta la fecha de cobro, entre el 15 y 20 del mes siguiente, pon 15 fijo y que el usuario lo cambie manualmente a cobrado cuando reciba el dinero. 
+Las fechas creo que es mejor que se calculen y se guarden ya que se usarán para cambiar de fases las ventas, tendremos que añadir los condicionantes para cambiar automáticamente de fase según en la fecha que estemos -> dime qué opinas sobre esto.
+8- si, así estaría bien
+9- Que se haga en el backend y se muestre en el frontend donde corresponda, a lo mejor no hace falta ponerlo en el formulario.
+10- así está bien, ya que una venta puede ir dando vueltas por las fases si es un pago recurrente y puede tener recibo de cada vez que se cobre. Sería mejor esto? o que se cuerre la venta cada vez que se cobre y se abra una nueva para siguiente cobro? sería más fácil ver el seguimiento si no se cierra la venta creo.Además tendremos actividad asociada a la venta en la que podremos ve todo lo que se hace sobre esa venta.
+11- csv de calculo para segunda fase
+12- Tengo pensado hacer info de cada input explicativo que al poner el ratón encima te salga la info.
+
+Preguntas concretas antes de empezar:
+Colaboradores: ¿son clientes con type=COLLABORATOR, o hay otra entidad? -> otra entidad ya creada
+Compañía Energía: ¿misma tabla que compañía seguros, o separada? -> separada
+Comisión Galena: ¿la calcula el sistema o la introduce Mila manualmente? -> 70% fijo pero editable por si cambia
+Fecha de cobro seguros: ¿guardamos la fecha calculada o solo la mostramos? -> decide en base a lo que te he puesto arriba
+Canal en Energía: ¿texto libre o ENUM? -> lo eliminamos también
+CSV energía: ¿lo incluimos en este sprint o lo dejamos para después? -> siguiente fase
+contactName: ¿se elimina también o se conserva? -> eliminamos
+
+El problema del ciclo de fases en ventas recurrentes:
+
+Una venta de seguro semestral tiene este ciclo de vida real:
+
+    Enero: se emite → Cobro enero (1ª vez)
+    Julio: vence → Cobro julio (2ª vez)
+    Enero siguiente: vence → Cobro enero (3ª vez)
+    ...
+
+
+Entre enero y julio esa venta no está "en cobro". Pero sí está activa y en cartera. La fase actual RECURRENT_BILLING es correcta para ese estado intermedio — la venta está viva, esperando su próximo vencimiento.
+
+Propuesta: fases divididas en dos mundos
+
+Mundo 1 — Pipeline (manual, hasta la emisión)
+
+    El usuario mueve la venta a mano:
+
+    QUOTE_STUDY → RESPONSE_PENDING → DOCUMENTS_PENDING → SIGNATURE_PENDING → ISSUANCE_PENDING
+
+
+Mundo 2 — Ciclo de cobro (automático, desde la emisión)
+
+    El sistema mueve la venta según las fechas:
+
+    RECURRENT_BILLING  ←──────────────────────────────────┐
+        │  (nextCollectionDate se acerca al mes siguiente)│
+        ↓                                                 │
+    BILLING_NEXT_MONTH                                     │
+        │  (nextCollectionDate entra en este mes)         │
+        ↓                                                 │
+    BILLING_THIS_MONTH                                     │
+        │  (usuario confirma que llegó el dinero)         │
+        ↓                                                 │
+    BILLED_AND_PAID  ──── si es recurrente: recalcula nextCollectionDate y vuelve arriba
+                    ──── si es NONE (temporal): se queda aquí definitivamente
+
+
+La pieza clave: nextCollectionDate
+
+    Necesitamos un campo nuevo en Sale: nextCollectionDate (fecha del próximo cobro esperado).
+
+    Se calcula al guardar por primera vez (a partir de issueDate + paymentFrequency)
+
+    Cuando el usuario marca BILLED_AND_PAID, el backend recalcula nextCollectionDate sumando el periodo correspondiente y devuelve la venta a RECURRENT_BILLING
+
+    El sistema compara nextCollectionDate con la fecha de hoy para mover automáticamente entre RECURRENT_BILLING → BILLING_NEXT_MONTH → BILLING_THIS_MONTH
+
+Ejemplo semestral:
+
+    issueDate = 15 enero, paymentFrequency = SEMIANNUAL
+
+    nextCollectionDate = 15 julio (primer cobro)
+
+    Hasta junio: RECURRENT_BILLING (nada que hacer)
+
+    En junio: BILLING_NEXT_MONTH (se acerca)
+
+    En julio: BILLING_THIS_MONTH (cobrar ahora)
+
+    Usuario confirma cobro: BILLED_AND_PAID → nextCollectionDate = 15 enero siguiente → RECURRENT_BILLING
+
+Respuestas del cliente:
+
+Pregunta 1. El kanban y las ventas recurrentes
+    Si tenemos 200 ventas activas en cartera, la mayoría estará en RECURRENT_BILLING. El kanban actual las mostraría todas en esa columna — sería un muro de tarjetas que no dice nada útil.
+    Opciones:
+    A) Un kanban solo para pipeline (fases 1–5, hasta ISSUANCE_PENDING), y una vista de cartera / cobros separada para las fases del ciclo de cobro. En la vista de cartera se filtra por "cobros este mes", "cobros próximo mes", "en cartera activa".
+    B) Un kanban único con todas las fases. Las ventas en RECURRENT_BILLING están pero filtradas por defecto, con un toggle para mostrarlas.
+    C) Otro criterio que uses tú actualmente.
+    ¿Cuál se acerca más a cómo quieres trabajar?
+Respuesta:
+    realmente lo que más me interesa saber es cuánto cobro este mes y cuánto tengo de previsión para el mes siguiente. (Esto para el Kanban), por lo tanto sería la A
+
+Pregunta 2. WRONG_SETTLEMENT (Liquidación errónea)
+    Actualmente está en el enum como fase. ¿Es una fase temporal de la que sale la venta cuando se resuelve el error, o es un estado terminal (la venta se "murió" por error de liquidación)?
+    Si es temporal: ¿a qué fase vuelve después de resolver? ¿BILLING_THIS_MONTH o BILLED_AND_PAID?
+Respuesta:
+    El siguiente paso sería primero a cobro de este mes o mes que viene, depende de la fecha en la que lo reclame y revisen, y después a cobrado y facturado
+
+Pregunta 3. BILLING_NEXT_MONTH — ¿manual o automático?
+    sta fase la mueve el sistema automáticamente cuando nextCollectionDate cae el mes siguiente, o la puede mover el usuario a mano? Mi propuesta es que sea solo automática (el usuario no debería tener que moverla). ¿De acuerdo?
+Respuesta:
+    Automáticamente
+
+Pregunta 4. Confirmar cobro: ¿acción explícita o cambio de fase?
+    Cuando el dinero llega, el usuario:
+    A) Cambia la fase manualmente a BILLED_AND_PAID desde el kanban o el detalle.
+    B) En la pestaña de recibos del detalle, añade un recibo nuevo → el sistema marca automáticamente BILLED_AND_PAID y recalcula nextCollectionDate.
+    La opción B me parece más limpia porque vincula el cobro al recibo. ¿Qué prefieres?
+Respuesta:
+    Opción B
+
+Pregunta 5. Ventas DEFERRED (aplazado — cada 45 días × 3 veces)
+    Este tipo de pago tiene 3 cobros fijos, no es indefinidamente recurrente. Después del 3er cobro, la venta se cierra (BILLED_AND_PAID definitivo).
+    ¿Confirmamos que DEFERRED tiene exactamente 3 cuotas siempre, o es un número configurable?
+Respuesta:
+    Tiene siempre 3 cobros fijos, se divide la prima neta en 3 veces y en el primer recibo se añaden los impuestos. Después pasa al año siguiente como recurrente. Digamos que es un cobro anual pero el importe se cobra aplazado en 3 veces (1 cada 45 días)
