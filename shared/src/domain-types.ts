@@ -781,50 +781,6 @@ export interface Task extends BaseEntity {
 }
 
 // ----------------------------------------------------
-// Policy
-// ----------------------------------------------------
-
-export enum InsuranceBranch {
-  HOGAR = "HOGAR",
-  AUTO = "AUTO",
-  VIDA = "VIDA",
-  SALUD = "SALUD",
-  RC = "RC",
-  COMERCIO = "COMERCIO",
-  INDUSTRIAL = "INDUSTRIAL",
-  OTROS = "OTROS",
-}
-
-export enum PolicyStatus {
-  ACTIVE = "ACTIVE",
-  PENDING_DOCS = "PENDING_DOCS",
-  CANCELED = "CANCELED",
-  EXPIRED = "EXPIRED",
-}
-
-export enum PaymentFrequency {
-  MONTHLY = "MONTHLY",
-  QUARTERLY = "QUARTERLY",
-  SEMIANNUAL = "SEMIANNUAL",
-  ANNUAL = "ANNUAL",
-}
-
-export interface Policy extends BaseEntity {
-  clientId: UUID
-  dealId?: UUID
-  insurer?: string
-  branch: InsuranceBranch
-  policyNumber?: string
-  status: PolicyStatus
-  startDate?: ISODate
-  endDate?: ISODate
-  renewalDate?: ISODate
-  paymentFrequency?: PaymentFrequency
-  premiumAmount?: number
-  commissionAmount?: number
-}
-
-// ----------------------------------------------------
 // Claim
 // ----------------------------------------------------
 
@@ -847,63 +803,6 @@ export interface Claim extends BaseEntity {
   description?: string
   referenceNumber?: string
   nextActionAt?: ISODateTime
-}
-
-// ----------------------------------------------------
-// Energy
-// ----------------------------------------------------
-
-export enum SupplyType {
-  ELECTRICITY = "ELECTRICITY",
-  GAS = "GAS",
-}
-
-export enum EnergyContractStatus {
-  IN_PROGRESS = "IN_PROGRESS",
-  ACTIVE = "ACTIVE",
-  CANCELED = "CANCELED",
-}
-
-export enum EnergyStudyStatus {
-  DRAFT = "DRAFT",
-  IN_PROGRESS = "IN_PROGRESS",
-  OFFER_SENT = "OFFER_SENT",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-}
-
-export interface EnergyContract extends BaseEntity {
-  clientId: UUID
-  dealId?: UUID
-  supplyType: SupplyType
-  cups?: string
-  tariff?: string
-  retailer?: string
-  distributor?: string
-  status: EnergyContractStatus
-  startDate?: ISODate
-  endDate?: ISODate
-  hasPermanence?: boolean
-  permanenceEndDate?: ISODate
-}
-
-export interface EnergyStudy extends BaseEntity {
-  clientId: UUID
-  dealId?: UUID
-  cups?: string
-  status: EnergyStudyStatus
-  currentTariff?: string
-  proposedTariff?: string
-  estimatedAnnualSavings?: number
-  recommendations?: string
-}
-
-export interface EnergyStudyInput extends BaseEntity {
-  energyStudyId: UUID
-  period: string
-  kwh?: number
-  kwMax?: number
-  reactiveKvarh?: number
 }
 
 // ----------------------------------------------------

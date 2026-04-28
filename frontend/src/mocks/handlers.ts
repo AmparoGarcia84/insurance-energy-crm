@@ -6,13 +6,17 @@
  * on every page load, which is the expected demo behaviour.
  *
  * Endpoints covered:
- *  Auth    POST /auth/login  GET /auth/me  POST /auth/logout
- *  Clients GET/POST/PUT/DELETE /clients
- *  Sales   GET/POST/PUT/DELETE /sales
- *  Users   GET/POST/DELETE /admin/users
- *  Collab. GET/POST/PUT/DELETE /collaborators
- *  Tasks   GET/POST/PATCH/DELETE /tasks
- *  Docs    GET/POST/PATCH/DELETE /documents
+ *  Auth      POST /auth/login  GET /auth/me  POST /auth/logout
+ *  Clients   GET/POST/PUT/DELETE /clients
+ *  Sales     GET/POST/PUT/DELETE /sales
+ *  Users     GET/POST/DELETE /admin/users
+ *  Collab.   GET/POST/PUT/DELETE /collaborators
+ *  Tasks     GET/POST/PATCH/DELETE /tasks
+ *  Docs      GET/POST/PATCH/DELETE /documents
+ *  Activities GET/POST/PATCH/DELETE /activities
+ *  Dashboard GET /dashboard/summary
+ *  Cases     GET/POST/PUT/DELETE /cases
+ *  Suppliers GET/POST/PUT/DELETE /suppliers
  */
 
 import { http, HttpResponse } from 'msw'
@@ -25,10 +29,12 @@ import { TaskStatus } from '../api/tasks'
 import type { DocumentRecord } from '../api/documents'
 import type { ActivityWithRelations } from '../api/activities'
 import type { Case, CaseInput } from '../api/cases'
+import type { Supplier, SupplierInput } from '../api/suppliers'
 import {
   DEMO_USERS, DEMO_CREDENTIALS,
   DEMO_CLIENTS, DEMO_SALES, DEMO_COLLABORATORS,
   DEMO_TASKS, DEMO_DOCUMENTS, DEMO_ACTIVITIES, DEMO_CASES,
+  DEMO_SUPPLIERS,
 } from './seedData'
 
 // ── In-memory store (reset on every page load) ────────────────────────────────
@@ -43,6 +49,7 @@ const store = {
   documents:   structuredClone(DEMO_DOCUMENTS)   as DocumentRecord[],
   activities:  structuredClone(DEMO_ACTIVITIES)  as ActivityWithRelations[],
   cases:       structuredClone(DEMO_CASES)       as Case[],
+  suppliers:   structuredClone(DEMO_SUPPLIERS)   as Supplier[],
 }
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -614,6 +621,56 @@ const casesHandlers = [
   }),
 ]
 
+// ── Suppliers ─────────────────────────────────────────────────────────────────
+
+const suppliersHandlers = [
+  http.get(`${API}/suppliers`, () =>
+    HttpResponse.json(store.suppliers)
+  ),
+
+  http.get(`${API}/suppliers/:id`, ({ params }) => {
+    const found = store.suppliers.find((s) => s.id === params.id)
+    if (!found) return new HttpResponse(null, { status: 404 })
+    return HttpResponse.json(found)
+  }),
+
+  http.post(`${API}/suppliers`, async ({ request }) => {
+    const body = await request.json() as SupplierInput
+    const created: Supplier = {
+      id:        crypto.randomUUID(),
+      name:      body.name,
+      cif:       body.cif,
+      phone:     body.phone,
+      secondaryPhone: body.secondaryPhone,
+      addresses: body.addresses ?? [],
+      emails:    body.emails    ?? [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    store.suppliers.push(created)
+    return HttpResponse.json(created, { status: 201 })
+  }),
+
+  http.put(`${API}/suppliers/:id`, async ({ params, request }) => {
+    const idx = store.suppliers.findIndex((s) => s.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    const body = await request.json() as Partial<SupplierInput>
+    store.suppliers[idx] = {
+      ...store.suppliers[idx],
+      ...body,
+      updatedAt: new Date().toISOString(),
+    }
+    return HttpResponse.json(store.suppliers[idx])
+  }),
+
+  http.delete(`${API}/suppliers/:id`, ({ params }) => {
+    const idx = store.suppliers.findIndex((s) => s.id === params.id)
+    if (idx === -1) return new HttpResponse(null, { status: 404 })
+    store.suppliers.splice(idx, 1)
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export const handlers = [
@@ -627,4 +684,5 @@ export const handlers = [
   ...activityHandlers,
   ...dashboardHandlers,
   ...casesHandlers,
+  ...suppliersHandlers,
 ]

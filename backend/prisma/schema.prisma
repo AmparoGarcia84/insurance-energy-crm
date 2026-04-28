@@ -143,8 +143,6 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  policies        Policy[]
-  energyContracts EnergyContract[]
   cases           Case[]
   sales           Sale[]
   tasks           Task[]
@@ -293,58 +291,6 @@ model Sale {
   tasks      Task[]
   documents  Document[]
   activities Activity[]
-
-  @@index([clientId])
-}
-
-// ── Policy ────────────────────────────────────────────────────────────────────
-
-enum PolicyStatus {
-  ACTIVE
-  EXPIRED
-  CANCELLED
-  PENDING
-}
-
-model Policy {
-  id           String       @id @default(uuid())
-  clientId     String
-  client       Client       @relation(fields: [clientId], references: [id])
-  policyNumber String?
-  insurer      String
-  product      String
-  status       PolicyStatus @default(ACTIVE)
-  startDate    DateTime
-  endDate      DateTime?
-  premium      Float?
-  notes        String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-
-  @@index([clientId])
-}
-
-// ── EnergyContract ────────────────────────────────────────────────────────────
-
-enum EnergyContractStatus {
-  ACTIVE
-  CANCELLED
-  PENDING
-  EXPIRED
-}
-
-model EnergyContract {
-  id        String               @id @default(uuid())
-  clientId  String
-  client    Client               @relation(fields: [clientId], references: [id])
-  supplier  String
-  cups      String?
-  status    EnergyContractStatus @default(ACTIVE)
-  startDate DateTime
-  endDate   DateTime?
-  notes     String?
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
 
   @@index([clientId])
 }

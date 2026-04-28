@@ -1,0 +1,110 @@
+Vamos a definir el diseño de ventas:
+Antes de desarrollar nada, quiero cer cómo es la mejor forma de hacerlo teniendo en cuenta los campos y cómo se comportan para el usuario.
+
+Campos de venta de SEGUROS:
+- Propietario de venta: (agente que gestiona dicha venta a elegir entre usuarios y colaboradores)
+- Nombre de la venta: texto libre con límite de caracteres
+- Cliente: un cliente existente con filtro por nombre dni, numero de cliente.
+- compañía: ENUM -> será una tabla con compañía y comisión correduría dependiendo del ramo
+- Ramo: hogar, auto… (ENUM)
+- Tipo: nuevo negocio o negocio existente
+- Canal: -> ELIMINAR
+- Fuente del proyecto: ENUM
+- Fuente de campaña: Texto libre
+- Número de Póliza: código con números y letras con caracter especial
+- ID contrato: -> ELIMINAR
+- Importe total: El importe total que pagará el cliente
+- Ingresos esperados: El calculado con los datos de cálculo
+    - para los cálculos de facturación: (prima neta X comisión correduría X comisión GG)/ recurrencia  = lo que cobro este mes)
+        - prima neta: en euros
+        - prima total: en euros (prima neta + impuestos) 
+        - comisión correduría % (tabla compañia -ramo )
+        - comisión grupo galena % (70% sobre comisión correduría) -> calculo sobre cartera (suma total de prima neta de esta compañía de todas las pólizas)
+- cuenta bancaria: que se pueda elegir una de las cuentas bancarias del cliente o añadir una diferente.
+- Fecha de cierre: (esto me sirve para tener controlado cuánto tiempo lleva en trámite la gestión) 
+- Fecha de emisión/activación: Fecha en la que se formaliza el contrato.
+- Fecha de facturación: Se calcula según ->fecha de emisión -> último día del mismo mes 
+- Fecha de cobro: Se calcula según ->fecha de emisión -> se recibe en banco del 15 al 20 del mes siguiente
+- Forma de pago: 
+    - no (caso seguro temporal)
+    - mensual (cobro 12 veces este importe)
+    - trimestral (cobro 4 veces este importe)
+    - semestral (cobro 2 veces este importe)
+    - anual (cobro 1 vez este importe)
+    - aplazado (cada 45 días 3 veces)
+- Fase: -> si cobrado, paso a cobro al siguiente ciclo.
+- Probabilidad: Se calcula según la fase en la que esté ?? 
+    - cotización proyecto estudio = 10%
+    - pendiente respuesta = 20%
+    - pendiente doc = 40%
+    - pendiente firma = 80%
+    - firmado, pendiente de emisión, activación = 90%
+    - cobro este mes = 99%
+    - recibo recurrente = 98%
+    - erroneo = 99%
+    - cobrado y facturado = 100%
+- Categoría de la previsión: -> ELIMINAR
+- Social Lead: -> ELIMINAR
+- Descripción del riesgo: dirección si es ramo hogar, nombre si es salud, matricula si es auto…
+- Nº de recibo -> recibo de cobro del cliente con fecha y poder añadir nuevos cada cobro.
+- Descripción: Texto libre con límite de caracteres.
+
+Campos de venta de ENERGÍA:
+
+- Propietario de venta: (agente que gestiona dicha venta a elegir entre usuarios y colaboradores)
+- Nombre de la venta: texto libre con límite de caracteres)
+- Cliente: un cliente existente con filtro por nombre dni, numero de cliente.
+- compañía: ENUM
+- Tipo: nuevo negocio o negocio existente
+- Canal: -> ELIMINAR
+- Fuente del proyecto: (Enum que hay ya en el proyecto)
+- Fuente de campaña: 
+- ID contrato: 
+- Número de póliza: -> ELIMINAR
+- Producto: Luz o gas
+- Tarifa: 
+    - TARIFAS LUZ: 2.0TD, 3.0TD, 6.1TD
+    - TARIFAS GAS: RL1, RL2, RL3 Y RL4
+- Tipo de tarifa: indexado, fijo, variable.
+- Importe: lo que se va a cobrar.
+- para los cálculos de facturación: Que se pueda subir un csv con datos (falta definir)
+- cuenta bancaria: que se pueda elegir una de las cuentas bancarias del cliente o añadir una diferente.
+- Fecha de cierre: cuando el cliente dice SI
+- Fecha de emisión/activación: cuando se formaliza el contrato
+- Forma de pago:  inicial, carterizado, renovación inicial, renovación carterizada. Aquí lo ideal es que la venta se cree automáticamente como pendiente de cobro (según corresponda con importe de la anterior) cada año que es lo que en zoho sale como "nuevo negocio o negocio existente".
+- recurrencia: 
+    - Carterizada (mensual)
+    - inicial (al principio de la activación del contrato - anual, cobro 1 vez este importe)
+- Fase: -> si cobrado, paso a cobro siguiente ciclo
+- Fecha de cobro: Se calcula según ->Condición de cobro: a mes vencido todas excepto naturgy que es 
+    - Del 1 al 15 -> cobro el 5 del mes siguiente (solo si es Naturgy)
+    - Del 16 al fin -> cobro el 24 del mes siguiente (solo si es Naturgy)
+- Probabilidad: igual que en SEGUROS
+- Categoría de la previsión: -> ELIMINAR
+- Social Lead: -> ELIMINAR
+- Descripción: Texto libre con límite de caracteres.
+
+RESPUESTAS A LAS PREGUNTAS DE CLAUDE:
+1- se borran ambos canal y contactName
+2- Hay una entidad separada de colaboradores, el propietario de la venta puede ser uno de ellos o un usuario (normalmente un usuario)
+3- En SEGUROS la comisión depende de la compañía y dentro de cada compañía depende del ramo, en ENERGÍA solamente será un enum de los valores posibles de compañías de energía que no necesariamente coincidirán con las compañías de seguros. Hay que separar compañías de seguros y compañías de energía.
+4- Conectar al ramo correcto del enum. 
+5- La frecuencia de los pagos depende de si es Seguros o energía, yo lo nombraría como frecuenciaPagoSeguros y frecuenciaPagoEnergía (en inglés y el orden que sea más adecuado para que sea acorde con todo el proyecto)
+6- la comisión de grupo galena depende de una tabla de ventas que tienen ellos, que ahora está en 70% que cambiará si venden más, depende de la suma de primas netas de dicha compañía. falta definir esta tabla, de momento dejemos en 70% editable, teniendo en cuenta que en futuro puede añadirse la tabla que defina en qué rangos de prima neta total de la compañia corresponda a cada porcentaje. 
+(netPremium × brokerCommission% × galenaCommission%) / recurrencia -> La recurrencia en esta ecuación sería: si es anual lo divido entre 1, si es semestral lo divido entre 2, si es mensual lo divido entre 12... 
+7- Fechas de cobro en seguros: fecha de facturación es el día que se emite la factura, la fecha que pondrá en la factura, pero no llega al banco hasta la fecha de cobro, entre el 15 y 20 del mes siguiente, pon 15 fijo y que el usuario lo cambie manualmente a cobrado cuando reciba el dinero. 
+Las fechas creo que es mejor que se calculen y se guarden ya que se usarán para cambiar de fases las ventas, tendremos que añadir los condicionantes para cambiar automáticamente de fase según en la fecha que estemos -> dime qué opinas sobre esto.
+8- si, así estaría bien
+9- Que se haga en el backend y se muestre en el frontend donde corresponda, a lo mejor no hace falta ponerlo en el formulario.
+10- así está bien, ya que una venta puede ir dando vueltas por las fases si es un pago recurrente y puede tener recibo de cada vez que se cobre. Sería mejor esto? o que se cuerre la venta cada vez que se cobre y se abra una nueva para siguiente cobro? sería más fácil ver el seguimiento si no se cierra la venta creo.Además tendremos actividad asociada a la venta en la que podremos ve todo lo que se hace sobre esa venta.
+11- csv de calculo para segunda fase
+12- Tengo pensado hacer info de cada input explicativo que al poner el ratón encima te salga la info.
+
+Preguntas concretas antes de empezar
+Colaboradores: ¿son clientes con type=COLLABORATOR, o hay otra entidad? -> otra entidad ya creada
+Compañía Energía: ¿misma tabla que compañía seguros, o separada? -> separada
+Comisión Galena: ¿la calcula el sistema o la introduce Mila manualmente? -> 70% fijo pero editable por si cambia
+Fecha de cobro seguros: ¿guardamos la fecha calculada o solo la mostramos? -> decide en base a lo que te he puesto arriba
+Canal en Energía: ¿texto libre o ENUM? -> lo eliminamos también
+CSV energía: ¿lo incluimos en este sprint o lo dejamos para después? -> siguiente fase
+contactName: ¿se elimina también o se conserva? -> eliminamos

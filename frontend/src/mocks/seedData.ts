@@ -34,6 +34,7 @@ import { DocumentGroup, DocumentType, DocumentStatus } from '../api/documents'
 import type { ActivityWithRelations } from '../api/activities'
 import { ActivityType, ActivityDirection } from '../api/activities'
 import type { Case } from '../api/cases'
+import type { Supplier } from '../api/suppliers'
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -1305,5 +1306,67 @@ export const DEMO_ACTIVITIES: ActivityWithRelations[] = [
     createdAt:   '2026-04-19T11:00:00.000Z',
     updatedAt:   '2026-04-19T11:00:00.000Z',
     user:        { id: 'u-mila', displayName: 'Mila' },
+  },
+]
+
+
+// ── Suppliers ─────────────────────────────────────────────────────────────────
+
+export const DEMO_SUPPLIERS: Supplier[] = [
+  {
+    id:        'sup-repsol',
+    name:      'Repsol Comercializadora',
+    cif:       'A-78374725',
+    phone:     '900 100 100',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-iberdrola',
+    name:      'Iberdrola Clientes',
+    cif:       'A-95075438',
+    phone:     '900 225 235',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-naturgy',
+    name:      'Naturgy Iberia',
+    cif:       'A-60404499',
+    phone:     '900 100 165',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-endesa',
+    name:      'Endesa Energía',
+    cif:       'A-81948077',
+    phone:     '800 760 333',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-mapfre',
+    name:      'Mapfre España',
+    cif:       'A-28006208',
+    phone:     '900 444 545',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-allianz',
+    name:      'Allianz Seguros',
+    cif:       'A-28007088',
+    phone:     '900 300 283',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id:        'sup-sanitas',
+    name:      'Sanitas Seguros',
+    cif:       'A-28587954',
+    phone:     '902 102 114',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z',
   },
 ]
