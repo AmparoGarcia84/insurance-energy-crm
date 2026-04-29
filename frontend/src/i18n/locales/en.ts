@@ -193,7 +193,7 @@ export default {
       documents: 'Documents',
     },
     detail: {
-      back: 'Back to list',
+      back: 'Back',
       edit: 'Edit',
       view: 'View',
       comingSoon: 'Coming soon',

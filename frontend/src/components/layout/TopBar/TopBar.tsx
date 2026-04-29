@@ -10,24 +10,18 @@
  */
 import { Mail, Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../auth/AuthContext'
-import { type Section } from '../Sidebar/Sidebar'
 import Avatar from '../../shared/Avatar/Avatar'
 import GlobalSearch from '../GlobalSearch/GlobalSearch'
 import './TopBar.css'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-interface TopBarProps {
-  onNavigate:   (section: Section) => void
-  onOpenClient: (clientId: string) => void
-  onOpenSale:   (saleId: string)   => void
-  onOpenCase:   (caseId: string)   => void
-}
-
-export default function TopBar({ onNavigate, onOpenClient, onOpenSale, onOpenCase }: TopBarProps) {
+export default function TopBar() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   const avatarSrc = user?.avatarUrl
     ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`)
@@ -35,11 +29,7 @@ export default function TopBar({ onNavigate, onOpenClient, onOpenSale, onOpenCas
 
   return (
     <header className="topbar">
-      <GlobalSearch
-        onOpenClient={onOpenClient}
-        onOpenSale={onOpenSale}
-        onOpenCase={onOpenCase}
-      />
+      <GlobalSearch />
 
       <div className="topbar-actions">
         <button aria-label={t('topbar.mail')}>
@@ -54,7 +44,7 @@ export default function TopBar({ onNavigate, onOpenClient, onOpenSale, onOpenCas
         <div className="topbar-user">
           <button
             className="topbar-user-info"
-            onClick={() => onNavigate('myAccount')}
+            onClick={() => navigate('/settings/my-account')}
             aria-label={t('topbar.myAccount')}
           >
             <span className="topbar-user-name">{user?.displayName}</span>
@@ -64,7 +54,7 @@ export default function TopBar({ onNavigate, onOpenClient, onOpenSale, onOpenCas
           <button
             className="topbar-avatar"
             aria-label={t('topbar.myAccount')}
-            onClick={() => onNavigate('myAccount')}
+            onClick={() => navigate('/settings/my-account')}
           >
             <Avatar src={avatarSrc} name={user?.displayName} size={40} />
           </button>

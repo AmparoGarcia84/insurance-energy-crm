@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import {
   DndContext,
@@ -31,19 +32,6 @@ import {
 } from '../../../api/sales'
 import { useSales } from '../../../context/DataContext'
 import './Sales.css'
-
-// ── Navigation stack ──────────────────────────────────────────────────────────
-
-type SalesView =
-  | { kind: 'board' }
-  | { kind: 'saleDetail'; sale: Sale }
-  | { kind: 'saleForm';   sale: Sale | null }
-
-interface Props {
-  onNavigateToClient?: (clientId: string) => void
-  initialSaleId?: string
-  onSaleOpened?: () => void
-}
 
 // ── Draggable sale card wrapper ────────────────────────────────────────────────
 
@@ -123,37 +111,17 @@ function SalesColumn({ stage, color, label, sales, total, totalLabel, ownerName,
   )
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
+// ── /sales (board) ─────────────────────────────────────────────────────────────
 
-export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened }: Props) {
+function SalesBoardPage() {
   const { t }      = useTranslation()
   const { user }   = useAuth()
+  const navigate   = useNavigate()
   const ownerName  = user?.displayName ?? ''
 
   const [saleType, setSaleType] = useState<SaleType>(SaleType.INSURANCE)
-  const { sales, loading: salesLoading, upsertSale, removeSale } = useSales()
+  const { sales, loading: salesLoading, upsertSale } = useSales()
   const displaySales = salesLoading ? [] : sales
-
-  const [stack, setStack] = useState<SalesView[]>(() =>
-    initialSaleId ? [] : [{ kind: 'board' }]
-  )
-
-  useEffect(() => {
-    if (!initialSaleId || salesLoading) return
-    const sale = sales.find((s) => s.id === initialSaleId)
-    if (sale) {
-      setStack([{ kind: 'saleDetail', sale }])
-    } else {
-      setStack([{ kind: 'board' }])
-    }
-    onSaleOpened?.()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSaleId, salesLoading])
-  const push      = (v: SalesView) => setStack(s => [...s, v])
-  const pop       = ()             => setStack(s => s.length > 1 ? s.slice(0, -1) : s)
-  const goToBoard = ()             => setStack([{ kind: 'board' }])
-
-  const current = stack[stack.length - 1]
 
   const [draggingId, setDraggingId] = useState<string | null>(null)
 
@@ -161,31 +129,6 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
 
-  // ── Sale form view ──────────────────────────────────────────────────────────
-  if (current.kind === 'saleForm') {
-    return (
-      <SaleForm
-        sale={current.sale}
-        onSave={(saved) => { upsertSale(saved); goToBoard() }}
-        onCancel={pop}
-        onDelete={(id) => { removeSale(id); goToBoard() }}
-      />
-    )
-  }
-
-  // ── Sale detail view ────────────────────────────────────────────────────────
-  if (current.kind === 'saleDetail') {
-    return (
-      <SaleDetail
-        sale={current.sale}
-        onBack={pop}
-        onEdit={(s) => push({ kind: 'saleForm', sale: s })}
-        onViewClient={onNavigateToClient}
-      />
-    )
-  }
-
-  // ── Board view ──────────────────────────────────────────────────────────────
   const filtered    = displaySales.filter((s) => s.type === saleType)
   const stages      = saleType === SaleType.INSURANCE ? INSURANCE_STAGES : ENERGY_STAGES
   const stageColors = saleType === SaleType.INSURANCE ? INSURANCE_STAGE_COLORS : ENERGY_STAGE_COLORS
@@ -211,7 +154,6 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
     return saleType === SaleType.INSURANCE ? '€' : t('sales.card.savingsPerYear')
   }
 
-  // ── DnD handlers ────────────────────────────────────────────────────────────
   function handleDragStart(event: DragStartEvent) {
     setDraggingId(event.active.id as string)
   }
@@ -231,11 +173,9 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
 
     const stageField = saleType === SaleType.INSURANCE ? 'insuranceStage' : 'energyStage'
 
-    // Optimistic update via context
     upsertSale({ ...sale, [stageField]: newStage })
 
     updateSale(saleId, { [stageField]: newStage }).then(upsertSale).catch(() => {
-      // Revert on failure
       upsertSale(sale)
     })
   }
@@ -246,7 +186,7 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
     <div className="sales">
       <div className="page-header">
         <h1 className="page-title">{t('sales.title')}</h1>
-        <button className="btn-primary" onClick={() => push({ kind: 'saleForm', sale: null })}>
+        <button className="btn-primary" onClick={() => navigate('/sales/new')}>
           <Plus size={16} />
           {t('sales.new')}
         </button>
@@ -281,7 +221,7 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
                 totalLabel={totalLabel()}
                 ownerName={ownerName}
                 draggingId={draggingId}
-                onClickSale={(s) => push({ kind: 'saleDetail', sale: s })}
+                onClickSale={(s) => navigate(`/sales/${s.id}`)}
               />
             )
           })}
@@ -300,5 +240,60 @@ export default function Sales({ onNavigateToClient, initialSaleId, onSaleOpened 
         </DragOverlay>
       </DndContext>
     </div>
+  )
+}
+
+// ── /sales/:saleId (detail) ────────────────────────────────────────────────────
+
+function SaleDetailPage() {
+  const { saleId } = useParams<{ saleId: string }>()
+  const navigate   = useNavigate()
+  const { sales }  = useSales()
+
+  const sale = sales.find((s) => s.id === saleId)
+  if (!sale) return null
+
+  return (
+    <SaleDetail
+      sale={sale}
+      onBack={() => navigate(-1)}
+      onEdit={() => navigate(`/sales/${saleId}/edit`)}
+      onViewClient={(clientId) => navigate(`/clients/${clientId}`)}
+    />
+  )
+}
+
+// ── /sales/new  and  /sales/:saleId/edit (form) ───────────────────────────────
+
+function SaleFormPage() {
+  const { saleId } = useParams<{ saleId?: string }>()
+  const navigate   = useNavigate()
+  const { sales, upsertSale, removeSale } = useSales()
+
+  const existing = saleId ? sales.find((s) => s.id === saleId) ?? null : null
+
+  return (
+    <SaleForm
+      sale={existing}
+      onSave={(saved) => {
+        upsertSale(saved)
+        navigate(`/sales/${saved.id}`)
+      }}
+      onCancel={() => navigate(-1)}
+      onDelete={(id) => { removeSale(id); navigate('/sales') }}
+    />
+  )
+}
+
+// ── Module router ─────────────────────────────────────────────────────────────
+
+export default function Sales() {
+  return (
+    <Routes>
+      <Route index element={<SalesBoardPage />} />
+      <Route path="new" element={<SaleFormPage />} />
+      <Route path=":saleId" element={<SaleDetailPage />} />
+      <Route path=":saleId/edit" element={<SaleFormPage />} />
+    </Routes>
   )
 }

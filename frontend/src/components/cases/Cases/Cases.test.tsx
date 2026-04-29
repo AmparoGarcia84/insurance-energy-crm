@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Cases from './Cases'
 import type { Case } from '../../../api/cases'
+
+vi.mock('../CaseDetail/CaseDetail', () => ({ default: () => null }))
+vi.mock('../CaseForm/CaseForm',     () => ({ default: () => null }))
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -85,23 +89,23 @@ describe('Cases list', () => {
   })
 
   it('renders the page title', () => {
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Casos')).toBeInTheDocument()
   })
 
   it('renders the search input', () => {
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByRole('searchbox')).toBeInTheDocument()
   })
 
   it('shows empty state when no cases', () => {
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('No hay casos')).toBeInTheDocument()
   })
 
   it('renders column headers when cases are present', () => {
     mockCases = [makeCase('1')]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Cliente')).toBeInTheDocument()
     expect(screen.getByText('Nombre del caso')).toBeInTheDocument()
     expect(screen.getByText('Fase')).toBeInTheDocument()
@@ -112,7 +116,7 @@ describe('Cases list', () => {
 
   it('renders client name, case name, status and priority badges', () => {
     mockCases = [makeCase('1', { status: 'IN_PROGRESS', priority: 'HIGH' })]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Carmen López')).toBeInTheDocument()
     expect(screen.getByText('Caso 1')).toBeInTheDocument()
     expect(screen.getByText('En trámite')).toBeInTheDocument()
@@ -127,7 +131,7 @@ describe('Cases list', () => {
       makeCase('d', { status: 'IN_PROGRESS' }),
       makeCase('e', { status: 'CLOSED' }),
     ]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Nuevo')).toBeInTheDocument()
     expect(screen.getByText('En espera')).toBeInTheDocument()
     expect(screen.getByText('Derivado')).toBeInTheDocument()
@@ -137,7 +141,7 @@ describe('Cases list', () => {
 
   it('renders — when occurrenceAt is absent', () => {
     mockCases = [makeCase('1', { occurrenceAt: null })]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.getByText('—')).toBeInTheDocument()
   })
 
@@ -146,7 +150,7 @@ describe('Cases list', () => {
       makeCase('1', { client: { id: 'c-1', name: 'Carmen López' }, name: 'Caso agua' }),
       makeCase('2', { client: { id: 'c-2', name: 'Antonio García' }, name: 'Caso tráfico' }),
     ]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     await userEvent.type(screen.getByRole('searchbox'), 'antonio')
     expect(screen.queryByText('Caso agua')).not.toBeInTheDocument()
     expect(screen.getByText('Caso tráfico')).toBeInTheDocument()
@@ -157,7 +161,7 @@ describe('Cases list', () => {
       makeCase('1', { name: 'Siniestro agua' }),
       makeCase('2', { name: 'Accidente tráfico' }),
     ]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     await userEvent.type(screen.getByRole('searchbox'), 'agua')
     expect(screen.getByText('Siniestro agua')).toBeInTheDocument()
     expect(screen.queryByText('Accidente tráfico')).not.toBeInTheDocument()
@@ -165,14 +169,14 @@ describe('Cases list', () => {
 
   it('shows emptySearch when search has no matches', async () => {
     mockCases = [makeCase('1')]
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     await userEvent.type(screen.getByRole('searchbox'), 'zzznomatch')
     expect(screen.getByText('Sin resultados')).toBeInTheDocument()
   })
 
   it('renders nothing while loading', () => {
     mockLoading = true
-    render(<Cases />)
+    render(<MemoryRouter initialEntries={['/cases']}><Routes><Route path="/cases/*" element={<Cases />} /></Routes></MemoryRouter>)
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
     expect(screen.queryByText('No hay casos')).not.toBeInTheDocument()
   })

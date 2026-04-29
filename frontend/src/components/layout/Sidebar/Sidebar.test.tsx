@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../../../auth/AuthContext'
 import Sidebar from './Sidebar'
 
@@ -13,11 +14,13 @@ vi.mock('../../../api/auth', () => ({
   logout: vi.fn().mockResolvedValue(undefined),
 }))
 
-function renderSidebar(activeSection: Parameters<typeof Sidebar>[0]['activeSection'] = 'home') {
+function renderSidebar(initialPath = '/home') {
   return render(
-    <AuthProvider>
-      <Sidebar activeSection={activeSection} onNavigate={vi.fn()} />
-    </AuthProvider>
+    <MemoryRouter initialEntries={[initialPath]}>
+      <AuthProvider>
+        <Sidebar />
+      </AuthProvider>
+    </MemoryRouter>
   )
 }
 
@@ -39,20 +42,14 @@ describe('Sidebar', () => {
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeInTheDocument()
   })
 
-  it('marks the active section with the active class', () => {
-    renderSidebar('clients')
+  it('marks the active section with the active class based on current path', () => {
+    renderSidebar('/clients')
     expect(screen.getByText('Clientes').closest('li')).toHaveClass('active')
   })
 
-  it('calls onNavigate when a nav item is clicked', async () => {
-    const onNavigate = vi.fn()
-    render(
-      <AuthProvider>
-        <Sidebar activeSection="home" onNavigate={onNavigate} />
-      </AuthProvider>
-    )
-    await userEvent.click(screen.getByText('Clientes'))
-    expect(onNavigate).toHaveBeenCalledWith('clients')
+  it('marks home as active when path is /home', () => {
+    renderSidebar('/home')
+    expect(screen.getByText('Inicio').closest('li')).toHaveClass('active')
   })
 })
 
@@ -63,7 +60,7 @@ describe('Sidebar — user management entry', () => {
 
   it('hides the user management entry for non-owner users', async () => {
     mockGetMe.mockResolvedValue({ id: '2', displayName: 'Ana', email: 'ana@example.com', role: 'EMPLOYEE', avatarUrl: null })
-    render(<AuthProvider><Sidebar activeSection="home" onNavigate={vi.fn()} /></AuthProvider>)
+    renderSidebar()
     await waitFor(() => {
       expect(screen.queryByText('Administración de usuarios')).not.toBeInTheDocument()
     })
@@ -71,18 +68,19 @@ describe('Sidebar — user management entry', () => {
 
   it('shows the user management entry for owner users', async () => {
     mockGetMe.mockResolvedValue({ id: '1', displayName: 'Mila', email: 'mila@example.com', role: 'OWNER', avatarUrl: null })
-    render(<AuthProvider><Sidebar activeSection="home" onNavigate={vi.fn()} /></AuthProvider>)
+    renderSidebar()
     await waitFor(() => {
       expect(screen.getByText('Administración de usuarios')).toBeInTheDocument()
     })
   })
 
-  it('navigates to userManagement when the entry is clicked', async () => {
+  it('navigates to /settings/users when the entry is clicked', async () => {
     mockGetMe.mockResolvedValue({ id: '1', displayName: 'Mila', email: 'mila@example.com', role: 'OWNER', avatarUrl: null })
-    const onNavigate = vi.fn()
-    render(<AuthProvider><Sidebar activeSection="home" onNavigate={onNavigate} /></AuthProvider>)
+    renderSidebar()
     await waitFor(() => screen.getByText('Administración de usuarios'))
+    // NavLink renders as <a> — clicking it changes the MemoryRouter location
     await userEvent.click(screen.getByText('Administración de usuarios'))
-    expect(onNavigate).toHaveBeenCalledWith('userManagement')
+    // The li should become active since path now matches /settings/users
+    expect(screen.getByText('Administración de usuarios').closest('li')).toHaveClass('active')
   })
 })

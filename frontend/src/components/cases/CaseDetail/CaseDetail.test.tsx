@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../../../i18n'
 import CaseDetail from './CaseDetail'
@@ -54,15 +55,17 @@ function renderDetail(props?: { onViewClient?: () => void; onViewSale?: () => vo
     onBack,
     onEdit,
     ...render(
-      <I18nextProvider i18n={i18n}>
-        <CaseDetail
-          case={CASE}
-          onBack={onBack}
-          onEdit={onEdit}
-          onViewClient={props?.onViewClient}
-          onViewSale={props?.onViewSale}
-        />
-      </I18nextProvider>
+      <MemoryRouter>
+        <I18nextProvider i18n={i18n}>
+          <CaseDetail
+            case={CASE}
+            onBack={onBack}
+            onEdit={onEdit}
+            onViewClient={props?.onViewClient}
+            onViewSale={props?.onViewSale}
+          />
+        </I18nextProvider>
+      </MemoryRouter>
     ),
   }
 }

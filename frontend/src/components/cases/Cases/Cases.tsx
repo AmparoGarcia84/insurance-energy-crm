@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import { Plus, Pencil } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
 import { useCases } from '../../../context/DataContext'
@@ -9,13 +10,6 @@ import CaseForm from '../CaseForm/CaseForm'
 import CaseDetail from '../CaseDetail/CaseDetail'
 import BasicSearch from '../../shared/BasicSearch/BasicSearch'
 import './Cases.css'
-
-// ── Navigation stack ──────────────────────────────────────────────────────────
-
-type View =
-  | { kind: 'list' }
-  | { kind: 'detail'; case: Case }
-  | { kind: 'form';   case: Case | null }
 
 // ── Badge maps ────────────────────────────────────────────────────────────────
 
@@ -33,68 +27,14 @@ const PRIORITY_CLASS: Record<CasePriority, string> = {
   LOW:    'badge-priority-low',
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── /cases (list) ─────────────────────────────────────────────────────────────
 
-interface Props {
-  initialCaseId?: string
-  onCaseOpened?:  () => void
-}
-
-export default function Cases({ initialCaseId, onCaseOpened }: Props) {
+function CasesListPage() {
   const { t } = useTranslation()
-  const { cases, loading, upsertCase, removeCase } = useCases()
-  const { canDelete } = usePermissions()
-
-  const [stack, setStack] = useState<View[]>(() =>
-    initialCaseId ? [] : [{ kind: 'list' }]
-  )
-
-  useEffect(() => {
-    if (!initialCaseId || loading) return
-    const found = cases.find((c) => c.id === initialCaseId)
-    if (found) {
-      setStack([{ kind: 'detail', case: found }])
-    } else {
-      setStack([{ kind: 'list' }])
-    }
-    onCaseOpened?.()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCaseId, loading])
-
-  const push = (v: View) => setStack((s) => [...s, v])
-  const pop  = ()        => setStack((s) => s.length > 1 ? s.slice(0, -1) : s)
-
+  const navigate = useNavigate()
+  const { cases, loading } = useCases()
   const [search, setSearch] = useState('')
 
-  const current = stack[stack.length - 1]
-
-  // ── Form view ───────────────────────────────────────────────────────────────
-  if (current?.kind === 'form') {
-    return (
-      <CaseForm
-        key={current.case?.id ?? 'new'}
-        case={current.case}
-        onSave={(saved) => { upsertCase(saved); pop() }}
-        onCancel={pop}
-        onDelete={canDelete
-          ? async (id) => { await deleteCase(id); removeCase(id); setStack([{ kind: 'list' }]) }
-          : undefined}
-      />
-    )
-  }
-
-  // ── Detail view ─────────────────────────────────────────────────────────────
-  if (current?.kind === 'detail') {
-    return (
-      <CaseDetail
-        case={current.case}
-        onBack={pop}
-        onEdit={(c) => push({ kind: 'form', case: c })}
-      />
-    )
-  }
-
-  // ── List view ────────────────────────────────────────────────────────────────
   const q = normalizeSearch(search)
   const filtered = loading
     ? []
@@ -108,7 +48,7 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
     <div className="cases">
       <div className="page-header">
         <h1 className="page-title">{t('cases.title')}</h1>
-        <button className="btn-primary" onClick={() => push({ kind: 'form', case: null })}>
+        <button className="btn-primary" onClick={() => navigate('/cases/new')}>
           <Plus size={16} />
           {t('cases.new')}
         </button>
@@ -140,7 +80,7 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
             </thead>
             <tbody>
               {filtered.map((c) => (
-                <tr key={c.id} className="cases__row" onClick={() => push({ kind: 'detail', case: c })}>
+                <tr key={c.id} className="cases__row" onClick={() => navigate(`/cases/${c.id}`)}>
                   <td className="cases__client">{c.client.name}</td>
                   <td className="cases__name">{c.name}</td>
                   <td>
@@ -167,7 +107,7 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
                   <td className="cases__actions">
                     <button
                       className="icon-btn"
-                      onClick={(e) => { e.stopPropagation(); push({ kind: 'form', case: c }) }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/cases/${c.id}/edit`) }}
                       title={t('cases.edit')}
                     >
                       <Pencil size={14} />
@@ -180,5 +120,62 @@ export default function Cases({ initialCaseId, onCaseOpened }: Props) {
         </div>
       )}
     </div>
+  )
+}
+
+// ── /cases/:caseId (detail) ───────────────────────────────────────────────────
+
+function CaseDetailPage() {
+  const { caseId } = useParams<{ caseId: string }>()
+  const navigate   = useNavigate()
+  const { cases }  = useCases()
+
+  const caseItem = cases.find((c) => c.id === caseId)
+  if (!caseItem) return null
+
+  return (
+    <CaseDetail
+      case={caseItem}
+      onBack={() => navigate(-1)}
+      onEdit={() => navigate(`/cases/${caseId}/edit`)}
+      onViewClient={(clientId) => navigate(`/clients/${clientId}`)}
+      onViewSale={(saleId) => navigate(`/sales/${saleId}`)}
+    />
+  )
+}
+
+// ── /cases/new  and  /cases/:caseId/edit (form) ───────────────────────────────
+
+function CaseFormPage() {
+  const { caseId } = useParams<{ caseId?: string }>()
+  const navigate   = useNavigate()
+  const { cases, upsertCase, removeCase } = useCases()
+  const { canDelete } = usePermissions()
+
+  const existing: Case | null = caseId ? cases.find((c) => c.id === caseId) ?? null : null
+
+  return (
+    <CaseForm
+      key={caseId ?? 'new'}
+      case={existing}
+      onSave={(saved) => { upsertCase(saved); navigate(`/cases/${saved.id}`) }}
+      onCancel={() => navigate(-1)}
+      onDelete={canDelete
+        ? async (id) => { await deleteCase(id); removeCase(id); navigate('/cases') }
+        : undefined}
+    />
+  )
+}
+
+// ── Module router ─────────────────────────────────────────────────────────────
+
+export default function Cases() {
+  return (
+    <Routes>
+      <Route index element={<CasesListPage />} />
+      <Route path="new" element={<CaseFormPage />} />
+      <Route path=":caseId" element={<CaseDetailPage />} />
+      <Route path=":caseId/edit" element={<CaseFormPage />} />
+    </Routes>
   )
 }

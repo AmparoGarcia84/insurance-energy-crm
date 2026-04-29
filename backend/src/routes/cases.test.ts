@@ -163,6 +163,26 @@ describe('POST /cases', () => {
     expect(res.body.name).toBe('Siniestro agua en vivienda')
   })
 
+  it('passes createdByUserId from the authenticated user to the service', async () => {
+    mockCreate.mockResolvedValue(STUB_CASE as never)
+    await request(app)
+      .post('/cases').set('Cookie', OWNER_COOKIE)
+      .send({ clientId: 'c-carmen', name: 'Test' })
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ createdByUserId: 'u-owner' })
+    )
+  })
+
+  it('passes createdByUserId for EMPLOYEE role', async () => {
+    mockCreate.mockResolvedValue(STUB_CASE as never)
+    await request(app)
+      .post('/cases').set('Cookie', EMPLOYEE_COOKIE)
+      .send({ clientId: 'c-carmen', name: 'Test' })
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ createdByUserId: 'u-emp' })
+    )
+  })
+
   it('returns 201 without saleId (optional)', async () => {
     mockCreate.mockResolvedValue({ ...STUB_CASE, saleId: null, sale: null } as never)
     const res = await request(app)

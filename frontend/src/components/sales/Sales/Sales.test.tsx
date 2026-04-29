@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Sales from './Sales'
 import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../../api/sales'
 import type { Sale } from '../../../api/sales'
@@ -57,31 +58,31 @@ describe('Sales', () => {
   })
 
   it('renders the pipeline title', () => {
-    render(<Sales />)
+    render(<MemoryRouter initialEntries={['/sales']}><Routes><Route path="/sales/*" element={<Sales />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Pipeline de Oportunidades')).toBeInTheDocument()
   })
 
   it('renders insurance columns by default', () => {
-    render(<Sales />)
+    render(<MemoryRouter initialEntries={['/sales']}><Routes><Route path="/sales/*" element={<Sales />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Pte. respuesta')).toBeInTheDocument()
     expect(screen.getByText('Pte. documentación')).toBeInTheDocument()
   })
 
   it('renders demo sales cards', () => {
-    render(<Sales />)
+    render(<MemoryRouter initialEntries={['/sales']}><Routes><Route path="/sales/*" element={<Sales />} /></Routes></MemoryRouter>)
     expect(screen.getByText('Pedro Gómez')).toBeInTheDocument()
     expect(screen.getByText('Ana Martínez')).toBeInTheDocument()
   })
 
   it('switches to energy view when toggle is clicked', async () => {
-    render(<Sales />)
+    render(<MemoryRouter initialEntries={['/sales']}><Routes><Route path="/sales/*" element={<Sales />} /></Routes></MemoryRouter>)
     await userEvent.click(screen.getByText('Energía'))
     // Energy demo cards should appear
     expect(screen.getByText('Bar La Terraza')).toBeInTheDocument()
   })
 
   it('shows SaleForm when Nueva venta is clicked', async () => {
-    render(<Sales />)
+    render(<MemoryRouter initialEntries={['/sales']}><Routes><Route path="/sales/*" element={<Sales />} /></Routes></MemoryRouter>)
     await userEvent.click(screen.getByText('Nueva venta'))
     expect(screen.getByText('Nueva venta', { selector: 'h1' })).toBeInTheDocument()
   })

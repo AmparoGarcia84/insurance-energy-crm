@@ -200,3 +200,91 @@ Pregunta 5. Ventas DEFERRED (aplazado — cada 45 días × 3 veces)
     ¿Confirmamos que DEFERRED tiene exactamente 3 cuotas siempre, o es un número configurable?
 Respuesta:
     Tiene siempre 3 cobros fijos, se divide la prima neta en 3 veces y en el primer recibo se añaden los impuestos. Después pasa al año siguiente como recurrente. Digamos que es un cobro anual pero el importe se cobra aplazado en 3 veces (1 cada 45 días)
+
+29 abril:
+
+## UX Opinion — Rediseño de Ventas
+
+### 1\. Estructura de navegación (lo más importante)
+
+Con la respuesta de Mila (Opción A), la estructura natural es:
+
+```
+Ventas
+├── Pipeline  (kanban, fases manuales 1–5)
+└── Cartera   (vista financiera, ciclo de cobro)
+```
+
+La pregunta que queda abierta: **¿separamos Seguros/Energía como pestañas dentro de cada vista, o como filtro?**
+
+Mi recomendación: **filtro/toggle**, no pestañas dobles. Dos mundos × dos vistas = 4 combinaciones de navegación. Eso es demasiado clic. Mejor una sola vista Pipeline con filtro Seguros | Energía | Todos, y lo mismo en Cartera.
+
+---
+
+### 2\. La vista "Cartera" no debería ser kanban
+
+Lo que Mila quiere saber ("cuánto cobro este mes y cuánto tengo de previsión") no es un kanban, es una **tabla financiera** con resumen arriba:
+
+```
+┌─────────────────────────────────────────────┐
+│  Cobro este mes: 4.200€  │  Próximo mes: 2.800€  │
+└─────────────────────────────────────────────┘
+  [Tabs: Este mes | Próximo mes | Cartera activa | Erróneos]
+  [Tabla: Cliente | Venta | Compañía | Importe | Fecha cobro | Acción]
+```
+
+La acción rápida de añadir recibo debería estar visible en la fila, sin tener que entrar al detalle.
+
+---
+
+### 3\. El formulario tiene demasiados campos (riesgo real)
+
+Seguros tiene \~22 campos, Energía \~18. Mis sugerencias:
+
+* **Agrupar visualmente** en secciones colapsables: `Identificación`, `Producto`, `Financiero`, `Fechas`, `Notas`
+* **Campos calculados no son inputs**: `expectedRevenue`, `billingDate`, `collectionDate`, `probability` → se muestran como read-only en detalle, no en el formulario de creación
+* **Flujo de creación mínimo**: al crear, pedir solo lo esencial (propietario, cliente, compañía, ramo/producto, nombre). El resto se rellena en el detalle. Esto reduce la fricción inicial enormemente.
+* **Ramo condicional**: hogar → pide dirección, auto → matrícula, salud → nombre. El campo "Descripción del riesgo" debería cambiar de label dinámicamente.
+
+---
+
+### 4\. El ciclo de recibos y DEFERRED
+
+Para DEFERRED (3 pagos × 45 días) el detalle de venta debería mostrar claramente:
+
+```
+Pago 1/3 — cobrado ✓  (15 ene)
+Pago 2/3 — pendiente  (1 mar)
+Pago 3/3 — pendiente  (15 abr)
+→ Próximo ciclo: anual desde 15 abr siguiente año
+```
+
+Añadir el 3.º recibo debe disparar la transición a ciclo anual automáticamente.
+    si
+
+---
+
+### 5\. WRONG_SETTLEMENT necesita una acción clara
+
+Si es un estado temporal, la tarjeta en kanban/tabla debería tener un botón visible "Reclamar / Resolver" que lo devuelva al flujo. Sin ese CTA, las ventas erróneas se quedan enterradas.
+    Me parece buena opción
+
+---
+
+### 6\. Probability como badge, no campo
+
+Ya que la probabilidad se calcula por fase, mostrarla como un badge de color en la tarjeta kanban (10% rojo → 99% verde) sin que el usuario la toque da información de un vistazo sin complejidad.
+    Si, pero que se muestre también el texto del porcentaje con el color 
+
+---
+
+### Preguntas que quedan por decidir antes de desarrollar
+
+1. **¿Seguros/Energía como filtro o como pestañas?** — Recomiendo filtro. 
+    como filtro
+2. **¿El formulario de creación es mínimo (quick-create) o completo?** — Recomiendo mínimo + relleno en detalle.
+    Mínimo y qe al crear te lleve al detalle de la venta para poder editar lo que falte
+3. **¿La vista Cartera reemplaza el kanban para las fases de cobro, o coexisten?** — Recomiendo reemplazar; el kanban de cobro no aporta valor visual.
+    Reemplazo, pero coexisten kanban con fases de no cobro + fases de cobro en vista cartera
+4. **¿Los tooltips de campos van en el formulario o también en el detalle?** — Recomiendo ambos.
+    En ambos

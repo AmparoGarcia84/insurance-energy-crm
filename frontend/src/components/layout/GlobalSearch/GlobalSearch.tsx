@@ -1,21 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { useClients, useSales, useCases } from '../../../context/DataContext'
 import { normalizeSearch } from '../../../utils/search'
 import './GlobalSearch.css'
 
-interface Props {
-  onOpenClient: (clientId: string) => void
-  onOpenSale:   (saleId: string)   => void
-  onOpenCase:   (caseId: string)   => void
-}
-
 const MAX_PER_GROUP = 5
 const MIN_QUERY_LENGTH = 2
 
-export default function GlobalSearch({ onOpenClient, onOpenSale, onOpenCase }: Props) {
+export default function GlobalSearch() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const wrapperRef = useRef<HTMLDivElement>(null)
 
@@ -70,9 +66,9 @@ export default function GlobalSearch({ onOpenClient, onOpenSale, onOpenCase }: P
 
   const hasResults = clientResults.length > 0 || saleResults.length > 0 || caseResults.length > 0
 
-  function handleSelect(fn: () => void) {
+  function handleSelect(path: string) {
     setQuery('')
-    fn()
+    navigate(path)
   }
 
   return (
@@ -104,7 +100,7 @@ export default function GlobalSearch({ onOpenClient, onOpenSale, onOpenCase }: P
                       role="option"
                       aria-selected="false"
                       className="global-search__item"
-                      onClick={() => handleSelect(() => onOpenClient(c.id))}
+                      onClick={() => handleSelect(`/clients/${c.id}`)}
                     >
                       <span className="global-search__item-main">{c.name}</span>
                       {c.clientNumber && (
@@ -124,7 +120,7 @@ export default function GlobalSearch({ onOpenClient, onOpenSale, onOpenCase }: P
                       role="option"
                       aria-selected="false"
                       className="global-search__item"
-                      onClick={() => handleSelect(() => onOpenSale(s.id))}
+                      onClick={() => handleSelect(`/sales/${s.id}`)}
                     >
                       <span className="global-search__item-main">{s.title}</span>
                       {s.clientName && (
@@ -144,7 +140,7 @@ export default function GlobalSearch({ onOpenClient, onOpenSale, onOpenCase }: P
                       role="option"
                       aria-selected="false"
                       className="global-search__item"
-                      onClick={() => handleSelect(() => onOpenCase(c.id))}
+                      onClick={() => handleSelect(`/cases/${c.id}`)}
                     >
                       <span className="global-search__item-main">{c.name}</span>
                       <span className="global-search__item-sub">{c.client.name}</span>

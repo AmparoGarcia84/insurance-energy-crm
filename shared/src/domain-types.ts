@@ -672,6 +672,13 @@ export enum CaseType {
   WRONG_SETTLEMENT = "WRONG_SETTLEMENT", // Liquidación errónea (ambos)
 }
 
+export const CaseTypeLabels: Record<CaseType, string> = {
+  [CaseType.CLAIM]:            "Siniestro",
+  [CaseType.FAULT]:            "Avería",
+  [CaseType.ACTIVATION]:       "Activación",
+  [CaseType.WRONG_SETTLEMENT]: "Liquidación errónea",
+}
+
 export interface Case extends BaseEntity {
   clientId: UUID
   client?:  { id: string; name: string }

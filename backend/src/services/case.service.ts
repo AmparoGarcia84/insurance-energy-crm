@@ -1,19 +1,22 @@
 import prisma from '../db/prisma.js'
 import { CaseStatus, CasePriority, CaseType } from '../generated/prisma/enums.js'
+import { createTaskForNewCase } from './task-automation.service.js'
 
 export type { CaseStatus, CasePriority, CaseType }
 
 export interface CaseInput {
-  clientId:     string
-  saleId?:      string | null
-  name:         string         // max 200
-  occurrenceAt?: string | null // ISO 8601
-  description?: string | null  // max 2000
-  cause?:       string | null  // max 1000
-  type?:        CaseType | null
-  status?:      CaseStatus
-  priority?:    CasePriority
-  supplierId?:  string | null
+  clientId:        string
+  saleId?:         string | null
+  name:            string         // max 200
+  occurrenceAt?:   string | null  // ISO 8601
+  description?:    string | null  // max 2000
+  cause?:          string | null  // max 1000
+  type?:           CaseType | null
+  status?:         CaseStatus
+  priority?:       CasePriority
+  supplierId?:     string | null
+  /** User who initiated the creation — used to assign the auto-generated task. */
+  createdByUserId?: string | null
 }
 
 const include = {
@@ -48,21 +51,32 @@ export async function createCase(data: CaseInput) {
     clientId = sale.clientId
   }
 
-  return prisma.case.create({
+  const created = await prisma.case.create({
     data: {
       clientId,
-      saleId:      data.saleId   ?? null,
-      name:        data.name,
+      saleId:       data.saleId        ?? null,
+      name:         data.name,
       occurrenceAt: data.occurrenceAt ? new Date(data.occurrenceAt) : null,
-      description: data.description ?? null,
-      cause:       data.cause       ?? null,
-      type:        data.type        ?? null,
-      status:      data.status      ?? CaseStatus.NEW,
-      priority:    data.priority    ?? CasePriority.NORMAL,
-      supplierId:  data.supplierId  ?? null,
+      description:  data.description   ?? null,
+      cause:        data.cause         ?? null,
+      type:         data.type          ?? null,
+      status:       data.status        ?? CaseStatus.NEW,
+      priority:     data.priority      ?? CasePriority.NORMAL,
+      supplierId:   data.supplierId    ?? null,
     },
     include,
   })
+
+  // Auto-generate the initial review task (best-effort — errors are logged, not thrown)
+  await createTaskForNewCase({
+    caseId:             created.id,
+    caseName:           created.name,
+    caseType:           created.type,
+    providerSupplierId: created.supplierId,
+    createdByUserId:    data.createdByUserId,
+  })
+
+  return created
 }
 
 export async function updateCase(id: string, data: Partial<CaseInput>) {

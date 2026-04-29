@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Pencil, Plus, User, Euro, Calendar, Phone, Mail, Info } from 'lucide-react'
 import type { Sale } from '../../../api/sales'
@@ -55,8 +56,12 @@ function InfoField({ label, value, full }: { label: string; value?: string | nul
 
 export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props) {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<Tab>('information')
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as Tab) ?? 'information'
+
   const [activityFormOpen, setActivityFormOpen] = useState(false)
+
   const { clients } = useClients()
   const client = clients.find((c) => c.id === sale.clientId)
   const primaryEmail = client?.emails?.find((e) => e.isPrimary) ?? client?.emails?.[0]
@@ -76,6 +81,10 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
         : undefined
 
   const revenue = isEnergy ? sale.expectedSavingsPerYear : sale.expectedRevenue
+
+  function setTab(newTab: Tab) {
+    setSearchParams({ tab: newTab }, { replace: true })
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'information', label: t('sales.detail.tabs.information') },
@@ -322,6 +331,7 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
             clientName={sale.clientName ?? ''}
             saleId={sale.id}
             saleName={sale.title}
+            onViewCase={(c) => navigate(`/cases/${c.id}`)}
           />
         )}
 

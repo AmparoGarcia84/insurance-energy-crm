@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import SaleDetail from './SaleDetail'
 import type { Sale } from '../../../api/sales'
 import { SaleType, InsuranceSaleStage, EnergySaleStage } from '../../../api/sales'
@@ -46,6 +47,7 @@ const mockClient = {
 
 vi.mock('../../../context/DataContext', () => ({
   useClients: () => ({ clients: [mockClient], loading: false }),
+  useCases:   () => ({ cases: [], loading: false, upsertCase: vi.fn(), removeCase: vi.fn() }),
   useSales:   () => ({ sales: [], loading: false }),
 }))
 
@@ -79,6 +81,19 @@ const energySale: Sale = {
   updatedAt: '2024-01-01T00:00:00Z',
 }
 
+function renderDetail(sale = baseSale, props?: Partial<Parameters<typeof SaleDetail>[0]>) {
+  return render(
+    <MemoryRouter>
+      <SaleDetail
+        sale={sale}
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        {...props}
+      />
+    </MemoryRouter>
+  )
+}
+
 describe('SaleDetail', () => {
   const onBack = vi.fn()
   const onEdit = vi.fn()
@@ -91,54 +106,53 @@ describe('SaleDetail', () => {
   })
 
   it('renders sale title in header', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByRole('heading', { name: 'Seguro Hogar - Ana Martínez' })).toBeInTheDocument()
   })
 
   it('renders client name in header meta', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
-    // clientName appears in both header meta and client card
+    renderDetail()
     expect(screen.getAllByText('Ana Martínez López').length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders stage badge for insurance sale', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('sales.stages.insurance.DOCUMENTS_PENDING')).toBeInTheDocument()
   })
 
   it('renders stage badge for energy sale', () => {
-    render(<SaleDetail sale={energySale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(energySale)
     expect(screen.getByText('sales.stages.energy.DOCUMENTS_PENDING')).toBeInTheDocument()
   })
 
   it('renders branch badge for insurance sale', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
-    // branch appears in header badge and in info card field
+    renderDetail()
     expect(screen.getAllByText('Hogar').length).toBeGreaterThanOrEqual(1)
   })
 
   it('calls onBack when back button is clicked', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(baseSale, { onBack })
     fireEvent.click(screen.getByTitle('sales.detail.back'))
     expect(onBack).toHaveBeenCalledOnce()
   })
 
   it('calls onEdit with sale when edit button is clicked', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(baseSale, { onEdit })
     fireEvent.click(screen.getByText('sales.detail.edit'))
     expect(onEdit).toHaveBeenCalledWith(baseSale)
   })
 
-  it('renders all four tabs', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+  it('renders all five tabs', () => {
+    renderDetail()
     expect(screen.getByText('sales.detail.tabs.information')).toBeInTheDocument()
     expect(screen.getByText('sales.detail.tabs.activity')).toBeInTheDocument()
     expect(screen.getByText('sales.detail.tabs.tasks')).toBeInTheDocument()
+    expect(screen.getByText('sales.detail.tabs.cases')).toBeInTheDocument()
     expect(screen.getByText('sales.detail.tabs.documents')).toBeInTheDocument()
   })
 
   it('activity tab renders the new activity button', async () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     fireEvent.click(screen.getByText('sales.detail.tabs.activity'))
     await waitFor(() => {
       expect(screen.getByText('activities.newActivity')).toBeInTheDocument()
@@ -146,7 +160,7 @@ describe('SaleDetail', () => {
   })
 
   it('tasks tab renders the new task button', async () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     fireEvent.click(screen.getByText('sales.detail.tabs.tasks'))
     await waitFor(() => {
       expect(screen.getByText('tasks.newTask')).toBeInTheDocument()
@@ -154,7 +168,7 @@ describe('SaleDetail', () => {
   })
 
   it('documents tab renders the add document button', async () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     fireEvent.click(screen.getByText('sales.detail.tabs.documents'))
     await waitFor(() => {
       expect(screen.getByText('documents.actions.add')).toBeInTheDocument()
@@ -162,53 +176,50 @@ describe('SaleDetail', () => {
   })
 
   it('shows info card in information tab', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('sales.sections.saleInfo')).toBeInTheDocument()
   })
 
   it('shows owner in info card when set', () => {
     const sale: Sale = { ...baseSale, ownerUserName: 'Mila García' }
-    render(<SaleDetail sale={sale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(sale)
     expect(screen.getByText('Mila García')).toBeInTheDocument()
     expect(screen.getByText('sales.fields.owner')).toBeInTheDocument()
   })
 
   it('omits field row when value is empty', () => {
-    // baseSale has no contactName, channel, etc.
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.queryByText('sales.fields.contactName')).not.toBeInTheDocument()
     expect(screen.queryByText('sales.fields.channel')).not.toBeInTheDocument()
   })
 
   it('shows description full-width in info card', () => {
     const sale: Sale = { ...baseSale, description: 'Cliente muy importante' }
-    render(<SaleDetail sale={sale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(sale)
     expect(screen.getByText('Cliente muy importante')).toBeInTheDocument()
     expect(screen.getByText('sales.fields.description')).toBeInTheDocument()
   })
 
   it('shows lostReason in info card when set', () => {
     const sale: Sale = { ...baseSale, lostReason: 'Precio elevado' }
-    render(<SaleDetail sale={sale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(sale)
     expect(screen.getByText('Precio elevado')).toBeInTheDocument()
     expect(screen.getByText('sales.fields.lostReason')).toBeInTheDocument()
   })
 
   it('shows translated businessType in info card', () => {
     const sale: Sale = { ...baseSale, businessType: 'NEW_BUSINESS' as Sale['businessType'] }
-    render(<SaleDetail sale={sale} onBack={onBack} onEdit={onEdit} />)
-    // t is identity in tests, so translation key is shown
+    renderDetail(sale)
     expect(screen.getByText('sales.businessType.NEW_BUSINESS')).toBeInTheDocument()
   })
 
   it('shows energy savings in info card for energy sale', () => {
-    render(<SaleDetail sale={energySale} onBack={onBack} onEdit={onEdit} />)
-    // Info card savings field should appear (tab defaults to information)
+    renderDetail(energySale)
     expect(screen.getByText('sales.fields.expectedSavings')).toBeInTheDocument()
   })
 
   it('info card not shown when switching to activity tab', async () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     fireEvent.click(screen.getByText('sales.detail.tabs.activity'))
     await waitFor(() => {
       expect(screen.queryByText('sales.sections.saleInfo')).not.toBeInTheDocument()
@@ -216,28 +227,25 @@ describe('SaleDetail', () => {
   })
 
   it('renders expected revenue in value card', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
-    // Revenue label in the summary card
+    renderDetail()
     expect(screen.getByText('sales.detail.cards.expectedRevenue')).toBeInTheDocument()
-    // Revenue figure appears in both summary card and info card
     expect(screen.getAllByText(/1[.,]?200/).length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders probability bar for insurance sale', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
-    // probability appears in both value card label and info card field
+    renderDetail()
     expect(screen.getAllByText(/75%/).length).toBeGreaterThanOrEqual(1)
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
   })
 
   it('renders energy savings with /año unit', () => {
-    render(<SaleDetail sale={energySale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(energySale)
     expect(screen.getAllByText(/800/).length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('/año')).toBeInTheDocument()
   })
 
   it('renders key dates in dates card', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('sales.fields.expectedCloseDate')).toBeInTheDocument()
     expect(screen.getByText('sales.fields.issueDate')).toBeInTheDocument()
     expect(screen.getByText('sales.fields.billingDate')).toBeInTheDocument()
@@ -245,13 +253,13 @@ describe('SaleDetail', () => {
 
   it('renders em-dash when dates are missing', () => {
     const saleNoDates: Sale = { ...baseSale, expectedCloseDate: undefined, issueDate: undefined, billingDate: undefined }
-    render(<SaleDetail sale={saleNoDates} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(saleNoDates)
     const dashes = screen.getAllByText('—')
     expect(dashes.length).toBeGreaterThanOrEqual(3)
   })
 
   it('renders view client button when onViewClient is provided', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} onViewClient={onViewClient} />)
+    renderDetail(baseSale, { onViewClient })
     const btn = screen.getByText('sales.detail.cards.viewClient')
     expect(btn).toBeInTheDocument()
     fireEvent.click(btn)
@@ -259,27 +267,27 @@ describe('SaleDetail', () => {
   })
 
   it('renders view client button even without onViewClient', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('sales.detail.cards.viewClient')).toBeInTheDocument()
   })
 
   it('renders client number from context', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText(/10001/)).toBeInTheDocument()
   })
 
   it('renders phone from context', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('+34 612 345 678')).toBeInTheDocument()
   })
 
   it('renders primary email from context', () => {
-    render(<SaleDetail sale={baseSale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail()
     expect(screen.getByText('ana.martinez@email.com')).toBeInTheDocument()
   })
 
   it('does not render branch badge for energy sale', () => {
-    render(<SaleDetail sale={energySale} onBack={onBack} onEdit={onEdit} />)
+    renderDetail(energySale)
     expect(screen.queryByText('Hogar')).not.toBeInTheDocument()
   })
 })

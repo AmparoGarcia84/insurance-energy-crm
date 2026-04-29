@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import TopBar from './TopBar'
 
 vi.mock('react-i18next', () => ({
@@ -21,15 +22,18 @@ vi.mock('../GlobalSearch/GlobalSearch', () => ({
   default: () => <input type="search" aria-label="global-search" />,
 }))
 
-function renderTopBar(overrides: Partial<Parameters<typeof TopBar>[0]> = {}) {
-  const props = {
-    onNavigate:   vi.fn(),
-    onOpenClient: vi.fn(),
-    onOpenSale:   vi.fn(),
-    onOpenCase:   vi.fn(),
-    ...overrides,
-  }
-  return { ...props, ...render(<TopBar {...props} />) }
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>()
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
+function renderTopBar() {
+  return render(
+    <MemoryRouter>
+      <TopBar />
+    </MemoryRouter>
+  )
 }
 
 describe('TopBar', () => {
@@ -49,9 +53,9 @@ describe('TopBar', () => {
     expect(screen.getByText('Mila García')).toBeInTheDocument()
   })
 
-  it('navigates to myAccount when the user name is clicked', async () => {
-    const { onNavigate } = renderTopBar()
+  it('navigates to /settings/my-account when the user name is clicked', async () => {
+    renderTopBar()
     await userEvent.click(screen.getByText('Mila García'))
-    expect(onNavigate).toHaveBeenCalledWith('myAccount')
+    expect(mockNavigate).toHaveBeenCalledWith('/settings/my-account')
   })
 })

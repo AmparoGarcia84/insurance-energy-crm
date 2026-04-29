@@ -2,17 +2,11 @@
  * Sidebar/Sidebar.tsx — Main navigation sidebar
  *
  * Renders the fixed left-hand navigation present on every authenticated screen.
- * It lists all CRM sections and provides the logout action.
- *
- * Navigation is currently rendered as plain anchor tags (href="#") because
- * client-side routing has not been wired up yet. Once a router is added,
- * each navItem entry should gain a `path` field and the <a> tags should be
- * replaced with the router's <Link> component.
- *
- * Logout is performed by calling setAuth(null), which clears the in-memory
- * token and causes App.tsx to unmount the Dashboard and render Login instead.
+ * Navigation uses react-router-dom NavLink so the browser URL changes on click
+ * and the active item is highlighted automatically based on the current path.
  */
 import React from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -32,35 +26,31 @@ import { useAuth } from '../../../auth/AuthContext'
 import { logout as logoutApi } from '../../../api/auth'
 import './Sidebar.css'
 
-/**
- * Ordered list of top-level CRM sections. The `key` field is both the React
- * list key and the i18next translation key, keeping the definition compact.
- * Icons are lucide-react components passed as references (not JSX) so they
- * can be instantiated with custom props inside the map.
- */
+// Keep Section type exported so existing callers that reference it don't break.
 export type Section = 'home' | 'clients' | 'sales' | 'policies' | 'energy' | 'cases' | 'tasks' | 'timeTracking' | 'collaborators' | 'suppliers' | 'userManagement' | 'myAccount'
 
-const navItems: { section: Section; key: string; icon: React.ElementType }[] = [
-  { section: 'home',          key: 'nav.home',          icon: LayoutDashboard },
-  { section: 'clients',       key: 'nav.clients',       icon: Users },
-  { section: 'sales',         key: 'nav.sales',         icon: TrendingUp },
-  { section: 'policies',      key: 'nav.policies',      icon: Shield },
-  { section: 'energy',        key: 'nav.energy',        icon: Zap },
-  { section: 'cases',         key: 'nav.cases',         icon: AlertCircle },
-  { section: 'tasks',         key: 'nav.tasks',         icon: ClipboardList },
-  { section: 'collaborators', key: 'nav.collaborators', icon: Handshake },
-  { section: 'suppliers',    key: 'nav.suppliers',    icon: Building2 },
+const navItems: { path: string; key: string; icon: React.ElementType }[] = [
+  { path: '/home',          key: 'nav.home',          icon: LayoutDashboard },
+  { path: '/clients',       key: 'nav.clients',       icon: Users },
+  { path: '/sales',         key: 'nav.sales',         icon: TrendingUp },
+  { path: '/policies',      key: 'nav.policies',      icon: Shield },
+  { path: '/energy',        key: 'nav.energy',        icon: Zap },
+  { path: '/cases',         key: 'nav.cases',         icon: AlertCircle },
+  { path: '/tasks',         key: 'nav.tasks',         icon: ClipboardList },
+  { path: '/collaborators', key: 'nav.collaborators', icon: Handshake },
+  { path: '/suppliers',     key: 'nav.suppliers',     icon: Building2 },
 ]
 
-interface SidebarProps {
-  activeSection: Section
-  onNavigate: (section: Section) => void
-}
-
-export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
+export default function Sidebar() {
   const { t } = useTranslation()
   const { user, setUser } = useAuth()
+  const location = useLocation()
   const isOwner = user?.role === 'OWNER'
+
+  function isActive(path: string): boolean {
+    if (path === '/home') return location.pathname === '/home' || location.pathname === '/'
+    return location.pathname.startsWith(path)
+  }
 
   return (
     <aside className="sidebar">
@@ -73,22 +63,22 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon
             return (
-              <li key={item.section} className={activeSection === item.section ? 'active' : ''}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate(item.section) }}>
+              <li key={item.path} className={isActive(item.path) ? 'active' : ''}>
+                <NavLink to={item.path}>
                   <Icon size={20} />
                   <span>{t(item.key)}</span>
-                </a>
+                </NavLink>
               </li>
             )
           })}
           {isOwner && (
             <>
               <li className="sidebar-nav-divider" role="separator" />
-              <li className={activeSection === 'userManagement' ? 'active' : ''}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('userManagement') }}>
+              <li className={location.pathname === '/settings/users' ? 'active' : ''}>
+                <NavLink to="/settings/users">
                   <UserCog size={20} />
                   <span>{t('nav.userManagement')}</span>
-                </a>
+                </NavLink>
               </li>
             </>
           )}

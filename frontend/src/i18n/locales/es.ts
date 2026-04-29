@@ -194,7 +194,7 @@ export default {
       documents: 'Documentos',
     },
     detail: {
-      back: 'Volver al listado',
+      back: 'Volver',
       edit: 'Editar',
       view: 'Ver',
       comingSoon: 'Próximamente',

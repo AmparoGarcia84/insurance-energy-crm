@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Pencil, Eye, Phone, Mail, User } from 'lucide-react'
 import {
   ClientTypeLabels,
@@ -36,8 +37,15 @@ function initials(name: string): string {
 
 export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Props) {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<Tab>('summary')
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as Tab) ?? 'summary'
+
   const [showInfo, setShowInfo] = useState(false)
+
+  function setTab(newTab: Tab) {
+    setSearchParams({ tab: newTab }, { replace: true })
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'summary',   label: t('clients.tabs.summary') },
@@ -115,13 +123,13 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
 
       {/* ── Tabs ── */}
       <div className="cd-tabs">
-        {tabs.map((t) => (
+        {tabs.map((tabItem) => (
           <button
-            key={t.id}
-            className={`cd-tab${tab === t.id ? ' cd-tab-active' : ''}`}
-            onClick={() => setTab(t.id)}
+            key={tabItem.id}
+            className={`cd-tab${tab === tabItem.id ? ' cd-tab-active' : ''}`}
+            onClick={() => setTab(tabItem.id)}
           >
-            {t.label}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -133,7 +141,11 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
         ) : tab === 'tasks' ? (
           <TasksTab context={{ lockedClientId: client.id, lockedClientName: client.name }} />
         ) : tab === 'cases' ? (
-          <CasesTab clientId={client.id} clientName={client.name} />
+          <CasesTab
+            clientId={client.id}
+            clientName={client.name}
+            onViewCase={(c) => navigate(`/cases/${c.id}`)}
+          />
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (

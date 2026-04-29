@@ -66,19 +66,6 @@ vi.mock('../../cases/CaseForm/CaseForm', () => ({
   ),
 }))
 
-vi.mock('../../cases/CaseDetail/CaseDetail', () => ({
-  default: ({ case: c, onBack, onEdit }: {
-    case: Case
-    onBack: () => void
-    onEdit: (c: Case) => void
-  }) => (
-    <div data-testid="case-detail" data-case-id={c.id}>
-      <button onClick={onBack}>Back</button>
-      <button onClick={() => onEdit(c)}>Edit</button>
-    </div>
-  ),
-}))
-
 vi.mock('../BasicSearch/BasicSearch', () => ({
   default: ({ value, onChange, placeholder }: {
     value: string
@@ -110,6 +97,8 @@ const makeCase = (id: string, overrides?: Partial<Case>): Case => ({
   ...overrides,
 })
 
+const noop = vi.fn()
+
 beforeEach(() => {
   vi.clearAllMocks()
   mockCases   = []
@@ -120,12 +109,12 @@ beforeEach(() => {
 
 describe('CasesTab — empty state', () => {
   it('shows "No cases yet" when there are no cases', () => {
-    render(<CasesTab clientId="c-1" clientName="Ana López" />)
+    render(<CasesTab clientId="c-1" clientName="Ana López" onViewCase={noop} />)
     expect(screen.getByText('No cases yet')).toBeInTheDocument()
   })
 
   it('always shows the "New case" button', () => {
-    render(<CasesTab clientId="c-1" clientName="Ana López" />)
+    render(<CasesTab clientId="c-1" clientName="Ana López" onViewCase={noop} />)
     expect(screen.getByText('New case')).toBeInTheDocument()
   })
 })
@@ -138,7 +127,7 @@ describe('CasesTab — client filter', () => {
       makeCase('c1', { clientId: 'c-1' }),
       makeCase('c2', { clientId: 'c-OTHER' }),
     ]
-    render(<CasesTab clientId="c-1" clientName="Ana López" />)
+    render(<CasesTab clientId="c-1" clientName="Ana López" onViewCase={noop} />)
     expect(screen.getByText('Case c1')).toBeInTheDocument()
     expect(screen.queryByText('Case c2')).not.toBeInTheDocument()
   })
@@ -153,7 +142,7 @@ describe('CasesTab — sale filter', () => {
       makeCase('s2', { clientId: 'c-1', saleId: 'sale-B' }),
     ]
     render(
-      <CasesTab clientId="c-1" clientName="Ana López" saleId="sale-A" saleName="Seguro Hogar" />
+      <CasesTab clientId="c-1" clientName="Ana López" saleId="sale-A" saleName="Seguro Hogar" onViewCase={noop} />
     )
     expect(screen.getByText('Case s1')).toBeInTheDocument()
     expect(screen.queryByText('Case s2')).not.toBeInTheDocument()
@@ -168,7 +157,7 @@ describe('CasesTab — search', () => {
       makeCase('x1', { name: 'Rotura de tubería' }),
       makeCase('x2', { name: 'Avería caldera' }),
     ]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={noop} />)
     fireEvent.change(screen.getByTestId('search'), { target: { value: 'rotura' } })
     expect(screen.getByText('Rotura de tubería')).toBeInTheDocument()
     expect(screen.queryByText('Avería caldera')).not.toBeInTheDocument()
@@ -176,38 +165,37 @@ describe('CasesTab — search', () => {
 
   it('shows "No results" message when search yields nothing', () => {
     mockCases = [makeCase('x1', { name: 'Rotura de tubería' })]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={noop} />)
     fireEvent.change(screen.getByTestId('search'), { target: { value: 'xyz' } })
     expect(screen.getByText('No results for your search')).toBeInTheDocument()
   })
 })
 
-// ── Navigation: list → detail ─────────────────────────────────────────────────
+// ── Row click calls onViewCase ─────────────────────────────────────────────────
 
-describe('CasesTab — navigation to detail', () => {
-  it('opens CaseDetail when a case row is clicked', () => {
+describe('CasesTab — row click delegates to onViewCase', () => {
+  it('calls onViewCase with the case when a row is clicked', () => {
+    const onViewCase = vi.fn()
     mockCases = [makeCase('d1')]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={onViewCase} />)
     fireEvent.click(screen.getByText('Case d1'))
-    expect(screen.getByTestId('case-detail')).toBeInTheDocument()
-    expect(screen.getByTestId('case-detail')).toHaveAttribute('data-case-id', 'd1')
+    expect(onViewCase).toHaveBeenCalledOnce()
+    expect(onViewCase).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }))
   })
 
-  it('returns to list when back is clicked in detail view', () => {
+  it('does NOT open an inline detail view', () => {
     mockCases = [makeCase('d1')]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={noop} />)
     fireEvent.click(screen.getByText('Case d1'))
-    fireEvent.click(screen.getByText('Back'))
     expect(screen.queryByTestId('case-detail')).not.toBeInTheDocument()
-    expect(screen.getByText('Case d1')).toBeInTheDocument()
   })
 })
 
-// ── Navigation: list → form (new) ─────────────────────────────────────────────
+// ── New case form ──────────────────────────────────────────────────────────────
 
 describe('CasesTab — new case form (client context)', () => {
   it('opens CaseForm with initialClientId when "New case" is clicked', () => {
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={noop} />)
     fireEvent.click(screen.getByText('New case'))
     const form = screen.getByTestId('case-form')
     expect(form).toHaveAttribute('data-case-id', 'new')
@@ -219,7 +207,7 @@ describe('CasesTab — new case form (client context)', () => {
 describe('CasesTab — new case form (sale context)', () => {
   it('opens CaseForm with initialSaleId when "New case" is clicked with saleId prop', () => {
     render(
-      <CasesTab clientId="c-1" clientName="Ana" saleId="sale-A" saleName="Seguro Hogar" />
+      <CasesTab clientId="c-1" clientName="Ana" saleId="sale-A" saleName="Seguro Hogar" onViewCase={noop} />
     )
     fireEvent.click(screen.getByText('New case'))
     const form = screen.getByTestId('case-form')
@@ -229,39 +217,22 @@ describe('CasesTab — new case form (sale context)', () => {
   })
 })
 
-// ── Navigation: detail → form (edit) ─────────────────────────────────────────
-
-describe('CasesTab — edit from detail', () => {
-  it('opens CaseForm with the existing case when "Edit" is clicked in detail', () => {
-    mockCases = [makeCase('e1')]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
-    // Navigate to detail
-    fireEvent.click(screen.getByText('Case e1'))
-    // Click edit in detail
-    fireEvent.click(screen.getByText('Edit'))
-    const form = screen.getByTestId('case-form')
-    expect(form).toHaveAttribute('data-case-id', 'e1')
-  })
-
-  it('returns to detail when back is clicked in the edit form', () => {
-    mockCases = [makeCase('e1')]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
-    fireEvent.click(screen.getByText('Case e1'))
-    fireEvent.click(screen.getByText('Edit'))
-    // CaseForm mock does not have back, so test that the stack popped by checking form mount
-    // (CaseForm renders data-testid="case-form"; pop would take us back to detail)
-    expect(screen.getByTestId('case-form')).toBeInTheDocument()
-  })
-})
-
-// ── Edit pencil from list ─────────────────────────────────────────────────────
+// ── Edit pencil from list ──────────────────────────────────────────────────────
 
 describe('CasesTab — edit pencil from list', () => {
   it('opens CaseForm directly when pencil icon is clicked in the list', () => {
     mockCases = [makeCase('p1')]
-    render(<CasesTab clientId="c-1" clientName="Ana" />)
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={noop} />)
     fireEvent.click(screen.getByTitle('Edit'))
     const form = screen.getByTestId('case-form')
     expect(form).toHaveAttribute('data-case-id', 'p1')
+  })
+
+  it('pencil click does NOT trigger onViewCase', () => {
+    const onViewCase = vi.fn()
+    mockCases = [makeCase('p1')]
+    render(<CasesTab clientId="c-1" clientName="Ana" onViewCase={onViewCase} />)
+    fireEvent.click(screen.getByTitle('Edit'))
+    expect(onViewCase).not.toHaveBeenCalled()
   })
 })

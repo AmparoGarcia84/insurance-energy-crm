@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Clients from './Clients'
 import { ClientType, ClientStatus } from '@crm/shared'
 import type { Client } from '../../../api/clients'
@@ -25,8 +26,10 @@ vi.mock('../../../api/clients', () => ({
   importClients: (...args: unknown[]) => mockImportClients(...args),
 }))
 
-// Lightweight stand-ins for the child components — they expose their callbacks
-// via buttons so we can drive the orchestration logic from tests.
+vi.mock('../../../hooks/usePermissions', () => ({
+  usePermissions: () => ({ canDelete: true }),
+}))
+
 vi.mock('../ClientsList/ClientsList', () => ({
   default: ({ clients, loading, onNew, onView, onEdit, onDelete }: {
     clients: Client[]
@@ -94,6 +97,18 @@ const mockClients: Client[] = [
   },
 ]
 
+// ── Helper ────────────────────────────────────────────────────────────────────
+
+function renderClients(initialPath = '/clients') {
+  return render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <Routes>
+        <Route path="/clients/*" element={<DataProvider><Clients /></DataProvider>} />
+      </Routes>
+    </MemoryRouter>
+  )
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('Clients', () => {
@@ -103,13 +118,13 @@ describe('Clients', () => {
   })
 
   it('renders ClientsList after loading', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => expect(screen.getByText('Ana García')).toBeInTheDocument())
     expect(screen.getByText('Blas López')).toBeInTheDocument()
   })
 
   it('shows ClientDetail when a client is viewed', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('view-1'))
     fireEvent.click(screen.getByText('view-1'))
     expect(screen.getByTestId('client-detail')).toBeInTheDocument()
@@ -117,7 +132,7 @@ describe('Clients', () => {
   })
 
   it('returns to list when back is clicked in ClientDetail', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('view-1'))
     fireEvent.click(screen.getByText('view-1'))
     fireEvent.click(screen.getByText('back'))
@@ -125,7 +140,7 @@ describe('Clients', () => {
   })
 
   it('shows ClientForm for a new client when new is clicked', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('new'))
     fireEvent.click(screen.getByText('new'))
     expect(screen.getByTestId('client-form')).toBeInTheDocument()
@@ -133,7 +148,7 @@ describe('Clients', () => {
   })
 
   it('shows ClientForm with existing client when edit is clicked', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('edit-1'))
     fireEvent.click(screen.getByText('edit-1'))
     expect(screen.getByTestId('client-form')).toBeInTheDocument()
@@ -141,19 +156,19 @@ describe('Clients', () => {
   })
 
   it('returns to list when cancel is clicked in ClientForm', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('new'))
     fireEvent.click(screen.getByText('new'))
     fireEvent.click(screen.getByText('cancel'))
     expect(screen.getByTestId('clients-list')).toBeInTheDocument()
   })
 
-  it('updates the list and closes form when a client is saved', async () => {
-    render(<DataProvider><Clients /></DataProvider>)
+  it('navigates to ClientDetail after saving a client', async () => {
+    renderClients()
     await waitFor(() => screen.getByText('new'))
     fireEvent.click(screen.getByText('new'))
     fireEvent.click(screen.getByText('save'))
-    expect(screen.getByTestId('clients-list')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByTestId('client-detail')).toBeInTheDocument())
     expect(screen.getByText('Updated')).toBeInTheDocument()
   })
 
@@ -161,7 +176,7 @@ describe('Clients', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockDeleteClient.mockResolvedValue(undefined)
 
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('delete-1'))
     fireEvent.click(screen.getByText('delete-1'))
 
@@ -172,7 +187,7 @@ describe('Clients', () => {
   it('does not delete when confirm is cancelled', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false)
 
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('delete-1'))
     fireEvent.click(screen.getByText('delete-1'))
 
@@ -181,9 +196,7 @@ describe('Clients', () => {
   })
 
   it('shows ClientForm when edit is clicked from ClientDetail', async () => {
-    mockGetClient.mockResolvedValue(mockClients[0])
-
-    render(<DataProvider><Clients /></DataProvider>)
+    renderClients()
     await waitFor(() => screen.getByText('view-1'))
     fireEvent.click(screen.getByText('view-1'))
     fireEvent.click(screen.getByText('edit'))

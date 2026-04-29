@@ -7,7 +7,6 @@ import { deleteCase, type Case, type CaseStatus, type CasePriority } from '../..
 import { usePermissions } from '../../../hooks/usePermissions'
 import BasicSearch from '../BasicSearch/BasicSearch'
 import CaseForm from '../../cases/CaseForm/CaseForm'
-import CaseDetail from '../../cases/CaseDetail/CaseDetail'
 import './CasesTab.css'
 
 // ── Badge maps ────────────────────────────────────────────────────────────────
@@ -29,59 +28,44 @@ const PRIORITY_CLASS: Record<CasePriority, string> = {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  clientId:   string
-  clientName: string
+  clientId:    string
+  clientName:  string
   /** If provided, cases are filtered by saleId instead of clientId. */
-  saleId?:    string
-  saleName?:  string
+  saleId?:     string
+  saleName?:   string
+  /** Called when the user clicks a case row — parent handles navigation to detail. */
+  onViewCase:  (c: Case) => void
 }
 
-// ── Navigation ────────────────────────────────────────────────────────────────
+// ── Navigation (list ↔ form only — detail is lifted to the parent) ─────────────
 
 type View =
   | { kind: 'list' }
-  | { kind: 'detail'; case: Case }
-  | { kind: 'form';   case: Case | null }
+  | { kind: 'form'; case: Case | null }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function CasesTab({ clientId, clientName, saleId, saleName }: Props) {
+export default function CasesTab({ clientId, clientName, saleId, saleName, onViewCase }: Props) {
   const { t } = useTranslation()
   const { cases, loading, upsertCase, removeCase } = useCases()
   const { canDelete } = usePermissions()
 
-  const [stack, setStack] = useState<View[]>([{ kind: 'list' }])
+  const [view, setView] = useState<View>({ kind: 'list' })
   const [search, setSearch] = useState('')
 
-  const push = (v: View) => setStack((s) => [...s, v])
-  const pop  = ()        => setStack((s) => s.length > 1 ? s.slice(0, -1) : s)
-
-  const current = stack[stack.length - 1]
-
   // ── Form view ────────────────────────────────────────────────────────────────
-  if (current.kind === 'form') {
+  if (view.kind === 'form') {
     return (
       <CaseForm
-        key={current.case?.id ?? 'new'}
-        case={current.case}
-        initialClientId={current.case === null ? (saleId ? undefined : clientId) : undefined}
-        initialSaleId={current.case === null ? saleId : undefined}
-        onSave={(saved) => { upsertCase(saved); pop() }}
-        onCancel={pop}
+        key={view.case?.id ?? 'new'}
+        case={view.case}
+        initialClientId={view.case === null ? (saleId ? undefined : clientId) : undefined}
+        initialSaleId={view.case === null ? saleId : undefined}
+        onSave={(saved) => { upsertCase(saved); setView({ kind: 'list' }) }}
+        onCancel={() => setView({ kind: 'list' })}
         onDelete={canDelete
-          ? async (id) => { await deleteCase(id); removeCase(id); setStack([{ kind: 'list' }]) }
+          ? async (id) => { await deleteCase(id); removeCase(id); setView({ kind: 'list' }) }
           : undefined}
-      />
-    )
-  }
-
-  // ── Detail view ──────────────────────────────────────────────────────────────
-  if (current.kind === 'detail') {
-    return (
-      <CaseDetail
-        case={current.case}
-        onBack={pop}
-        onEdit={(c) => push({ kind: 'form', case: c })}
       />
     )
   }
@@ -107,7 +91,7 @@ export default function CasesTab({ clientId, clientName, saleId, saleName }: Pro
         </span>
         <button
           className="btn-primary"
-          onClick={() => push({ kind: 'form', case: null })}
+          onClick={() => setView({ kind: 'form', case: null })}
         >
           <Plus size={15} />
           {t('cases.casesTab.new')}
@@ -144,7 +128,7 @@ export default function CasesTab({ clientId, clientName, saleId, saleName }: Pro
                 <tr
                   key={c.id}
                   className="cases-tab__row"
-                  onClick={() => push({ kind: 'detail', case: c })}
+                  onClick={() => onViewCase(c)}
                 >
                   <td className="cases-tab__name">{c.name}</td>
                   <td>
@@ -171,7 +155,7 @@ export default function CasesTab({ clientId, clientName, saleId, saleName }: Pro
                   <td className="cases-tab__actions">
                     <button
                       className="icon-btn"
-                      onClick={(e) => { e.stopPropagation(); push({ kind: 'form', case: c }) }}
+                      onClick={(e) => { e.stopPropagation(); setView({ kind: 'form', case: c }) }}
                       title={t('cases.edit')}
                     >
                       <Pencil size={14} />

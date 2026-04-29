@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Sidebar, { Section } from '../Sidebar/Sidebar'
+import Sidebar from '../Sidebar/Sidebar'
 import TopBar from '../TopBar/TopBar'
 import Home from '../../home/Home/Home'
 import Clients from '../../clients/Clients/Clients'
@@ -16,55 +16,29 @@ import Suppliers from '../../suppliers/Suppliers/Suppliers'
 
 export default function Dashboard() {
   const { t } = useTranslation()
-  const [activeSection, setActiveSection] = useState<Section>('home')
-  const [pendingClientId, setPendingClientId] = useState<string | null>(null)
-  const [pendingSaleId,   setPendingSaleId]   = useState<string | null>(null)
-  const [pendingCaseId,   setPendingCaseId]   = useState<string | null>(null)
-
-  function navigateToClient(clientId: string) {
-    setPendingClientId(clientId)
-    setActiveSection('clients')
-  }
-
-  function navigateToSale(saleId: string) {
-    setPendingSaleId(saleId)
-    setActiveSection('sales')
-  }
-
-  function navigateToCase(caseId: string) {
-    setPendingCaseId(caseId)
-    setActiveSection('cases')
-  }
-
-  function renderSection() {
-    switch (activeSection) {
-      case 'home':           return <Home />
-      case 'clients':        return <Clients initialClientId={pendingClientId ?? undefined} onClientOpened={() => setPendingClientId(null)} />
-      case 'sales':          return <Sales onNavigateToClient={navigateToClient} initialSaleId={pendingSaleId ?? undefined} onSaleOpened={() => setPendingSaleId(null)} />
-      case 'policies':       return <Policies onNavigateToClient={navigateToClient} />
-      case 'energy':         return <Energy onNavigateToClient={navigateToClient} />
-      case 'cases':          return <Cases initialCaseId={pendingCaseId ?? undefined} onCaseOpened={() => setPendingCaseId(null)} />
-      case 'tasks':          return <Tasks />
-      case 'collaborators':  return <Collaborators />
-      case 'suppliers':      return <Suppliers />
-      case 'userManagement': return <UserManagement />
-      case 'myAccount':      return <MyAccount />
-      default:               return <div className="page-header"><h1 className="page-title">{t(`nav.${activeSection}`)}</h1></div>
-    }
-  }
+  const navigate = useNavigate()
 
   return (
     <div className="dashboard">
-      <Sidebar activeSection={activeSection} onNavigate={setActiveSection} />
+      <Sidebar />
       <div className="dashboard-main">
-        <TopBar
-          onNavigate={setActiveSection}
-          onOpenClient={navigateToClient}
-          onOpenSale={navigateToSale}
-          onOpenCase={navigateToCase}
-        />
+        <TopBar />
         <main className="dashboard-content">
-          {renderSection()}
+          <Routes>
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/clients/*" element={<Clients />} />
+            <Route path="/sales/*" element={<Sales />} />
+            <Route path="/policies/*" element={<Policies onNavigateToClient={(id) => navigate(`/clients/${id}`)} />} />
+            <Route path="/energy/*" element={<Energy onNavigateToClient={(id) => navigate(`/clients/${id}`)} />} />
+            <Route path="/cases/*" element={<Cases />} />
+            <Route path="/tasks/*" element={<Tasks />} />
+            <Route path="/suppliers/*" element={<Suppliers />} />
+            <Route path="/collaborators/*" element={<Collaborators />} />
+            <Route path="/settings/users" element={<UserManagement />} />
+            <Route path="/settings/my-account" element={<MyAccount />} />
+            <Route path="*" element={<div className="page-header"><h1 className="page-title">{t('nav.notFound')}</h1></div>} />
+          </Routes>
         </main>
       </div>
     </div>

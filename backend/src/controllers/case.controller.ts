@@ -48,6 +48,7 @@ export async function createCase(req: AuthRequest, res: Response): Promise<void>
   try {
     const created = await caseService.createCase({
       clientId, saleId, name, occurrenceAt, description, cause, type, status, priority, supplierId,
+      createdByUserId: req.user!.userId,
     })
     res.status(201).json(created)
   } catch (err: unknown) {

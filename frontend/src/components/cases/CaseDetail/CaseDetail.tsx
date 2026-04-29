@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Pencil, User, Calendar, FileText } from 'lucide-react'
 import type { Case, CaseStatus, CasePriority } from '../../../api/cases'
@@ -56,7 +56,12 @@ type Tab = 'activity' | 'tasks' | 'documents'
 
 export default function CaseDetail({ case: caseItem, onBack, onEdit, onViewClient, onViewSale }: Props) {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<Tab>('activity')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as Tab) ?? 'activity'
+
+  function setTab(newTab: Tab) {
+    setSearchParams({ tab: newTab }, { replace: true })
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'activity',  label: t('cases.detail.tabs.activity') },

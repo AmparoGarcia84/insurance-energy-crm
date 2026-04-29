@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import GlobalSearch from './GlobalSearch'
 import type { Client } from '../../../api/clients'
 import type { Sale } from '../../../api/sales'
@@ -54,16 +55,20 @@ vi.mock('../../../context/DataContext', () => ({
   useCases:   () => ({ cases: CASES,   loading: false }),
 }))
 
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>()
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function renderSearch(overrides: Partial<Parameters<typeof GlobalSearch>[0]> = {}) {
-  const props = {
-    onOpenClient: vi.fn(),
-    onOpenSale:   vi.fn(),
-    onOpenCase:   vi.fn(),
-    ...overrides,
-  }
-  return { ...props, ...render(<GlobalSearch {...props} />) }
+function renderSearch() {
+  return render(
+    <MemoryRouter>
+      <GlobalSearch />
+    </MemoryRouter>
+  )
 }
 
 function type(text: string) {
@@ -104,7 +109,6 @@ describe('GlobalSearch — client results', () => {
   it('shows matching client by name', () => {
     renderSearch()
     type('ana')
-    // item-main is unique; item-sub shows the client number
     expect(screen.getByText('Ana García', { selector: '.global-search__item-main' })).toBeInTheDocument()
     expect(screen.queryByText('Blas López', { selector: '.global-search__item-main' })).not.toBeInTheDocument()
   })
@@ -122,12 +126,12 @@ describe('GlobalSearch — client results', () => {
     expect(screen.getByText('Ana García', { selector: '.global-search__item-main' })).toBeInTheDocument()
   })
 
-  it('calls onOpenClient with the correct id when a client result is clicked', () => {
-    const { onOpenClient } = renderSearch()
+  it('navigates to /clients/:id when a client result is clicked', () => {
+    renderSearch()
     type('000001')
     const btn = screen.getByText('Ana García', { selector: '.global-search__item-main' }).closest('button')!
     fireEvent.click(btn)
-    expect(onOpenClient).toHaveBeenCalledWith('c-001')
+    expect(mockNavigate).toHaveBeenCalledWith('/clients/c-001')
   })
 
   it('clears the query after selecting a client', () => {
@@ -154,11 +158,11 @@ describe('GlobalSearch — sale results', () => {
     expect(screen.getByText('Luz oficina López')).toBeInTheDocument()
   })
 
-  it('calls onOpenSale with the correct id when a sale result is clicked', () => {
-    const { onOpenSale } = renderSearch()
+  it('navigates to /sales/:id when a sale result is clicked', () => {
+    renderSearch()
     type('hogar')
     fireEvent.click(screen.getByText('Hogar Ana García'))
-    expect(onOpenSale).toHaveBeenCalledWith('s-001')
+    expect(mockNavigate).toHaveBeenCalledWith('/sales/s-001')
   })
 })
 
@@ -177,11 +181,11 @@ describe('GlobalSearch — case results', () => {
     expect(screen.getByText('Reclamación siniestro')).toBeInTheDocument()
   })
 
-  it('calls onOpenCase with the correct id when a case result is clicked', () => {
-    const { onOpenCase } = renderSearch()
+  it('navigates to /cases/:id when a case result is clicked', () => {
+    renderSearch()
     type('recla')
     fireEvent.click(screen.getByText('Reclamación siniestro'))
-    expect(onOpenCase).toHaveBeenCalledWith('ca-001')
+    expect(mockNavigate).toHaveBeenCalledWith('/cases/ca-001')
   })
 })
 

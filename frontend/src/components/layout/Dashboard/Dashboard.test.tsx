@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../../../auth/AuthContext'
 import Dashboard from './Dashboard'
 
@@ -22,8 +23,14 @@ vi.mock('../GlobalSearch/GlobalSearch', () => ({
   default: () => <input type="search" aria-label="global-search" />,
 }))
 
-function renderDashboard() {
-  return render(<AuthProvider><Dashboard /></AuthProvider>)
+function renderDashboard(initialPath = '/home') {
+  return render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <AuthProvider>
+        <Dashboard />
+      </AuthProvider>
+    </MemoryRouter>
+  )
 }
 
 describe('Dashboard', () => {
@@ -38,9 +45,14 @@ describe('Dashboard', () => {
     expect(screen.getByRole('main')).toBeInTheDocument()
   })
 
-  it('shows home section by default', () => {
-    renderDashboard()
+  it('shows home section when path is /home', () => {
+    renderDashboard('/home')
     expect(screen.getByTestId('home-section')).toBeInTheDocument()
     expect(screen.getByRole('main')).toHaveTextContent('Inicio')
+  })
+
+  it('redirects / to /home', () => {
+    renderDashboard('/')
+    expect(screen.getByTestId('home-section')).toBeInTheDocument()
   })
 })

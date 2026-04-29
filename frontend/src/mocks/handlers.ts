@@ -584,7 +584,7 @@ const casesHandlers = [
     const now  = new Date().toISOString()
     const client   = store.clients.find(c => c.id === data.clientId)
     const sale     = data.saleId ? store.sales?.find((s: { id: string; title: string }) => s.id === data.saleId) : null
-    const supplier = data.supplierId ? { id: data.supplierId, name: data.supplierId } : null
+    const supplier = data.supplierId ? store.suppliers.find(s => s.id === data.supplierId) ?? null : null
     const newCase: Case = {
       id:           `case-new-${Date.now()}`,
       clientId:     data.clientId,
@@ -599,11 +599,44 @@ const casesHandlers = [
       status:       data.status       ?? 'NEW',
       priority:     data.priority     ?? 'NORMAL',
       supplierId:   data.supplierId   ?? null,
-      supplier,
+      supplier:     supplier ? { id: supplier.id, name: supplier.name } : null,
       createdAt:    now,
       updatedAt:    now,
     }
     store.cases.unshift(newCase)
+
+    // Auto-generate the initial review task (mirrors backend task-automation.service)
+    const CASE_TYPE_LABELS: Record<string, string> = {
+      CLAIM: 'Siniestro', FAULT: 'Avería', ACTIVATION: 'Activación', WRONG_SETTLEMENT: 'Liquidación errónea',
+    }
+    const typeLabel = data.type ? CASE_TYPE_LABELS[data.type] : null
+    const dueDate   = (() => {
+      const d = new Date(); d.setMonth(d.getMonth() + 3); return d.toISOString().split('T')[0]
+    })()
+    const autoTask: TaskWithRelations = {
+      id:              `t-auto-case-${Date.now()}`,
+      subject:         `Revisión de caso - ${newCase.name}`,
+      description:     `Iniciar solución para el ${typeLabel ?? 'caso'}`,
+      status:          TaskStatus.NOT_STARTED,
+      dueDate,
+      caseId:          newCase.id,
+      clientId:        newCase.clientId,
+      saleId:          newCase.saleId ?? undefined,
+      assignedToUserId: store.currentUser?.id,
+      hasReminder:     false,
+      providerSupplierId: data.supplierId ?? undefined,
+      createdAt:       now,
+      updatedAt:       now,
+      assignedTo:      store.currentUser
+        ? { id: store.currentUser.id, displayName: store.currentUser.displayName, email: store.currentUser.email }
+        : null,
+      client:          newCase.client ? { id: newCase.client.id, name: newCase.client.name, clientNumber: null } : null,
+      sale:            newCase.sale ?? null,
+      case:            { id: newCase.id, title: newCase.name } as TaskWithRelations['case'],
+      providerSupplier: supplier ? { id: supplier.id, name: supplier.name, cif: supplier.cif ?? null } : null,
+    }
+    store.tasks.unshift(autoTask)
+
     return HttpResponse.json(newCase, { status: 201 })
   }),
 
