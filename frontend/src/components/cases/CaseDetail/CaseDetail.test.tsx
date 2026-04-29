@@ -18,11 +18,15 @@ vi.mock('../../../api/tasks', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../api/tasks')>()
   return { ...actual, getTasks: vi.fn() }
 })
-vi.mock('../../../api/users',    () => ({ getUsers:    vi.fn().mockResolvedValue([]) }))
-vi.mock('../../../api/clients',  () => ({ getClients:  vi.fn().mockResolvedValue([]), getClient: vi.fn() }))
-vi.mock('../../../api/sales',    () => ({ getSales:    vi.fn().mockResolvedValue([]) }))
-vi.mock('../../../api/cases',    () => ({ getCases:    vi.fn().mockResolvedValue([]) }))
-vi.mock('../../../api/suppliers',() => ({ getSuppliers: vi.fn().mockResolvedValue([]) }))
+vi.mock('../../../api/users',     () => ({ getUsers:     vi.fn().mockResolvedValue([]) }))
+vi.mock('../../../api/clients',   () => ({ getClients:   vi.fn().mockResolvedValue([]), getClient: vi.fn() }))
+vi.mock('../../../api/sales',     () => ({ getSales:     vi.fn().mockResolvedValue([]) }))
+vi.mock('../../../api/cases',     () => ({ getCases:     vi.fn().mockResolvedValue([]) }))
+vi.mock('../../../api/suppliers', () => ({ getSuppliers: vi.fn().mockResolvedValue([]) }))
+vi.mock('../../../api/documents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/documents')>()
+  return { ...actual, getDocuments: vi.fn().mockResolvedValue([]) }
+})
 
 const CASE: Case = {
   id:          'case-1',
@@ -140,5 +144,10 @@ describe('CaseDetail', () => {
     await waitFor(() =>
       expect(vi.mocked(tasksApi.getTasks)).toHaveBeenCalledWith({ caseId: 'case-1' })
     )
+  })
+
+  it('shows Documents tab button', () => {
+    renderDetail()
+    expect(screen.getByText(/documentos|documents/i)).toBeInTheDocument()
   })
 })

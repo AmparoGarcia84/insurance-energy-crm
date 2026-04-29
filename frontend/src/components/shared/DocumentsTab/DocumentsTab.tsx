@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, ExternalLink, Trash2 } from 'lucide-react'
 import { normalizeSearch } from '../../../utils/search'
-import BasicSearch from '../../shared/BasicSearch/BasicSearch'
+import BasicSearch from '../BasicSearch/BasicSearch'
 import {
   getDocuments,
   deleteDocument,
@@ -12,15 +12,11 @@ import {
   type DocumentRecord,
 } from '../../../api/documents'
 import { usePermissions } from '../../../hooks/usePermissions'
-import DocumentUploadModal from '../../shared/DocumentUploadModal/DocumentUploadModal'
-import ConfirmModal from '../../shared/ConfirmModal/ConfirmModal'
-import './SaleDocumentsTab.css'
+import DocumentUploadModal from '../DocumentUploadModal/DocumentUploadModal'
+import ConfirmModal from '../ConfirmModal/ConfirmModal'
+import './DocumentsTab.css'
 
-interface Props {
-  saleId:     string
-  clientId:   string
-  clientName: string
-}
+// ── Status badge map ──────────────────────────────────────────────────────────
 
 const STATUS_CLASS: Record<DocumentStatus, string> = {
   [DocumentStatus.PENDING_SIGNATURE]: 'doc-status--pending',
@@ -29,7 +25,23 @@ const STATUS_CLASS: Record<DocumentStatus, string> = {
   [DocumentStatus.UNDER_REVIEW]:      'doc-status--review',
 }
 
-export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props) {
+const BACKEND_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface Props {
+  clientId:    string
+  clientName:  string
+  /**
+   * When provided, documents are filtered by this saleId.
+   * The "Sale" column is hidden (redundant in a sale context).
+   */
+  saleId?: string
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function DocumentsTab({ clientId, clientName, saleId }: Props) {
   const { t }         = useTranslation()
   const { canDelete } = usePermissions()
 
@@ -63,19 +75,23 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
     }
   }
 
-  const backendBase = 'http://localhost:3000'
-
+  // In client context, search by name + sale title; in sale context, name only
   const filtered = docs.filter((doc) => {
     const q = normalizeSearch(search)
-    return normalizeSearch(doc.name).includes(q)
+    return (
+      normalizeSearch(doc.name).includes(q) ||
+      (!saleId && doc.sale?.title ? normalizeSearch(doc.sale.title).includes(q) : false)
+    )
   })
 
+  const showSaleColumn = !saleId
+
   return (
-    <div className="sdt-view">
+    <div className="docs-tab">
 
       {/* ── Toolbar ── */}
-      <div className="sdt-toolbar">
-        <span className="sdt-toolbar__count">
+      <div className="docs-tab__toolbar">
+        <span className="docs-tab__count">
           {t('documents.table.count', { count: docs.length })}
         </span>
         <button className="btn-primary" onClick={() => setShowUpload(true)}>
@@ -95,18 +111,19 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
 
       {/* ── Table / empty ── */}
       {loading ? null : filtered.length === 0 ? (
-        <div className="sdt-empty">
+        <div className="docs-tab__empty">
           <p>{search ? t('documents.table.emptySearch') : t('documents.table.empty')}</p>
         </div>
       ) : (
         <div className="data-table-wrap">
-          <table className="data-table sdt-table">
+          <table className="data-table docs-tab__table">
             <thead>
               <tr>
                 <th>{t('documents.table.name')}</th>
                 <th>{t('documents.table.type')}</th>
                 <th>{t('documents.table.group')}</th>
                 <th>{t('documents.table.status')}</th>
+                {showSaleColumn && <th>{t('documents.table.sale')}</th>}
                 <th>{t('documents.table.expiryDate')}</th>
                 <th>{t('documents.table.file')}</th>
                 {canDelete && <th />}
@@ -115,7 +132,7 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
             <tbody>
               {filtered.map((doc) => (
                 <tr key={doc.id}>
-                  <td className="sdt-name">{doc.name}</td>
+                  <td className="docs-tab__name">{doc.name}</td>
                   <td>{t(`documents.documentType.${doc.documentType as DocumentType}`)}</td>
                   <td>
                     {doc.group
@@ -123,11 +140,16 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
                       : '—'}
                   </td>
                   <td>
-                    <span className={`cd-docs-tab__status ${STATUS_CLASS[doc.status as DocumentStatus]}`}>
+                    <span className={`docs-tab__status ${STATUS_CLASS[doc.status as DocumentStatus]}`}>
                       {t(`documents.status.${doc.status as DocumentStatus}`)}
                     </span>
                   </td>
-                  <td className="sdt-expiry">
+                  {showSaleColumn && (
+                    <td className="docs-tab__sale">
+                      {doc.sale?.title ?? '—'}
+                    </td>
+                  )}
+                  <td className="docs-tab__expiry">
                     {doc.expiryDate
                       ? new Date(doc.expiryDate).toLocaleDateString('es-ES')
                       : '—'}
@@ -135,21 +157,21 @@ export default function SaleDocumentsTab({ saleId, clientId, clientName }: Props
                   <td>
                     {doc.fileUrl ? (
                       <a
-                        href={doc.fileUrl.startsWith('http') ? doc.fileUrl : `${backendBase}${doc.fileUrl}`}
+                        href={doc.fileUrl.startsWith('http') ? doc.fileUrl : `${BACKEND_BASE}${doc.fileUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="cd-docs-tab__file-link"
+                        className="docs-tab__file-link"
                         title={t('documents.actions.viewFile')}
                       >
                         <ExternalLink size={14} />
                         <span>{t('documents.actions.viewFile')}</span>
                       </a>
                     ) : (
-                      <span className="cd-docs-tab__no-file">—</span>
+                      <span className="docs-tab__no-file">—</span>
                     )}
                   </td>
                   {canDelete && (
-                    <td className="cd-docs-tab__actions">
+                    <td className="docs-tab__actions">
                       <button
                         className="icon-btn icon-btn-danger"
                         onClick={() => setToDelete(doc)}

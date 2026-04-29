@@ -513,8 +513,9 @@ export default {
       back: 'Back',
       edit: 'Edit',
       tabs: {
-        activity: 'Activity',
-        tasks:    'Tasks',
+        activity:  'Activity',
+        tasks:     'Tasks',
+        documents: 'Documents',
       },
       cards: {
         info:       'Case information',

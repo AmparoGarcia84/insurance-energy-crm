@@ -11,7 +11,7 @@ import { useClients } from '../../../context/DataContext'
 import ActivityTab from '../../shared/ActivityTab/ActivityTab'
 import TasksTab from '../../shared/TasksTab/TasksTab'
 import CasesTab from '../../shared/CasesTab/CasesTab'
-import SaleDocumentsTab from '../SaleDocumentsTab/SaleDocumentsTab'
+import DocumentsTab from '../../shared/DocumentsTab/DocumentsTab'
 import './SaleDetail.css'
 
 interface Props {
@@ -326,10 +326,10 @@ export default function SaleDetail({ sale, onBack, onEdit, onViewClient }: Props
         )}
 
         {tab === 'documents' && (
-          <SaleDocumentsTab
-            saleId={sale.id}
+          <DocumentsTab
             clientId={sale.clientId}
             clientName={sale.clientName ?? ''}
+            saleId={sale.id}
           />
         )}
       </div>

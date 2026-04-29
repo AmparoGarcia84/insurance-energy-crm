@@ -514,8 +514,9 @@ export default {
       back: 'Volver',
       edit: 'Editar',
       tabs: {
-        activity: 'Actividad',
-        tasks:    'Tareas',
+        activity:  'Actividad',
+        tasks:     'Tareas',
+        documents: 'Documentos',
       },
       cards: {
         info:       'Información del caso',

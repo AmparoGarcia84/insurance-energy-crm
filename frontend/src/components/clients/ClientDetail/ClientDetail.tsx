@@ -10,10 +10,10 @@ import type { Sale } from '../../../api/sales'
 import ClientInfoModal from '../ClientInfoModal/ClientInfoModal'
 import ClientSummaryTab from '../ClientSummaryTab/ClientSummaryTab'
 import ClientSalesTab from '../ClientSalesTab/ClientSalesTab'
-import ClientDocumentsTab from '../ClientDocumentsTab/ClientDocumentsTab'
 import ActivityTab from '../../shared/ActivityTab/ActivityTab'
 import TasksTab from '../../shared/TasksTab/TasksTab'
 import CasesTab from '../../shared/CasesTab/CasesTab'
+import DocumentsTab from '../../shared/DocumentsTab/DocumentsTab'
 import './ClientDetail.css'
 
 interface Props {
@@ -137,7 +137,7 @@ export default function ClientDetail({ client, onBack, onEdit, onViewSale }: Pro
         ) : tab === 'sales' ? (
           <ClientSalesTab clientId={client.id} clientName={client.name} onViewSale={onViewSale} />
         ) : tab === 'documents' ? (
-          <ClientDocumentsTab clientId={client.id} clientName={client.name} />
+          <DocumentsTab clientId={client.id} clientName={client.name} />
         ) : tab === 'activity' ? (
           <ActivityTab clientId={client.id} />
         ) : (

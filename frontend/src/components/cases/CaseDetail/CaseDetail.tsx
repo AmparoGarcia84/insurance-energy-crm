@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, User, Calendar, FileText } from 'lucide-react'
 import type { Case, CaseStatus, CasePriority } from '../../../api/cases'
 import ActivityTab from '../../shared/ActivityTab/ActivityTab'
 import TasksTab from '../../shared/TasksTab/TasksTab'
+import DocumentsTab from '../../shared/DocumentsTab/DocumentsTab'
 import './CaseDetail.css'
 
 // ── Badge maps (shared with Cases list) ───────────────────────────────────────
@@ -49,7 +50,7 @@ interface Props {
   onViewSale?: (saleId: string) => void
 }
 
-type Tab = 'activity' | 'tasks'
+type Tab = 'activity' | 'tasks' | 'documents'
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -58,8 +59,9 @@ export default function CaseDetail({ case: caseItem, onBack, onEdit, onViewClien
   const [tab, setTab] = useState<Tab>('activity')
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'activity', label: t('cases.detail.tabs.activity') },
-    { id: 'tasks',    label: t('cases.detail.tabs.tasks') },
+    { id: 'activity',  label: t('cases.detail.tabs.activity') },
+    { id: 'tasks',     label: t('cases.detail.tabs.tasks') },
+    { id: 'documents', label: t('cases.detail.tabs.documents') },
   ]
 
   return (
@@ -214,6 +216,13 @@ export default function CaseDetail({ case: caseItem, onBack, onEdit, onViewClien
               lockedCaseId:    caseItem.id,
               lockedCaseName:  caseItem.name,
             }}
+          />
+        )}
+        {tab === 'documents' && (
+          <DocumentsTab
+            clientId={caseItem.clientId}
+            clientName={caseItem.client.name}
+            saleId={caseItem.saleId ?? undefined}
           />
         )}
       </div>
